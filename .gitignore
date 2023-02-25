@@ -22,5 +22,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-### IntelliJ IDEA ###
+#IntelliJ IDEA 추가
 .idea
+
+#package-lock-json 추가 (윈도우와 맥이 달라서)
+package-lock-json
