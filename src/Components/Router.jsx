@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
-import AboutPage from "./AboutPage";
-import ContactPage from "./ContactPage";
-import StartPage from "./StartPage";
+import AboutPage from "../Pages/AboutPage";
+import ContactPage from "../Pages/ContactPage";
+import StartPage from "../Pages/StartPage";
 
 export default function Router() {
     return (
