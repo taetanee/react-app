@@ -1,9 +1,6 @@
 import React, {useEffect} from "react";
 
 export default function ContactPage() {
-
-
-
     const getData = async () => {
 
         const res = await fetch(
