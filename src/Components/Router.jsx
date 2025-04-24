@@ -22,9 +22,9 @@ export default function Router() {
             </nav>
 
             <Routes>
-                <Route exact path='/' element={<StartPage />} />
-                <Route path='/about' element={<AboutPage />} />
-                <Route path='/contact' element={<ContactPage />} />
+                <Route exact path='/' element={<StartPage/>}/>
+                <Route path='/about' element={<AboutPage/>}/>
+                <Route path='/contact' element={<ContactPage/>}/>
             </Routes>
         </BrowserRouter>
     );
