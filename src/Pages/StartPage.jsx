@@ -1,37 +1,44 @@
 import React, { useEffect, useState } from "react";
 
 export default function StartPage() {
-    const [data, setData] = useState([]); // 데이터 저장용 상태
-
-    const getData = async () => {
-        const res = await fetch(
-            "https://jsonplaceholder.typicode.com/comments"
-        ).then((res) => res.json());
-
-        const initData = res.slice(0, 20).map((it) => ({
-            author: it.email,
-            content: it.body,
-            emotion: Math.floor(Math.random() * 5) + 1,
-            created_date: new Date().getTime(),
-        }));
-
-        setData(initData);
-    };
+    const [data, setData] = useState([]);
 
     useEffect(() => {
-        getData();
+        const fetchData = async () => {
+            try {
+                const response = await fetch("https://jsonplaceholder.typicode.com/comments");
+                const json = await response.json();
+
+                const initData = [];
+                const sliced = json.slice(0, 20);
+
+                for (let i = 0; i < sliced.length; i++) {
+                    const item = sliced[i];
+                    initData.push({
+                        author: item.email,
+                        content: item.body,
+                        emotion: Math.floor(Math.random() * 5) + 1,
+                        created_date: Date.now(),
+                    });
+                }
+
+                setData(initData);
+            } catch (error) {
+                console.error("데이터 가져오기 실패:", error);
+            }
+        };
+
+        fetchData();
     }, []);
 
     return (
         <div>
-            <h1>Start본문</h1>
-            <h2>데이터 수 : {data.length}</h2>
-
-            {/* 데이터 리스트 보여주기 예시 */}
+            <h1>Start 페이지</h1>
+            <h2>데이터 개수: {data.length}</h2>
             <ul>
-                {data.map((item, idx) => (
-                    <li key={idx}>
-                        <b>{item.author}</b>: {item.content}
+                {data.map((item, index) => (
+                    <li key={index}>
+                        <strong>{item.author}</strong>: {item.content}
                     </li>
                 ))}
             </ul>
