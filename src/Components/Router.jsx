@@ -11,9 +11,11 @@ export default function Router() {
                 <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/'>
                     Start
                 </NavLink>
+                 /
                 <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/about'>
                     About
                 </NavLink>
+                /
                 <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/contact'>
                     Contact
                 </NavLink>
