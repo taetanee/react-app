@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-export default function StartPage() {
+export default function Page01() {
     const [data, setData] = useState([]);
 
     useEffect(() => {
@@ -33,7 +33,7 @@ export default function StartPage() {
 
     return (
         <div>
-            <h1>Start 페이지</h1>
+            <h1>데이터 가져오기1</h1>
             <h2>데이터 개수: {data.length}</h2>
             <ul>
                 {data.map((item, index) => (
