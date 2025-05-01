@@ -46,7 +46,7 @@ export default function Page01() {
             fetchDust();
             fetchSnp500();
             fetchWeather();
-        }, 10000);
+        }, 1000);
 
         return () => clearInterval(intervalId);
     }, []);
