@@ -56,6 +56,7 @@ export default function Page01() {
         // S&P500은 실시간 갱신
         const intervalId = setInterval(() => {
             fetchSnp500();
+            fetchExchangeRate();
         }, 10000);
 
         return () => clearInterval(intervalId);
@@ -63,15 +64,15 @@ export default function Page01() {
 
     return (
         <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
-            <h1>서울 미세먼지 :</h1>
+            <h1>[서울 미세먼지]</h1>
             <h2>{dust || "불러오는 중..."}</h2>
             <hr />
 
-            <h1>S&P 500 현재 지수 :</h1>
+            <h1>[S&P 500 현재 지수]</h1>
             <h2>{snp500 || "불러오는 중..."}</h2>
             <hr />
 
-            <h1>서울 현재 날씨 :</h1>
+            <h1>[서울 현재 날씨</h1>
             {weather ? (
                 <div>
                     <p>🌡 기온: {weather.temperature.value} {weather.temperature.unit}</p>
@@ -82,7 +83,7 @@ export default function Page01() {
             )}
             <hr />
 
-            <h1>USD/KRW 환율 :</h1>
+            <h1>[USD/KRW 환율]</h1>
             <h2>{exchangeRate ? `${exchangeRate} 원` : "불러오는 중..."}</h2>
         </div>
     );
