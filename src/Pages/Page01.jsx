@@ -4,6 +4,7 @@ export default function Page01() {
     const [dust, setDust] = useState("");       // 서울 미세먼지 데이터
     const [snp500, setSnp500] = useState("");   // S&P500 현재 지수
     const [weather, setWeather] = useState(null); // 서울 날씨 정보
+    const [exchangeRate, setExchangeRate] = useState(""); // 환율 정보
 
     useEffect(() => {
         const fetchDust = async () => {
@@ -36,15 +37,26 @@ export default function Page01() {
             }
         };
 
+        const fetchExchangeRate = async () => {
+            try {
+                const response = await fetch("http://localhost:18080/weather/getExchangeRateUSDToKRW");
+                const result = await response.text();  // 서버가 double/string 반환 시
+                setExchangeRate(result);
+            } catch (error) {
+                console.error("환율 정보 로딩 실패", error);
+            }
+        };
+
         // 최초 호출
         fetchDust();
         fetchSnp500();
         fetchWeather();
+        fetchExchangeRate();
 
-        // 주기적 업데이트 (10초)
+        // S&P500은 실시간 갱신
         const intervalId = setInterval(() => {
             fetchSnp500();
-        }, 1000);
+        }, 10000);
 
         return () => clearInterval(intervalId);
     }, []);
@@ -68,6 +80,10 @@ export default function Page01() {
             ) : (
                 <p>날씨 정보 불러오는 중...</p>
             )}
+            <hr />
+
+            <h1>USD/KRW 환율 :</h1>
+            <h2>{exchangeRate ? `${exchangeRate} 원` : "불러오는 중..."}</h2>
         </div>
     );
 }
