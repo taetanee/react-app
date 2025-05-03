@@ -43,9 +43,7 @@ export default function Page01() {
 
         // 주기적 업데이트 (10초)
         const intervalId = setInterval(() => {
-            fetchDust();
             fetchSnp500();
-            fetchWeather();
         }, 1000);
 
         return () => clearInterval(intervalId);
