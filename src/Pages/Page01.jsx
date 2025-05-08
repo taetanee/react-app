@@ -72,7 +72,7 @@ export default function Page01() {
             <h2>{snp500 || "불러오는 중..."}</h2>
             <hr />
 
-            <h1>[서울 현재 날씨</h1>
+            <h1>[서울 현재 날씨]</h1>
             {weather ? (
                 <div>
                     <p>🌡 기온: {weather.temperature.value} {weather.temperature.unit}</p>
