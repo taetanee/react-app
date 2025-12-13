@@ -14,15 +14,15 @@ export default function Router() {
                 </NavLink>
                 /
                 <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/page01'>
-                    데이터 가져오기1
+                    오늘 현황
                 </NavLink>
                 /
                 <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/page02'>
-                    데이터 가져오기2
+                    온라인 클립보드
                 </NavLink>
                 /
                 <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/page03'>
-                    미구현 Page03
+                    오픈AI(미구현)
                 </NavLink>
             </nav>
 

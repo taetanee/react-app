@@ -1,27 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+// 경로가 'src/Components' 아래에 있다고 가정합니다.
+import TextClipboard from "../Components/TextClipboard";
+import DummyFileFeature from "../Components/DummyFileFeature";
 
 export default function Page02() {
-    const [uuid, setUuid] = useState(""); // uuid 하나를 문자열로 저장
 
-    useEffect(() => {
-        const fetchWord = async () => {
-            try {
-                const response = await fetch("http://localhost:18080/test/getUuid");
-                const result = await response.text(); // 문자열로 응답 받는 경우
-                console.log("받은 UUID:", result);
-                setUuid(result); // 상태에 저장
-            } catch (error) {
-                console.error("에러 발생:", error);
-            }
-        };
-
-        fetchWord();
-    }, []);
+    // 파일 업로드 성공 후 새로고침 로직이 필요 없으므로, useState, useCallback 모두 제거
 
     return (
-        <div>
-            <h1>데이터 가져오기2</h1>
-            <h2>받은 UUID: {uuid}</h2>
+        <div style={{ maxWidth: '800px', margin: '30px auto', fontFamily: 'Arial, sans-serif' }}>
+            <h1 style={{ borderBottom: '2px solid #007bff', paddingBottom: '10px', marginBottom: '30px' }}>
+                🚀 온라인 클립보드 (텍스트 전용)
+            </h1>
+
+            {/* 1. 텍스트 클립보드 */}
+            <TextClipboard />
+
+            <hr style={{ margin: '30px 0', borderColor: '#eee' }} />
+
+            {/* 2. 더미 파일 기능 */}
+            <DummyFileFeature />
+
         </div>
     );
 }
