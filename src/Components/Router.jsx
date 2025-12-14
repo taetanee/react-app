@@ -3,25 +3,20 @@ import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import Main from "../Pages/Main";
 import Page01 from "../Pages/Page01";
 import Page02 from "../Pages/Page02";
-import Page03 from "../Pages/Page03";
 
 export default function Router() {
     return (
         <BrowserRouter>
             <nav>
                 <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/'>
-                    메인
+                    실시간 현황
                 </NavLink>
                 /
                 <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/page01'>
-                    오늘 현황
-                </NavLink>
-                /
-                <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/page02'>
                     온라인 클립보드
                 </NavLink>
                 /
-                <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/page03'>
+                <NavLink className={({ isActive }) => "nav-link" + (isActive ? " click" : "")} to='/page02'>
                     오픈AI(미구현)
                 </NavLink>
             </nav>
@@ -30,7 +25,6 @@ export default function Router() {
                 <Route exact path='/' element={<Main/>}/>
                 <Route path='/page01' element={<Page01/>}/>
                 <Route path='/page02' element={<Page02/>}/>
-                <Route path='/page03' element={<Page03/>}/>
             </Routes>
         </BrowserRouter>
     );
