@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = "http://localhost:18080/onlineClipboard";
+const API_BASE_URL = "http://124.53.139.229:28080/onlineClipboard";
 
 const TextClipboard = ({ refreshKey }) => {
     const [text, setText] = useState("");

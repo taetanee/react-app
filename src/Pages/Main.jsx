@@ -9,7 +9,7 @@ export default function Main() {
     useEffect(() => {
         const fetchDust = async () => {
             try {
-                const response = await fetch("http://192.168.219.101:18080/weather/getMinuDustFrcstDspth");
+                const response = await fetch("http://124.53.139.229:28080/weather/getMinuDustFrcstDspth");
                 const result = await response.text();
                 setDust(result);
             } catch (error) {
@@ -19,7 +19,7 @@ export default function Main() {
 
         const fetchSnp500 = async () => {
             try {
-                const response = await fetch("http://192.168.219.101:18080/weather/getSnp500CurrentPrice");
+                const response = await fetch("http://124.53.139.229:28080/weather/getSnp500CurrentPrice");
                 const result = await response.text();
                 setSnp500(result);
             } catch (error) {
@@ -29,7 +29,7 @@ export default function Main() {
 
         const fetchWeather = async () => {
             try {
-                const response = await fetch("http://192.168.219.101:18080/weather/getCurrentWeather");
+                const response = await fetch("http://124.53.139.229:28080/weather/getCurrentWeather");
                 const result = await response.json();
                 setWeather(result);
             } catch (error) {
@@ -39,7 +39,7 @@ export default function Main() {
 
         const fetchExchangeRate = async () => {
             try {
-                const response = await fetch("http://192.168.219.101:18080/weather/getExchangeRateUSDToKRW");
+                const response = await fetch("http://124.53.139.229:28080/weather/getExchangeRateUSDToKRW");
                 const result = await response.text();  // 서버가 double/string 반환 시
                 setExchangeRate(result);
             } catch (error) {
