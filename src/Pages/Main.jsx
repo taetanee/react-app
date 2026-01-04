@@ -159,7 +159,7 @@ export default function Main() {
                             <h2 style={titleStyle}>공포탐욕지수</h2>
                             <p style={{ ...valueStyle, color: "#2c3e50" }}>{fearGreed.value || "0"}</p>
                             <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db" }}>
-                                {fearGreed.rating} ({fearGreed.diff})
+                                {fearGreed.diff} ({fearGreed.rating})
                             </p>
                         </div>
                     </a>
