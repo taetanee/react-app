@@ -53,8 +53,6 @@ export default function Router() {
                         borderRadius: '4px',
                         transition: 'all 0.3s ease-in-out',
                         backgroundColor: isActive ? '#e9f5ff' : 'transparent',
-                        // 미구현 항목을 살짝 흐리게 표시
-                        opacity: 0.6
                     })}
                     to='/page02'
                 >
