@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 
 export default function Main() {
     const [dust, setDust] = useState("");
-    // 1. snp500 상태를 객체 구조로 변경
     const [snp500, setSnp500] = useState({ price: "", change: "", percent: "", isUp: true });
     const [weather, setWeather] = useState(null);
     const [exchangeRate, setExchangeRate] = useState({ rate: "", change: "", percent: "", isUp: true });
+    const [fearGreed, setFearGreed] = useState({ value: 0, rating: "", diff: 0, status: "UP" });
+    // VIX 상태 추가
+    const [vix, setVix] = useState({ price: "", change: "", percent: "", isUp: true, status: "" });
 
     useEffect(() => {
         const fetchDust = async () => {
@@ -21,7 +23,6 @@ export default function Main() {
         const fetchSnp500 = async () => {
             try {
                 const response = await fetch("http://124.53.139.229:28080/myDashboard/getSnp500CurrentPrice");
-                // 2. .json()으로 파싱
                 const result = await response.json();
                 setSnp500(result);
             } catch (error) {
@@ -49,14 +50,41 @@ export default function Main() {
             }
         };
 
+        const fetchFearGreed = async () => {
+            try {
+                const response = await fetch("http://124.53.139.229:28080/myDashboard/getFearAndGreedIndex");
+                const result = await response.json();
+                setFearGreed(result);
+            } catch (error) {
+                console.error("공포탐욕지수 로딩 실패", error);
+            }
+        };
+
+        // VIX Fetch 추가
+        const fetchVix = async () => {
+            try {
+                const response = await fetch("http://124.53.139.229:28080/myDashboard/getVixIndex");
+                const result = await response.json();
+                setVix(result);
+            } catch (error) {
+                console.error("VIX 정보 로딩 실패", error);
+            }
+        };
+
+        // 최초 호출
         fetchDust();
         fetchSnp500();
         fetchWeather();
         fetchExchangeRate();
+        fetchFearGreed();
+        fetchVix();
 
+        // 10초 주기 갱신
         const intervalId = setInterval(() => {
             fetchSnp500();
             fetchExchangeRate();
+            fetchFearGreed();
+            fetchVix();
         }, 10000);
 
         return () => clearInterval(intervalId);
@@ -132,7 +160,6 @@ export default function Main() {
                     <a href="https://www.google.com/search?q=snp500" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>S&P 500</h2>
-                            {/* 3. S&P 500 출력 구조 변경 */}
                             <p style={{ ...valueStyle, color: "#2c3e50" }}>{snp500.price || "..."}</p>
                             {snp500.price && (
                                 <p style={{
@@ -160,6 +187,40 @@ export default function Main() {
                                     color: exchangeRate.isUp ? "#e74c3c" : "#3498db"
                                 }}>
                                     {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change} ({exchangeRate.percent})
+                                </p>
+                            )}
+                        </div>
+                    </a>
+
+                    {/* 공포탐욕 지수 */}
+                    <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
+                        <div style={cardStyle}>
+                            <h2 style={titleStyle}>공포탐욕지수</h2>
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{fearGreed.value || "0"}</p>
+                            <p style={{
+                                fontSize: "14px",
+                                fontWeight: "bold",
+                                margin: "5px 0 0 0",
+                                color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db"
+                            }}>
+                                {fearGreed.status === "UP" ? "▲" : "▼"} {fearGreed.diff >= 0 ? `+${fearGreed.diff}` : fearGreed.diff} ({fearGreed.rating})
+                            </p>
+                        </div>
+                    </a>
+
+                    {/* VIX 지수 추가 */}
+                    <a href="https://www.google.com/search?q=vix%EC%A7%80%EC%88%98" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
+                        <div style={cardStyle}>
+                            <h2 style={titleStyle}>VIX (공포지수)</h2>
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{vix.price || "..."}</p>
+                            {vix.price && (
+                                <p style={{
+                                    fontSize: "14px",
+                                    fontWeight: "bold",
+                                    margin: "5px 0 0 0",
+                                    color: vix.isUp ? "#e74c3c" : "#3498db" 
+                                }}>
+                                    {vix.isUp ? "▲" : "▼"} {vix.change} ({vix.percent})
                                 </p>
                             )}
                         </div>
