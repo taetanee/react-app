@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 
 export default function Main() {
     const [dust, setDust] = useState("");
-    const [snp500, setSnp500] = useState("");
+    // 1. snp500 상태를 객체 구조로 변경
+    const [snp500, setSnp500] = useState({ price: "", change: "", percent: "", isUp: true });
     const [weather, setWeather] = useState(null);
     const [exchangeRate, setExchangeRate] = useState({ rate: "", change: "", percent: "", isUp: true });
 
@@ -20,7 +21,8 @@ export default function Main() {
         const fetchSnp500 = async () => {
             try {
                 const response = await fetch("http://124.53.139.229:28080/myDashboard/getSnp500CurrentPrice");
-                const result = await response.text();
+                // 2. .json()으로 파싱
+                const result = await response.json();
                 setSnp500(result);
             } catch (error) {
                 console.error("S&P500 정보 로딩 실패", error);
@@ -60,6 +62,7 @@ export default function Main() {
         return () => clearInterval(intervalId);
     }, []);
 
+    // 스타일 정의
     const cardStyle = {
         flex: '1 1 220px',
         backgroundColor: "#fff",
@@ -102,13 +105,14 @@ export default function Main() {
                     justifyContent: 'center'
                 }}>
 
+                    {/* 서울 날씨 */}
                     <a href="https://www.google.com/search?q=%EC%98%A4%EB%8A%98%EB%82%A0%EC%94%A8" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>서울 날씨</h2>
                             {weather ? (
                                 <div style={{ marginTop: "10px", fontSize: "14px", textAlign: "left", display: "inline-block" }}>
-                                    <p style={{ margin: "3px 0" }}>🌡 **기온:** <span style={{ color: "#e74c3c", fontWeight: "bold" }}>{weather.temperature.value}°C</span></p>
-                                    <p style={{ margin: "3px 0" }}>🌧 **상태:** {weather.precipitation.description}</p>
+                                    <p style={{ margin: "3px 0" }}>🌡 기온: <span style={{ color: "#e74c3c", fontWeight: "bold" }}>{weather.temperature.value}°C</span></p>
+                                    <p style={{ margin: "3px 0" }}>🌧 상태: {weather.precipitation.description}</p>
                                 </div>
                             ) : (
                                 <p style={{ ...valueStyle, fontSize: "14px", color: "#bdc3c7" }}>로딩 중...</p>
@@ -116,6 +120,7 @@ export default function Main() {
                         </div>
                     </a>
 
+                    {/* 서울 미세먼지 */}
                     <a href="https://m.search.naver.com/search.naver?query=%EB%AF%B8%EC%84%B8%EB%A8%BC%EC%A7%80" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>서울 미세먼지</h2>
@@ -123,13 +128,26 @@ export default function Main() {
                         </div>
                     </a>
 
+                    {/* S&P 500 */}
                     <a href="https://www.google.com/search?q=snp500" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>S&P 500</h2>
-                            <p style={{ ...valueStyle, color: "#27ae60" }}>{snp500 || "..."}</p>
+                            {/* 3. S&P 500 출력 구조 변경 */}
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{snp500.price || "..."}</p>
+                            {snp500.price && (
+                                <p style={{
+                                    fontSize: "14px",
+                                    fontWeight: "bold",
+                                    margin: "5px 0 0 0",
+                                    color: snp500.isUp ? "#e74c3c" : "#3498db" 
+                                }}>
+                                    {snp500.isUp ? "▲" : "▼"} {snp500.change} ({snp500.percent})
+                                </p>
+                            )}
                         </div>
                     </a>
 
+                    {/* USD/KRW 환율 */}
                     <a href="https://kr.investing.com/currencies/usd-krw" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>USD/KRW 환율</h2>
@@ -146,6 +164,7 @@ export default function Main() {
                             )}
                         </div>
                     </a>
+
                 </div>
             </div>
         </div>
