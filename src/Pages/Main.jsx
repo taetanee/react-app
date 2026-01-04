@@ -78,13 +78,18 @@ export default function Main() {
                     <a href="https://www.google.com/search?q=%EC%98%A4%EB%8A%98%EB%82%A0%EC%94%A8" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>서울 날씨</h2>
-                            {weather ? (
+                            {/* weather와 하위 속성들이 존재하는지 체크 (? 사용) */}
+                            {weather && weather.temperature ? (
                                 <div style={{ ...valueStyle, fontSize: "16px", marginTop: "8px" }}>
-                                    🌡 <span style={{ color: "#e74c3c" }}>{weather.temperature.value}°C</span>
+                                    🌡 <span style={{ color: "#e74c3c" }}>{weather.temperature?.value ?? "0"}°C</span>
                                     <span style={{ color: "#bdc3c7", margin: "0 8px" }}>/</span>
-                                    🌧 {weather.precipitation.description}
+                                    🌧 {weather.precipitation?.description ?? "정보 없음"}
                                 </div>
-                            ) : <p style={{fontSize:"13px", color:"#bdc3c7"}}>로딩 중...</p>}
+                            ) : (
+                                <p style={{ fontSize: "13px", color: "#bdc3c7", margin: "10px 0" }}>
+                                    ...
+                                </p>
+                            )}
                         </div>
                     </a>
 
