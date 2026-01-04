@@ -58,7 +58,7 @@ export default function Router() {
                     })}
                     to='/page02'
                 >
-                    오픈AI(미구현)
+                    오픈AI
                 </NavLink>
             </nav>
 
