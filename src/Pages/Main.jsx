@@ -115,15 +115,17 @@ export default function Main() {
                     </a>
 
                     {/* 서울 미세먼지 */}
-                    <div style={cardStyle}>
-                        <h2 style={titleStyle}>서울 미세먼지</h2>
-                        <p style={{ 
-                            ...valueStyle, 
-                            color: dust.includes("매우 나쁨") ? "#c0392b" : dust.includes("나쁨") ? "#e67e22" : dust.includes("보통") ? "#27ae60" : "#2980b9"
-                        }}>
-                            {dust || "..."}
-                        </p>
-                    </div>
+                    <a href="https://m.search.naver.com/search.naver?query=%EB%AF%B8%EC%84%B8%EB%A8%BC%EC%A7%80" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
+                        <div style={cardStyle}>
+                            <h2 style={titleStyle}>서울 미세먼지</h2>
+                            <p style={{ 
+                                ...valueStyle, 
+                                color: dust.includes("매우 나쁨") ? "#c0392b" : dust.includes("나쁨") ? "#e67e22" : dust.includes("보통") ? "#27ae60" : "#2980b9"
+                            }}>
+                                {dust || "..."}
+                            </p>
+                        </div>
+                    </a>
 
                     {/* S&P 500 */}
                     <a href="https://www.google.com/search?q=snp500" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
