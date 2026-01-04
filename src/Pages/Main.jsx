@@ -95,19 +95,13 @@ export default function Main() {
             flexDirection: "column",
             alignItems: "center"
         }}>
-            <div style={{ width: "100%", maxWidth: "500px" }}> {/* 모바일에 맞게 컨테이너 폭 조정 */}
-                <div style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '10px', // 카드 사이 간격 축소
-                    justifyContent: 'center'
-                }}>
+            <div style={{ width: "100%", maxWidth: "500px" }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
 
                     {/* 서울 날씨 */}
                     <a href="https://www.google.com/search?q=%EC%98%A4%EB%8A%98%EB%82%A0%EC%94%A8" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>서울 날씨</h2>
-                            {/* weather와 하위 속성들이 존재하는지 체크 (? 사용) */}
                             {weather && weather.temperature ? (
                                 <div style={{ ...valueStyle, fontSize: "16px", marginTop: "8px" }}>
                                     🌡 <span style={{ color: "#e74c3c" }}>{weather.temperature?.value ?? "0"}°C</span>
@@ -115,9 +109,7 @@ export default function Main() {
                                     🌧 {weather.precipitation?.description ?? "정보 없음"}
                                 </div>
                             ) : (
-                                <p style={{ fontSize: "13px", color: "#bdc3c7", margin: "10px 0" }}>
-                                    날씨 정보를 불러올 수 없습니다 (서버 점검 중)
-                                </p>
+                                <p style={{ fontSize: "13px", color: "#bdc3c7", margin: "10px 0" }}>...</p>
                             )}
                         </div>
                     </a>
@@ -134,46 +126,54 @@ export default function Main() {
                     </div>
 
                     {/* S&P 500 */}
-                    <div style={cardStyle}>
-                        <h2 style={titleStyle}>S&P 500</h2>
-                        <p style={{ ...valueStyle, color: "#2c3e50" }}>{snp500.price || "..."}</p>
-                        {snp500.price && (
-                            <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: snp500.isUp ? "#e74c3c" : "#3498db" }}>
-                                {snp500.isUp ? "▲" : "▼"} {snp500.change} ({snp500.percent})
-                            </p>
-                        )}
-                    </div>
+                    <a href="https://www.google.com/search?q=snp500" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
+                        <div style={cardStyle}>
+                            <h2 style={titleStyle}>S&P 500</h2>
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{snp500.price || "..."}</p>
+                            {snp500.price && (
+                                <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: snp500.isUp ? "#e74c3c" : "#3498db" }}>
+                                    {snp500.isUp ? "▲" : "▼"} {snp500.change} ({snp500.percent})
+                                </p>
+                            )}
+                        </div>
+                    </a>
 
                     {/* 환율 */}
-                    <div style={cardStyle}>
-                        <h2 style={titleStyle}>달러/원 환율</h2>
-                        <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
-                        {exchangeRate.rate && (
-                            <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: exchangeRate.isUp ? "#e74c3c" : "#3498db" }}>
-                                {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change}
-                            </p>
-                        )}
-                    </div>
+                    <a href="https://www.google.com/search?q=%ED%99%98%EC%9C%A8" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
+                        <div style={cardStyle}>
+                            <h2 style={titleStyle}>달러/원 환율</h2>
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
+                            {exchangeRate.rate && (
+                                <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: exchangeRate.isUp ? "#e74c3c" : "#3498db" }}>
+                                    {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change}
+                                </p>
+                            )}
+                        </div>
+                    </a>
 
-                    {/* 공포탐욕 */}
-                    <div style={cardStyle}>
-                        <h2 style={titleStyle}>공포탐욕지수</h2>
-                        <p style={{ ...valueStyle, color: "#2c3e50" }}>{fearGreed.value || "0"}</p>
-                        <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db" }}>
-                            {fearGreed.rating}
-                        </p>
-                    </div>
+                    {/* 공포탐욕지수 - diff 추가 */}
+                    <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
+                        <div style={cardStyle}>
+                            <h2 style={titleStyle}>공포탐욕지수</h2>
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{fearGreed.value || "0"}</p>
+                            <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db" }}>
+                                {fearGreed.rating} ({fearGreed.diff})
+                            </p>
+                        </div>
+                    </a>
 
                     {/* VIX */}
-                    <div style={cardStyle}>
-                        <h2 style={titleStyle}>VIX (변동성지수)</h2>
-                        <p style={{ ...valueStyle, color: "#2c3e50" }}>{vix.price || "..."}</p>
-                        {vix.price && (
-                            <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: vix.isUp ? "#e74c3c" : "#3498db" }}>
-                                {vix.isUp ? "▲" : "▼"} {vix.percent}
-                            </p>
-                        )}
-                    </div>
+                    <a href="https://www.google.com/search?q=vix+index" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
+                        <div style={cardStyle}>
+                            <h2 style={titleStyle}>VIX (변동성지수)</h2>
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{vix.price || "..."}</p>
+                            {vix.price && (
+                                <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: vix.isUp ? "#e74c3c" : "#3498db" }}>
+                                    {vix.isUp ? "▲" : "▼"} {vix.percent}
+                                </p>
+                            )}
+                        </div>
+                    </a>
 
                 </div>
             </div>
