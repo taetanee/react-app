@@ -141,7 +141,7 @@ export default function Main() {
                     </a>
 
                     {/* 환율 */}
-                    <a href="https://www.google.com/search?q=%ED%99%98%EC%9C%A8" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
+                    <a href="https://kr.investing.com/currencies/usd-krw" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>달러/원 환율</h2>
                             <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
