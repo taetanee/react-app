@@ -10,22 +10,51 @@ export default function Main() {
 
     useEffect(() => {
         const fetchAll = async () => {
+            // 1. 미세먼지 (텍스트 응답)
             try {
-                // 기존 fetch 로직 유지 (코드 절약을 위해 통합 호출 예시)
-                const dRes = await fetch("http://124.53.139.229:28080/myDashboard/getMinuDustFrcstDspth");
-                setDust(await dRes.text());
-                const sRes = await fetch("http://124.53.139.229:28080/myDashboard/getSnp500CurrentPrice");
-                setSnp500(await sRes.json());
-                const wRes = await fetch("http://124.53.139.229:28080/myDashboard/getCurrentWeather");
-                setWeather(await wRes.json());
-                const eRes = await fetch("http://124.53.139.229:28080/myDashboard/getExchangeRateUSDToKRW");
-                setExchangeRate(await eRes.json());
-                const fRes = await fetch("http://124.53.139.229:28080/myDashboard/getFearAndGreedIndex");
-                setFearGreed(await fRes.json());
-                const vRes = await fetch("http://124.53.139.229:28080/myDashboard/getVixIndex");
-                setVix(await vRes.json());
-            } catch (e) { console.error(e); }
+                const res = await fetch("http://124.53.139.229:28080/myDashboard/getMinuDustFrcstDspth");
+                const text = await res.text();
+                // 미세먼지는 텍스트에 에러 코드가 포함되어 있는지 확인하거나 빈 값 체크
+                if (text && !text.includes("500")) setDust(text);
+            } catch (e) { console.error("미세먼지 실패", e); }
+
+            // 2. S&P 500 (JSON 응답)
+            try {
+                const res = await fetch("http://124.53.139.229:28080/myDashboard/getSnp500CurrentPrice");
+                const data = await res.json();
+                // result_code가 500이 아닐 때만 업데이트
+                if (data && data.result_code !== 500) setSnp500(data);
+            } catch (e) { console.error("S&P500 실패", e); }
+
+            // 3. 날씨
+            try {
+                const res = await fetch("http://124.53.139.229:28080/myDashboard/getCurrentWeather");
+                const data = await res.json();
+                if (data && data.result_code !== 500) setWeather(data);
+            } catch (e) { console.error("날씨 실패", e); }
+
+            // 4. 환율
+            try {
+                const res = await fetch("http://124.53.139.229:28080/myDashboard/getExchangeRateUSDToKRW");
+                const data = await res.json();
+                if (data && data.result_code !== 500) setExchangeRate(data);
+            } catch (e) { console.error("환율 실패", e); }
+
+            // 5. 공포탐욕지수
+            try {
+                const res = await fetch("http://124.53.139.229:28080/myDashboard/getFearAndGreedIndex");
+                const data = await res.json();
+                if (data && data.result_code !== 500) setFearGreed(data);
+            } catch (e) { console.error("공포탐욕 실패", e); }
+
+            // 6. VIX
+            try {
+                const res = await fetch("http://124.53.139.229:28080/myDashboard/getVixIndex");
+                const data = await res.json();
+                if (data && data.result_code !== 500) setVix(data);
+            } catch (e) { console.error("VIX 실패", e); }
         };
+
         fetchAll();
         const intervalId = setInterval(fetchAll, 10000);
         return () => clearInterval(intervalId);
@@ -87,7 +116,7 @@ export default function Main() {
                                 </div>
                             ) : (
                                 <p style={{ fontSize: "13px", color: "#bdc3c7", margin: "10px 0" }}>
-                                    ...
+                                    날씨 정보를 불러올 수 없습니다 (서버 점검 중)
                                 </p>
                             )}
                         </div>
@@ -100,7 +129,7 @@ export default function Main() {
                             ...valueStyle, 
                             color: dust.includes("매우 나쁨") ? "#c0392b" : dust.includes("나쁨") ? "#e67e22" : dust.includes("보통") ? "#27ae60" : "#2980b9"
                         }}>
-                            {dust || "로딩 중..."}
+                            {dust || "..."}
                         </p>
                     </div>
 
