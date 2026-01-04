@@ -4,7 +4,7 @@ export default function Main() {
     const [dust, setDust] = useState("");
     const [snp500, setSnp500] = useState("");
     const [weather, setWeather] = useState(null);
-    const [exchangeRate, setExchangeRate] = useState("");
+    const [exchangeRate, setExchangeRate] = useState({ rate: "", change: "", percent: "", isUp: true });
 
     useEffect(() => {
         const fetchDust = async () => {
@@ -40,7 +40,7 @@ export default function Main() {
         const fetchExchangeRate = async () => {
             try {
                 const response = await fetch("http://124.53.139.229:28080/weather/getExchangeRateUSDToKRW");
-                const result = await response.text();
+                const result = await response.json();
                 setExchangeRate(result);
             } catch (error) {
                 console.error("환율 정보 로딩 실패", error);
@@ -60,19 +60,18 @@ export default function Main() {
         return () => clearInterval(intervalId);
     }, []);
 
-    // 카드 공통 스타일
     const cardStyle = {
-        flex: '1 1 220px', // 너비를 조금 더 줄임
+        flex: '1 1 220px',
         backgroundColor: "#fff",
-        padding: "15px", // 패딩 축소
+        padding: "15px",
         borderRadius: "8px",
         boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
-        textAlign: "center" // 텍스트 중앙 정렬
+        textAlign: "center"
     };
 
     const titleStyle = {
         marginTop: 0,
-        fontSize: "16px", // 제목 크기 축소
+        fontSize: "16px",
         color: "#7f8c8d",
         borderBottom: "1px solid #f0f0f0",
         paddingBottom: "8px",
@@ -80,7 +79,7 @@ export default function Main() {
     };
 
     const valueStyle = {
-        fontSize: "28px", // 값 크기 축소 (36px -> 28px)
+        fontSize: "28px",
         fontWeight: "bold",
         margin: "10px 0 0 0"
     };
@@ -93,11 +92,9 @@ export default function Main() {
             minHeight: "100vh",
             display: "flex",
             flexDirection: "column",
-            alignItems: "center" // 중앙 정렬
+            alignItems: "center"
         }}>
-            {/* 전체 너비를 제한하는 컨테이너 */}
             <div style={{ width: "100%", maxWidth: "900px" }}>
-
                 <div style={{
                     display: 'flex',
                     flexWrap: 'wrap',
@@ -136,7 +133,17 @@ export default function Main() {
                     <a href="https://kr.investing.com/currencies/usd-krw" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>USD/KRW 환율</h2>
-                            <p style={{ ...valueStyle, color: "#2980b9" }}>{exchangeRate ? `${exchangeRate}원` : "..."}</p>
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
+                            {exchangeRate.rate && (
+                                <p style={{
+                                    fontSize: "14px",
+                                    fontWeight: "bold",
+                                    margin: "5px 0 0 0",
+                                    color: exchangeRate.isUp ? "#e74c3c" : "#3498db"
+                                }}>
+                                    {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change} ({exchangeRate.percent})
+                                </p>
+                            )}
                         </div>
                     </a>
                 </div>
