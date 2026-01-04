@@ -5,7 +5,7 @@ export default function Page02() {
     // 브라우저에 저장된 비밀번호가 있으면 불러옴
     const [password, setPassword] = useState(localStorage.getItem("chat_pwd") || "");
     const [messages, setMessages] = useState([
-        { role: "assistant", content: "안녕하세요. 비밀번호 입력하면 사용가능합니다😊 (무분별한 토큰 사용 방지)" }
+        { role: "assistant", content: "안녕하세요😊 비밀번호를 입력하시면 Open ai와 채팅할 수 있습니다 (무분별한 토큰 사용 방지)" }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef();
