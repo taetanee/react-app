@@ -26,7 +26,7 @@ export default function Router() {
                     })}
                     to='/'
                 >
-                    실시간 현황
+                    나만의 대시보드
                 </NavLink>
                 <NavLink
                     style={({ isActive }) => ({

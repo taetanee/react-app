@@ -9,10 +9,6 @@ export default function Page01() {
 
     return (
         <div style={{ maxWidth: '800px', margin: '30px auto', fontFamily: 'Arial, sans-serif' }}>
-            <h1 style={{ borderBottom: '2px solid #007bff', paddingBottom: '10px', marginBottom: '30px' }}>
-                🚀 온라인 클립보드 (텍스트 전용)
-            </h1>
-
             {/* 1. 텍스트 클립보드 */}
             <TextClipboard />
 
