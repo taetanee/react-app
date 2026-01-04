@@ -138,9 +138,10 @@ export default function Main() {
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>서울 날씨</h2>
                             {weather ? (
-                                <div style={{ marginTop: "10px", fontSize: "14px", textAlign: "left", display: "inline-block" }}>
-                                    <p style={{ margin: "3px 0" }}>🌡 기온: <span style={{ color: "#e74c3c", fontWeight: "bold" }}>{weather.temperature.value}°C</span></p>
-                                    <p style={{ margin: "3px 0" }}>🌧 상태: {weather.precipitation.description}</p>
+                                <div style={{ ...valueStyle, fontSize: "18px", marginTop: "15px" }}>
+                                    🌡 기온 : <span style={{ color: "#e74c3c" }}>{weather.temperature.value}°C</span>
+                                    <span style={{ color: "#bdc3c7", margin: "0 10px", fontWeight: "normal" }}>/</span>
+                                    🌧 강수 : <span style={{ color: "#2c3e50" }}>{weather.precipitation.description}</span>
                                 </div>
                             ) : (
                                 <p style={{ ...valueStyle, fontSize: "14px", color: "#bdc3c7" }}>로딩 중...</p>
@@ -152,7 +153,19 @@ export default function Main() {
                     <a href="https://m.search.naver.com/search.naver?query=%EB%AF%B8%EC%84%B8%EB%A8%BC%EC%A7%80" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>서울 미세먼지</h2>
-                            <p style={{ ...valueStyle, color: "#e67e22" }}>{dust || "..."}</p>
+                            <p style={{ 
+                                ...valueStyle, 
+                                color: (() => {
+                                    if (!dust || dust === "...") return "#bdc3c7";
+                                    if (dust.includes("매우 나쁨")) return "#c0392b";
+                                    if (dust.includes("나쁨")) return "#e67e22";
+                                    if (dust.includes("보통")) return "#27ae60";
+                                    if (dust.includes("좋음")) return "#2980b9";
+                                    return "#2c3e50";
+                                })()
+                            }}>
+                                {dust || "로딩 중..."}
+                            </p>
                         </div>
                     </a>
 
@@ -177,7 +190,7 @@ export default function Main() {
                     {/* USD/KRW 환율 */}
                     <a href="https://kr.investing.com/currencies/usd-krw" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
                         <div style={cardStyle}>
-                            <h2 style={titleStyle}>USD/KRW 환율</h2>
+                            <h2 style={titleStyle}>달러/원 환율</h2>
                             <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
                             {exchangeRate.rate && (
                                 <p style={{
@@ -211,7 +224,7 @@ export default function Main() {
                     {/* VIX 지수 추가 */}
                     <a href="https://www.google.com/search?q=vix%EC%A7%80%EC%88%98" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 220px' }}>
                         <div style={cardStyle}>
-                            <h2 style={titleStyle}>VIX (공포지수)</h2>
+                            <h2 style={titleStyle}>VIX (뉴욕주식시장 변동성지수)</h2>
                             <p style={{ ...valueStyle, color: "#2c3e50" }}>{vix.price || "..."}</p>
                             {vix.price && (
                                 <p style={{
