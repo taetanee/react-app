@@ -5,7 +5,7 @@ export default function Page02() {
     // 브라우저에 저장된 비밀번호가 있으면 불러옴
     const [password, setPassword] = useState(localStorage.getItem("chat_pwd") || "");
     const [messages, setMessages] = useState([
-        { role: "assistant", content: "안녕하세요😊 비밀번호를 입력하시면 Open ai와 채팅할 수 있습니다" }
+        { role: "assistant", content: "안녕하세요😊 Open ai와 채팅할 수 있습니다"}
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef();
@@ -90,19 +90,19 @@ export default function Page02() {
             
             {/* 비밀번호 입력 영역 (수정됨) */}
             <div style={{ maxWidth: "800px", margin: "0 auto 10px auto", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "13px", color: "#e67e22", fontWeight: "bold" }}>💡 힌트: 휴대폰번호(- 없이)</span>
+                <span style={{ fontSize: "13px", color: "#e67e22", fontWeight: "bold" }}>비밀번호 : </span>
                 <input 
                     type="text"  // (1) password에서 text로 변경하여 값이 보이게 함
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="비밀번호 입력"
+                    placeholder="💡힌트는 휴대폰번호"
                     style={{
                         padding: "5px 10px",
                         borderRadius: "5px",
                         border: "1px solid #ddd",
                         fontSize: "13px",
                         outline: "none",
-                        width: "150px"
+                        width: "200px"
                     }}
                 />
             </div>
