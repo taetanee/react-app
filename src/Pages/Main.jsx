@@ -147,7 +147,7 @@ export default function Main() {
                             <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
                             {exchangeRate.rate && (
                                 <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: exchangeRate.isUp ? "#e74c3c" : "#3498db" }}>
-                                    {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change}
+                                    {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change} ({exchangeRate.percent})
                                 </p>
                             )}
                         </div>
@@ -157,9 +157,14 @@ export default function Main() {
                     <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>공포탐욕지수</h2>
-                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{fearGreed.value || "0"}</p>
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>
+                                {fearGreed.value || "0"}
+                                <span style={{ fontSize: "14px", fontWeight: "normal", color: "#95a5a6", marginLeft: "5px" }}>
+                                    ({fearGreed.rating})
+                                </span>
+                            </p>
                             <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db" }}>
-                                {fearGreed.diff} ({fearGreed.rating})
+                                {fearGreed.status === "UP" ? "▲" : "▼"} {Math.abs(fearGreed.diff)}
                             </p>
                         </div>
                     </a>

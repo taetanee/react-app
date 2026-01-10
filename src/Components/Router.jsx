@@ -26,7 +26,7 @@ export default function Router() {
                     })}
                     to='/'
                 >
-                    나만의 대시보드
+                    오늘 요약
                 </NavLink>
                 <NavLink
                     style={({ isActive }) => ({
