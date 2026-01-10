@@ -142,16 +142,16 @@ export default function Main() {
 
                     {/* 환율 */}
                     <a href="https://kr.investing.com/currencies/usd-krw" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
-                        <div style={cardStyle}>
-                            <h2 style={titleStyle}>달러/원 환율</h2>
-                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
-                            {exchangeRate.rate && (
-                                <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: exchangeRate.isUp ? "#e74c3c" : "#3498db" }}>
-                                    {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change} ({exchangeRate.percent})
-                                </p>
-                            )}
-                        </div>
-                    </a>
+                    <div style={cardStyle}>
+                        <h2 style={titleStyle}>달러/원 환율</h2>
+                        <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
+                        {exchangeRate.rate && (
+                            <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: exchangeRate.isUp ? "#e74c3c" : "#3498db" }}>
+                                {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change} ({exchangeRate.percent})
+                            </p>
+                        )}
+                    </div>
+                </a>
 
                     {/* 공포탐욕지수 - diff 추가 */}
                     <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
@@ -173,10 +173,17 @@ export default function Main() {
                     <a href="https://www.google.com/search?q=vix+index" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', flex: '1 1 100%' }}>
                         <div style={cardStyle}>
                             <h2 style={titleStyle}>VIX (변동성지수)</h2>
-                            <p style={{ ...valueStyle, color: "#2c3e50" }}>{vix.price || "..."}</p>
+                            <p style={{ ...valueStyle, color: "#2c3e50" }}>
+                                {vix.price || "..."}
+                                {vix.status && (
+                                    <span style={{ fontSize: "14px", fontWeight: "normal", color: "#95a5a6", marginLeft: "5px" }}>
+                                        ({vix.status})
+                                    </span>
+                                )}
+                            </p>
                             {vix.price && (
                                 <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: vix.isUp ? "#e74c3c" : "#3498db" }}>
-                                    {vix.isUp ? "▲" : "▼"} {vix.percent}
+                                    {vix.isUp ? "▲" : "▼"} {vix.change} ({vix.percent})
                                 </p>
                             )}
                         </div>
