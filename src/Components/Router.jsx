@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import Main from "../Pages/Main";
 import Page01 from "../Pages/Page01";
 import Page02 from "../Pages/Page02";
+import Page03 from "../Pages/Page03";
 
 export default function Router() {
     return (
@@ -58,12 +59,29 @@ export default function Router() {
                 >
                     오픈AI
                 </NavLink>
+
+                <NavLink
+                    style={({ isActive }) => ({
+                        textDecoration: 'none',
+                        color: isActive ? '#007bff' : '#333',
+                        fontWeight: isActive ? 'bold' : 'normal',
+                        padding: '8px 15px',
+                        margin: '0 5px',
+                        borderRadius: '4px',
+                        transition: 'all 0.3s ease-in-out',
+                        backgroundColor: isActive ? '#e9f5ff' : 'transparent',
+                    })}
+                    to='/page03'
+                >
+                    포트폴리오
+                </NavLink>
             </nav>
 
             <Routes>
                 <Route exact path='/' element={<Main/>}/>
                 <Route path='/page01' element={<Page01/>}/>
                 <Route path='/page02' element={<Page02/>}/>
+                <Route path='/page03' element={<Page03/>}/>
             </Routes>
         </BrowserRouter>
     );
