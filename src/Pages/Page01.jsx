@@ -40,14 +40,16 @@ export default function Page01() {
 
     return (
         <div style={{ maxWidth: '800px', margin: '30px auto', fontFamily: 'Arial, sans-serif' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
-                <span style={{ fontSize: '13px', color: '#888', fontFamily: 'monospace' }}>{randomWord}</span>
-                <button
-                    onClick={handleShareURL}
-                    style={{ padding: '6px 12px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}
-                >
-                    URL 공유
-                </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', border: '1px solid #ddd', borderRadius: '6px', backgroundColor: '#fafafa' }}>
+                    <span style={{ fontSize: '13px', color: '#555', fontFamily: 'monospace' }}>{randomWord}</span>
+                    <button
+                        onClick={handleShareURL}
+                        style={{ padding: '6px 12px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}
+                    >
+                        URL 공유
+                    </button>
+                </div>
             </div>
 
             <TextClipboard randomWord={randomWord} />

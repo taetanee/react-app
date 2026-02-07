@@ -35,12 +35,9 @@ const FileClipboard = ({ randomWord }) => {
         fetchFileList();
     }, [fetchFileList]);
 
-    const handleUpload = async () => {
-        const files = fileInputRef.current?.files;
-        if (!files || files.length === 0) {
-            message('파일을 선택해주세요.', 'info');
-            return;
-        }
+    const handleFileChange = async (e) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
         setUploading(true);
 
@@ -82,43 +79,49 @@ const FileClipboard = ({ randomWord }) => {
         }
     };
 
+    const handleDelete = async (fileName) => {
+        try {
+            await axios.delete(`${API_BASE_URL}/deleteFile`, {
+                params: { randomWord, fileName }
+            });
+            message(`${fileName} 삭제 완료`, 'success');
+            fetchFileList();
+        } catch (error) {
+            message(`삭제 실패: ${getErrorMsg(error)}`, 'error');
+        }
+    };
+
     return (
         <div style={{ padding: '20px', border: '1px solid #28a745', borderRadius: '8px', marginTop: '20px' }}>
 
             {/* 업로드 영역 */}
             <div style={{ marginBottom: '20px' }}>
-                <h3>파일 업로드</h3>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        multiple
-                        style={{ flex: 1 }}
-                    />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0 }}>파일</h3>
                     <button
-                        onClick={handleUpload}
+                        onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
                         style={{
-                            padding: '8px 15px',
-                            backgroundColor: uploading ? '#aaa' : '#28a745',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: uploading ? 'not-allowed' : 'pointer',
-                            whiteSpace: 'nowrap'
+                            padding: '6px 14px', backgroundColor: uploading ? '#aaa' : '#28a745', color: 'white',
+                            border: 'none', borderRadius: '4px', cursor: uploading ? 'not-allowed' : 'pointer', fontSize: '13px'
                         }}
                     >
-                        {uploading ? '업로드 중...' : '업로드'}
+                        {uploading ? '업로드 중...' : '파일 추가'}
                     </button>
                 </div>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    multiple
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                />
             </div>
 
-            <hr style={{ margin: '20px 0', borderColor: '#eee' }} />
-
-            {/* 다운로드 영역 */}
-            <div>
-                <h3 style={{ margin: '0 0 10px 0' }}>파일 다운로드</h3>
-                {fileList.length > 0 ? (
+            {/* 파일 목록 */}
+            {fileList.length > 0 && (
+                <>
+                    <hr style={{ margin: '0 0 15px 0', borderColor: '#eee' }} />
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                         {fileList.map((fileName, index) => (
                             <li key={index} style={{
@@ -130,31 +133,34 @@ const FileClipboard = ({ randomWord }) => {
                                 borderRadius: '4px',
                                 marginBottom: '4px'
                             }}>
-                                <span style={{ fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '10px' }}>
+                                <span style={{ fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: '10px' }}>
                                     {fileName}
                                 </span>
-                                <button
-                                    onClick={() => handleDownload(fileName)}
-                                    style={{
-                                        padding: '4px 12px',
-                                        backgroundColor: '#007bff',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontSize: '13px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    다운로드
-                                </button>
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                    <button
+                                        onClick={() => handleDownload(fileName)}
+                                        style={{
+                                            padding: '4px 12px', backgroundColor: '#007bff', color: 'white',
+                                            border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        다운로드
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(fileName)}
+                                        style={{
+                                            padding: '4px 12px', backgroundColor: '#dc3545', color: 'white',
+                                            border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        삭제
+                                    </button>
+                                </div>
                             </li>
                         ))}
                     </ul>
-                ) : (
-                    <p style={{ fontSize: '14px', color: '#999', textAlign: 'center' }}>업로드된 파일이 없습니다.</p>
-                )}
-            </div>
+                </>
+            )}
         </div>
     );
 };

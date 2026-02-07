@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { message } from './Message';
 
@@ -11,6 +11,8 @@ const getErrorMsg = (error) => {
 
 const TextClipboard = ({ randomWord, refreshKey }) => {
     const [text, setText] = useState("");
+    const [loaded, setLoaded] = useState(false);
+    const timerRef = useRef(null);
 
     const fetchClipboardData = useCallback(async () => {
         try {
@@ -21,6 +23,8 @@ const TextClipboard = ({ randomWord, refreshKey }) => {
             }
         } catch (error) {
             console.error("데이터 로드 실패:", getErrorMsg(error));
+        } finally {
+            setLoaded(true);
         }
     }, [randomWord]);
 
@@ -28,32 +32,40 @@ const TextClipboard = ({ randomWord, refreshKey }) => {
         fetchClipboardData();
     }, [fetchClipboardData, refreshKey]);
 
-    const handleSaveText = async () => {
+    const saveText = useCallback(async (content) => {
         try {
-            await axios.post(`${API_BASE_URL}/saveContent`, { randomWord, content: text });
-            message('저장 완료', 'success');
+            await axios.post(`${API_BASE_URL}/saveContent`, { randomWord, content });
         } catch (error) {
             message(`저장 실패: ${getErrorMsg(error)}`, 'error');
         }
+    }, [randomWord]);
+
+    const handleChange = (e) => {
+        const value = e.target.value;
+        setText(value);
+
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+            saveText(value);
+        }, 300);
     };
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) clearTimeout(timerRef.current);
+        };
+    }, []);
+
+    if (!loaded) return null;
 
     return (
         <div style={{ padding: '20px', border: '1px solid #007bff', borderRadius: '8px', marginBottom: '20px' }}>
-            <h3 style={{ margin: '0 0 10px 0', textAlign: 'center' }}>텍스트 클립보드</h3>
+            <h3 style={{ margin: '0 0 10px 0' }}>텍스트</h3>
             <textarea
                 value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="여기에 텍스트를 입력하세요. 저장 버튼을 눌러야 반영됩니다."
-                style={{ width: '100%', minHeight: '150px', padding: '10px', fontSize: '16px', marginBottom: '10px' }}
+                onChange={handleChange}
+                style={{ width: '100%', minHeight: '150px', padding: '10px', fontSize: '16px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ddd' }}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                <button
-                    onClick={handleSaveText}
-                    style={{ padding: '8px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                    텍스트 저장
-                </button>
-            </div>
         </div>
     );
 };
