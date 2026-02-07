@@ -4,38 +4,33 @@ import axios from 'axios';
 
 const API_BASE_URL = "http://124.53.139.229:28080/onlineClipboard";
 
-const TextClipboard = ({ refreshKey }) => {
+const TextClipboard = ({ randomWord, refreshKey }) => {
     const [text, setText] = useState("");
     const [status, setStatus] = useState("준비됨");
 
-    // --- 데이터 가져오기 (getContent API) ---
-    // 새로고침 버튼이 없으므로, 컴포넌트 마운트 시 최초 데이터 로드 기능만 남깁니다.
     const fetchClipboardData = useCallback(async () => {
         setStatus("데이터 로딩 중...");
         try {
-            const response = await axios.post(`${API_BASE_URL}/getContent`, {});
+            const response = await axios.post(`${API_BASE_URL}/getContent`, { randomWord });
             const commonResult = response.data.result;
 
             if (commonResult) {
-                // 텍스트는 "data" 키로 반환된다고 가정
                 const newText = commonResult.data || "";
                 setText(newText);
-                setStatus("✅ 데이터 로드 완료");
+                setStatus("데이터 로드 완료");
             } else {
                 setStatus("데이터 로드 실패: 응답 형식 오류");
             }
         } catch (error) {
             console.error("데이터 로드 실패:", error);
-            setStatus(`❌ 데이터 로드 실패: ${error.message}`);
+            setStatus(`데이터 로드 실패: ${error.message}`);
         }
-    }, []);
+    }, [randomWord]);
 
     useEffect(() => {
         fetchClipboardData();
-        // 외부에서 refreshKey를 통해 강제 새로고침을 시도할 때만 다시 로드합니다.
     }, [fetchClipboardData, refreshKey]);
 
-    // --- 텍스트 저장 (saveContent API) ---
     const handleTextChange = (e) => {
         setText(e.target.value);
     };
@@ -43,18 +38,35 @@ const TextClipboard = ({ refreshKey }) => {
     const handleSaveText = async () => {
         setStatus("텍스트 저장 중...");
         try {
-            // 텍스트를 "content" 키로 전송
-            await axios.post(`${API_BASE_URL}/saveContent`, { content: text });
-            setStatus("✅ 텍스트 저장 성공");
+            await axios.post(`${API_BASE_URL}/saveContent`, { randomWord, content: text });
+            setStatus("텍스트 저장 성공");
         } catch (error) {
             console.error("텍스트 저장 실패:", error);
-            setStatus(`❌ 텍스트 저장 실패: ${error.message}`);
+            setStatus(`텍스트 저장 실패: ${error.message}`);
         }
+    };
+
+    const handleShareURL = () => {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            setStatus("URL 복사 완료");
+        });
     };
 
     return (
         <div style={{ padding: '20px', border: '1px solid #007bff', borderRadius: '8px', marginBottom: '20px' }}>
-            <h3>📝 텍스트 클립보드</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <h3 style={{ margin: 0 }}>텍스트 클립보드</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '13px', color: '#888', fontFamily: 'monospace' }}>{randomWord}</span>
+                    <button
+                        onClick={handleShareURL}
+                        style={{ padding: '6px 12px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}
+                    >
+                        URL 공유
+                    </button>
+                </div>
+            </div>
             <textarea
                 value={text}
                 onChange={handleTextChange}
@@ -62,7 +74,6 @@ const TextClipboard = ({ refreshKey }) => {
                 style={{ width: '100%', minHeight: '150px', padding: '10px', fontSize: '16px', marginBottom: '10px' }}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                {/* 🚨 변경된 부분: 텍스트 저장 버튼만 남기고 우측 정렬 (justifyContent: 'flex-end') */}
                 <button
                     onClick={handleSaveText}
                     style={{ padding: '8px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
@@ -70,7 +81,7 @@ const TextClipboard = ({ refreshKey }) => {
                     텍스트 저장
                 </button>
             </div>
-            <p style={{ marginTop: '10px', fontSize: '14px', color: status.includes('성공') ? 'green' : status.includes('실패') ? 'red' : '#555' }}>
+            <p style={{ marginTop: '10px', fontSize: '14px', color: status.includes('성공') || status.includes('완료') ? 'green' : status.includes('실패') ? 'red' : '#555' }}>
                 상태: {status}
             </p>
         </div>

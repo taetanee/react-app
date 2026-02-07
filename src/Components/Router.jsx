@@ -80,6 +80,7 @@ export default function Router() {
             <Routes>
                 <Route exact path='/' element={<Main/>}/>
                 <Route path='/page01' element={<Page01/>}/>
+                <Route path='/page01/:randomWord' element={<Page01/>}/>
                 <Route path='/page02' element={<Page02/>}/>
                 <Route path='/page03' element={<Page03/>}/>
             </Routes>
