@@ -47,7 +47,7 @@ export default function Page01() {
                         onClick={handleShareURL}
                         style={{ padding: '6px 12px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}
                     >
-                        URL 공유
+                        URL 복사
                     </button>
                 </div>
             </div>

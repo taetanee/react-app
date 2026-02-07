@@ -35,6 +35,7 @@ const TextClipboard = ({ randomWord, refreshKey }) => {
     const saveText = useCallback(async (content) => {
         try {
             await axios.post(`${API_BASE_URL}/saveContent`, { randomWord, content });
+            message('저장 완료', 'success');
         } catch (error) {
             message(`저장 실패: ${getErrorMsg(error)}`, 'error');
         }
