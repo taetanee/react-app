@@ -60,7 +60,7 @@ const TextClipboard = ({ randomWord, refreshKey }) => {
 
     return (
         <div style={{ padding: '20px', border: '1px solid #007bff', borderRadius: '8px', marginBottom: '20px' }}>
-            <h3 style={{ margin: '0 0 10px 0' }}>텍스트</h3>
+            <h3 style={{ margin: '0 0 10px 0', textAlign: 'center' }}>텍스트</h3>
             <textarea
                 value={text}
                 onChange={handleChange}

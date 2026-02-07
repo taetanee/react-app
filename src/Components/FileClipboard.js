@@ -96,8 +96,8 @@ const FileClipboard = ({ randomWord }) => {
 
             {/* 업로드 영역 */}
             <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0 }}>파일</h3>
+                <h3 style={{ margin: '0 0 10px 0', textAlign: 'center' }}>파일</h3>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
