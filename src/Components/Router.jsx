@@ -35,9 +35,27 @@ function Layout() {
 
     const handleCopyURL = () => {
         const baseUrl = `${window.location.origin}/${id}`;
-        navigator.clipboard.writeText(baseUrl).then(() => {
-            message('URL이 복사되었습니다.', 'success');
-        });
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(baseUrl).then(() => {
+                message('URL이 복사되었습니다.', 'success');
+            }).catch(() => {
+                message('URL 복사에 실패했습니다.', 'error');
+            });
+        } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = baseUrl;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                message('URL이 복사되었습니다.', 'success');
+            } catch {
+                message('URL 복사에 실패했습니다.', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
     };
 
     return (
