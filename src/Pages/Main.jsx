@@ -344,9 +344,13 @@ export default function Main() {
         };
     });
 
-    const allCards = [...staticCards, ...stockCards];
-    const bookmarkedCards = allCards.filter(c => bookmarks.includes(c.id));
-    const nonBookmarkedCards = allCards.filter(c => !bookmarks.includes(c.id));
+    // 기본 카드: 즐겨찾기 분류
+    const bookmarkedStatic = staticCards.filter(c => bookmarks.includes(c.id));
+    const nonBookmarkedStatic = staticCards.filter(c => !bookmarks.includes(c.id));
+
+    // 종목 카드: 즐겨찾기 분류
+    const bookmarkedStock = stockCards.filter(c => bookmarks.includes(c.id));
+    const nonBookmarkedStock = stockCards.filter(c => !bookmarks.includes(c.id));
 
     const renderCard = (card, dimmed = false) => (
         <div key={card.id} style={{ flex: '1 1 100%', opacity: dimmed ? 0.45 : 1, transition: 'opacity 0.3s' }}>
@@ -507,6 +511,15 @@ export default function Main() {
         </div>
     );
 
+    const sectionTitleStyle = {
+        fontSize: '13px',
+        fontWeight: '600',
+        color: '#7f8c8d',
+        margin: '0 0 10px 0',
+        paddingBottom: '6px',
+        borderBottom: '2px solid #ddd',
+    };
+
     return (
         <div style={{
             padding: "15px",
@@ -518,29 +531,55 @@ export default function Main() {
             alignItems: "center"
         }}>
             <div style={{ width: "100%", maxWidth: "500px" }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
 
-                    {/* 종목 검색 카드 (다른 카드와 동일한 레벨) */}
-                    {renderSearchCard()}
+                {/* 상단: 기본 대시보드 */}
+                <div style={{ marginBottom: '20px' }}>
+                    <h3 style={sectionTitleStyle}>대시보드</h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+                        {bookmarkedStatic.map(card => renderCard(card, false))}
 
-                    {bookmarkedCards.map(card => renderCard(card, false))}
+                        {nonBookmarkedStatic.length > 0 && bookmarkedStatic.length > 0 && (
+                            <div style={{
+                                width: '100%',
+                                textAlign: 'center',
+                                padding: '8px 0',
+                                color: '#aaa',
+                                fontSize: '12px',
+                                letterSpacing: '2px'
+                            }}>
+                                ── 즐겨찾기 미등록 ──
+                            </div>
+                        )}
 
-                    {nonBookmarkedCards.length > 0 && bookmarkedCards.length > 0 && (
-                        <div style={{
-                            width: '100%',
-                            textAlign: 'center',
-                            padding: '8px 0',
-                            color: '#aaa',
-                            fontSize: '12px',
-                            letterSpacing: '2px'
-                        }}>
-                            ── 즐겨찾기 미등록 ──
-                        </div>
-                    )}
-
-                    {nonBookmarkedCards.map(card => renderCard(card, true))}
-
+                        {nonBookmarkedStatic.map(card => renderCard(card, true))}
+                    </div>
                 </div>
+
+                {/* 하단: 종목 */}
+                <div>
+                    <h3 style={sectionTitleStyle}>내 종목</h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+                        {renderSearchCard()}
+
+                        {bookmarkedStock.map(card => renderCard(card, false))}
+
+                        {nonBookmarkedStock.length > 0 && bookmarkedStock.length > 0 && (
+                            <div style={{
+                                width: '100%',
+                                textAlign: 'center',
+                                padding: '8px 0',
+                                color: '#aaa',
+                                fontSize: '12px',
+                                letterSpacing: '2px'
+                            }}>
+                                ── 즐겨찾기 미등록 ──
+                            </div>
+                        )}
+
+                        {nonBookmarkedStock.map(card => renderCard(card, true))}
+                    </div>
+                </div>
+
             </div>
         </div>
     );

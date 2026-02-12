@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, NavLink, Navigate, useParams, useNavigate, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, NavLink, Navigate, useSearchParams, useNavigate, Outlet } from "react-router-dom";
 import Main from "../Pages/Main";
 import Page01 from "../Pages/Page01";
 import Page02 from "../Pages/Page02";
@@ -11,15 +11,20 @@ import axios from "axios";
 const API_BASE_URL = "http://124.53.139.229:28080/onlineClipboard";
 
 function RootRedirect() {
-    return <Navigate to={`/${generateWordId()}`} replace />;
+    return <Navigate to={`/?id=${generateWordId()}`} replace />;
 }
 
 function Layout() {
-    const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const id = searchParams.get('id');
     const navigate = useNavigate();
     const [editing, setEditing] = useState(false);
     const [newId, setNewId] = useState(id);
     const [migrating, setMigrating] = useState(false);
+
+    if (!id) {
+        return <Navigate to={`/?id=${generateWordId()}`} replace />;
+    }
 
     const navLinkStyle = ({ isActive }) => ({
         textDecoration: 'none',
@@ -33,7 +38,7 @@ function Layout() {
     });
 
     const handleCopyURL = () => {
-        const baseUrl = `${window.location.origin}/${id}`;
+        const baseUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
         navigator.clipboard.writeText(baseUrl).then(() => {
             message('URL이 복사되었습니다.', 'success');
         }).catch(() => {
@@ -74,9 +79,7 @@ function Layout() {
             });
             message('URL이 변경되었습니다.', 'success');
             setEditing(false);
-            // 현재 하위 경로 유지하면서 새 ID로 이동
-            const subPath = window.location.pathname.replace(`/${id}`, '');
-            navigate(`/${trimmed}${subPath}`, { replace: true });
+            navigate(`${window.location.pathname}?id=${trimmed}`, { replace: true });
         } catch (error) {
             const msg = error.response?.data?.result_msg || error.response?.data?.message || error.message;
             message(`URL 변경 실패: ${msg}`, 'error');
@@ -103,16 +106,16 @@ function Layout() {
                 flexWrap: 'wrap',
                 gap: '2px'
             }}>
-                <NavLink style={navLinkStyle} to={`/${id}`} end>
+                <NavLink style={navLinkStyle} to={`/?id=${id}`} end>
                     나만의 요약
                 </NavLink>
-                <NavLink style={navLinkStyle} to={`/${id}/clipboard`}>
+                <NavLink style={navLinkStyle} to={`/clipboard?id=${id}`}>
                     나만의 온라인 클립보드
                 </NavLink>
-                <NavLink style={navLinkStyle} to={`/${id}/openai`}>
+                <NavLink style={navLinkStyle} to={`/openai?id=${id}`}>
                     오픈AI
                 </NavLink>
-                <NavLink style={navLinkStyle} to={`/${id}/portfolio`}>
+                <NavLink style={navLinkStyle} to={`/portfolio?id=${id}`}>
                     포트폴리오
                 </NavLink>
                 <div style={{
@@ -221,12 +224,11 @@ export default function Router() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<RootRedirect />} />
-                <Route path="/:id" element={<Layout />}>
-                    <Route index element={<Main />} />
-                    <Route path="clipboard" element={<Page01 />} />
-                    <Route path="openai" element={<Page02 />} />
-                    <Route path="portfolio" element={<Page03 />} />
+                <Route element={<Layout />}>
+                    <Route path="/" element={<Main />} />
+                    <Route path="/clipboard" element={<Page01 />} />
+                    <Route path="/openai" element={<Page02 />} />
+                    <Route path="/portfolio" element={<Page03 />} />
                 </Route>
             </Routes>
         </BrowserRouter>

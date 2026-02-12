@@ -1,11 +1,12 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import TextClipboard from "../Components/TextClipboard";
 import FileClipboard from "../Components/FileClipboard";
 import { message } from "../Components/Message";
 
 export default function Page01() {
-    const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const id = searchParams.get('id');
 
     const handleShareURL = () => {
         const url = window.location.href;
