@@ -60,12 +60,31 @@ const TextClipboard = ({ randomWord, refreshKey }) => {
     if (!loaded) return null;
 
     return (
-        <div style={{ padding: '20px', border: '1px solid #007bff', borderRadius: '8px', marginBottom: '20px' }}>
-            <h3 style={{ margin: '0 0 10px 0', textAlign: 'center' }}>텍스트</h3>
+        <div style={{
+            padding: '20px',
+            backgroundColor: '#fff',
+            borderRadius: '10px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: '16px', color: '#2c3e50' }}>텍스트</h3>
+            </div>
             <textarea
                 value={text}
                 onChange={handleChange}
-                style={{ width: '100%', minHeight: '150px', padding: '10px', fontSize: '16px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ddd' }}
+                placeholder="여기에 텍스트를 입력하세요. 같은 URL로 접속하면 언제든 확인할 수 있습니다."
+                style={{
+                    width: '100%',
+                    minHeight: '150px',
+                    padding: '12px',
+                    fontSize: '15px',
+                    boxSizing: 'border-box',
+                    borderRadius: '6px',
+                    border: '1px solid #e0e0e0',
+                    outline: 'none',
+                    resize: 'vertical',
+                    lineHeight: '1.6',
+                }}
             />
         </div>
     );
