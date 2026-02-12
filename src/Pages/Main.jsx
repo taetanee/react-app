@@ -248,14 +248,14 @@ export default function Main() {
             title: 'S&P 500',
             link: 'https://www.google.com/search?q=snp500',
             content: () => (
-                <>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px' }}>
                     <p style={{ ...valueStyle, color: "#2c3e50" }}>{snp500.price || "..."}</p>
                     {snp500.price && (
-                        <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: snp500.isUp ? "#e74c3c" : "#3498db" }}>
+                        <span style={{ fontSize: "13px", fontWeight: "bold", color: snp500.isUp ? "#e74c3c" : "#3498db" }}>
                             {snp500.isUp ? "▲" : "▼"} {snp500.change} ({snp500.percent})
-                        </p>
+                        </span>
                     )}
-                </>
+                </div>
             )
         },
         {
@@ -263,14 +263,14 @@ export default function Main() {
             title: '달러/원 환율',
             link: 'https://kr.investing.com/currencies/usd-krw',
             content: () => (
-                <>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px' }}>
                     <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
                     {exchangeRate.rate && (
-                        <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: exchangeRate.isUp ? "#e74c3c" : "#3498db" }}>
+                        <span style={{ fontSize: "13px", fontWeight: "bold", color: exchangeRate.isUp ? "#e74c3c" : "#3498db" }}>
                             {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change} ({exchangeRate.percent})
-                        </p>
+                        </span>
                     )}
-                </>
+                </div>
             )
         },
         {
@@ -279,14 +279,14 @@ export default function Main() {
             link: 'https://edition.cnn.com/markets/fear-and-greed',
             content: () => (
                 <>
-                    <p style={{ ...valueStyle, color: "#2c3e50" }}>
-                        {fearGreed.value || "0"}
-                        <span style={{ fontSize: "14px", fontWeight: "normal", color: "#95a5a6", marginLeft: "5px" }}>
-                            ({fearGreed.rating})
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px' }}>
+                        <p style={{ ...valueStyle, color: "#2c3e50" }}>{fearGreed.value || "0"}</p>
+                        <span style={{ fontSize: "13px", fontWeight: "bold", color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db" }}>
+                            {fearGreed.status === "UP" ? "▲" : "▼"} {Math.abs(fearGreed.diff)}
                         </span>
-                    </p>
-                    <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db" }}>
-                        {fearGreed.status === "UP" ? "▲" : "▼"} {Math.abs(fearGreed.diff)}
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#95a5a6", margin: "3px 0 0 0" }}>
+                        {fearGreed.rating}
                     </p>
                 </>
             )
@@ -297,17 +297,17 @@ export default function Main() {
             link: 'https://www.google.com/search?q=vix+index',
             content: () => (
                 <>
-                    <p style={{ ...valueStyle, color: "#2c3e50" }}>
-                        {vix.price || "..."}
-                        {vix.status && (
-                            <span style={{ fontSize: "14px", fontWeight: "normal", color: "#95a5a6", marginLeft: "5px" }}>
-                                ({vix.status})
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px' }}>
+                        <p style={{ ...valueStyle, color: "#2c3e50" }}>{vix.price || "..."}</p>
+                        {vix.price && (
+                            <span style={{ fontSize: "13px", fontWeight: "bold", color: vix.isUp ? "#e74c3c" : "#3498db" }}>
+                                {vix.isUp ? "▲" : "▼"} {vix.change} ({vix.percent})
                             </span>
                         )}
-                    </p>
-                    {vix.price && (
-                        <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: vix.isUp ? "#e74c3c" : "#3498db" }}>
-                            {vix.isUp ? "▲" : "▼"} {vix.change} ({vix.percent})
+                    </div>
+                    {vix.status && (
+                        <p style={{ fontSize: "13px", color: "#95a5a6", margin: "3px 0 0 0" }}>
+                            {vix.status}
                         </p>
                     )}
                 </>
