@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import { message } from "../Components/Message";
 
 const API_BASE_URL = "http://124.53.139.229:28080/myDashboard";
 
 export default function Main() {
+    const { id: rawId } = useParams();
+    const id = rawId?.replace(/^@/, '') ?? '';
     const [dust, setDust] = useState("");
     const [snp500, setSnp500] = useState({ price: "", change: "", percent: "", isUp: true });
     const [weather, setWeather] = useState(null);
@@ -11,9 +14,12 @@ export default function Main() {
     const [fearGreed, setFearGreed] = useState({ value: 0, rating: "", diff: 0, status: "UP" });
     const [vix, setVix] = useState({ price: "", change: "", percent: "", isUp: true, status: "" });
 
+    const bookmarksKey = `dashboard_bookmarks_${id}`;
+    const customStocksKey = `custom_stocks_${id}`;
+
     const [bookmarks, setBookmarks] = useState(() => {
         try {
-            const saved = localStorage.getItem('dashboard_bookmarks');
+            const saved = localStorage.getItem(`dashboard_bookmarks_${id}`);
             if (saved !== null) return JSON.parse(saved);
             return ['weather', 'dust', 'snp500', 'exchange', 'feargreed', 'vix'];
         } catch {
@@ -24,7 +30,7 @@ export default function Main() {
     // 개별 종목 상태
     const [customStocks, setCustomStocks] = useState(() => {
         try {
-            const saved = localStorage.getItem('custom_stocks');
+            const saved = localStorage.getItem(`custom_stocks_${id}`);
             return saved ? JSON.parse(saved) : [];
         } catch { return []; }
     });
@@ -135,7 +141,7 @@ export default function Main() {
 
             const newStocks = [...customStocks, ticker];
             setCustomStocks(newStocks);
-            localStorage.setItem('custom_stocks', JSON.stringify(newStocks));
+            localStorage.setItem(customStocksKey, JSON.stringify(newStocks));
 
             if (data && !data.error) {
                 setStockData(prev => ({ ...prev, [ticker]: data }));
@@ -144,7 +150,7 @@ export default function Main() {
             // 자동 즐겨찾기 등록
             setBookmarks(prev => {
                 const next = [...prev, `stock_${ticker}`];
-                localStorage.setItem('dashboard_bookmarks', JSON.stringify(next));
+                localStorage.setItem(bookmarksKey, JSON.stringify(next));
                 return next;
             });
 
@@ -164,11 +170,11 @@ export default function Main() {
         e.stopPropagation();
         const newStocks = customStocks.filter(t => t !== ticker);
         setCustomStocks(newStocks);
-        localStorage.setItem('custom_stocks', JSON.stringify(newStocks));
+        localStorage.setItem(customStocksKey, JSON.stringify(newStocks));
 
         setBookmarks(prev => {
             const next = prev.filter(id => id !== `stock_${ticker}`);
-            localStorage.setItem('dashboard_bookmarks', JSON.stringify(next));
+            localStorage.setItem(bookmarksKey, JSON.stringify(next));
             return next;
         });
 
@@ -187,7 +193,7 @@ export default function Main() {
             const next = prev.includes(cardId)
                 ? prev.filter(id => id !== cardId)
                 : [...prev, cardId];
-            localStorage.setItem('dashboard_bookmarks', JSON.stringify(next));
+            localStorage.setItem(bookmarksKey, JSON.stringify(next));
             return next;
         });
     };

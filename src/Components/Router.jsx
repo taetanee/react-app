@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, NavLink, Navigate, useSearchParams, useNavigate, Outlet } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, NavLink, Navigate, useParams, useNavigate, Outlet } from "react-router-dom";
 import Main from "../Pages/Main";
 import Page01 from "../Pages/Page01";
 import Page02 from "../Pages/Page02";
@@ -11,20 +11,22 @@ import axios from "axios";
 const API_BASE_URL = "http://124.53.139.229:28080/onlineClipboard";
 
 function RootRedirect() {
-    return <Navigate to={`/?id=${generateWordId()}`} replace />;
+    const saved = localStorage.getItem('my_id');
+    const target = saved ?? generateWordId();
+    return <Navigate to={`/@${target}`} replace />;
 }
 
 function Layout() {
-    const [searchParams] = useSearchParams();
-    const id = searchParams.get('id');
+    const { id: rawId } = useParams();
+    const id = rawId?.replace(/^@/, '') ?? '';
     const navigate = useNavigate();
     const [editing, setEditing] = useState(false);
     const [newId, setNewId] = useState(id);
     const [migrating, setMigrating] = useState(false);
 
-    if (!id) {
-        return <Navigate to={`/?id=${generateWordId()}`} replace />;
-    }
+    useEffect(() => {
+        if (id) localStorage.setItem('my_id', id);
+    }, [id]);
 
     const navLinkStyle = ({ isActive }) => ({
         textDecoration: 'none',
@@ -38,7 +40,7 @@ function Layout() {
     });
 
     const handleCopyURL = () => {
-        const baseUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
+        const baseUrl = `${window.location.origin}${window.location.pathname}`;
         navigator.clipboard.writeText(baseUrl).then(() => {
             message('URL이 복사되었습니다.', 'success');
         }).catch(() => {
@@ -79,7 +81,8 @@ function Layout() {
             });
             message('URL이 변경되었습니다.', 'success');
             setEditing(false);
-            navigate(`${window.location.pathname}?id=${trimmed}`, { replace: true });
+            const subPath = window.location.pathname.replace(`/@${id}`, '');
+            navigate(`/@${trimmed}${subPath}`, { replace: true });
         } catch (error) {
             const msg = error.response?.data?.result_msg || error.response?.data?.message || error.message;
             message(`URL 변경 실패: ${msg}`, 'error');
@@ -106,16 +109,16 @@ function Layout() {
                 flexWrap: 'wrap',
                 gap: '2px'
             }}>
-                <NavLink style={navLinkStyle} to={`/?id=${id}`} end>
+                <NavLink style={navLinkStyle} to={`/@${id}`} end>
                     나만의 요약
                 </NavLink>
-                <NavLink style={navLinkStyle} to={`/clipboard?id=${id}`}>
+                <NavLink style={navLinkStyle} to={`/@${id}/clipboard`}>
                     나만의 온라인 클립보드
                 </NavLink>
-                <NavLink style={navLinkStyle} to={`/openai?id=${id}`}>
+                <NavLink style={navLinkStyle} to={`/@${id}/openai`}>
                     오픈AI
                 </NavLink>
-                <NavLink style={navLinkStyle} to={`/portfolio?id=${id}`}>
+                <NavLink style={navLinkStyle} to={`/@${id}/portfolio`}>
                     포트폴리오
                 </NavLink>
                 <div style={{
@@ -224,11 +227,12 @@ export default function Router() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route element={<Layout />}>
-                    <Route path="/" element={<Main />} />
-                    <Route path="/clipboard" element={<Page01 />} />
-                    <Route path="/openai" element={<Page02 />} />
-                    <Route path="/portfolio" element={<Page03 />} />
+                <Route path="/" element={<RootRedirect />} />
+                <Route path="/:id" element={<Layout />}>
+                    <Route index element={<Main />} />
+                    <Route path="clipboard" element={<Page01 />} />
+                    <Route path="openai" element={<Page02 />} />
+                    <Route path="portfolio" element={<Page03 />} />
                 </Route>
             </Routes>
         </BrowserRouter>
