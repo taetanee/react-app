@@ -118,9 +118,20 @@ function Layout() {
                 <NavLink style={navLinkStyle} to={`/@${id}/openai`}>
                     오픈AI
                 </NavLink>
-                <NavLink style={navLinkStyle} to={`/@${id}/portfolio`}>
+                <span
+                    onClick={() => alert('비공개 상태입니다.')}
+                    style={{
+                        textDecoration: 'none',
+                        color: '#aaa',
+                        fontWeight: 'normal',
+                        padding: '8px 15px',
+                        margin: '0 5px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                    }}
+                >
                     포트폴리오
-                </NavLink>
+                </span>
                 <div style={{
                     marginLeft: '10px',
                     display: 'flex',
