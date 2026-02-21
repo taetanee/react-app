@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(find \"C:\"\" -maxdepth 2 -type d -name \"*OnlineClipboard*\" -o -type d -name \"*onlineClipboard* \")",
+      "Bash(npx react-scripts build:*)"
+    ]
+  }
+}
