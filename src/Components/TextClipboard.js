@@ -72,7 +72,7 @@ const TextClipboard = ({ randomWord, refreshKey }) => {
             <textarea
                 value={text}
                 onChange={handleChange}
-                placeholder="여기에 텍스트를 입력하세요. 같은 URL로 접속하면 언제든 확인할 수 있습니다."
+                placeholder="텍스트를 입력하세요"
                 style={{
                     width: '100%',
                     minHeight: '150px',

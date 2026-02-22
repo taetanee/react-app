@@ -113,7 +113,7 @@ function Layout() {
                     나만의 요약
                 </NavLink>
                 <NavLink style={navLinkStyle} to={`/@${id}/clipboard`}>
-                    나만의 온라인 클립보드
+                    나만의 복붙
                 </NavLink>
                 <NavLink style={navLinkStyle} to={`/@${id}/openai`}>
                     오픈AI
