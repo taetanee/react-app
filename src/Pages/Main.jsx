@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { message } from "../Components/Message";
 
-const API_BASE_URL = "http://124.53.139.229:28080/myDashboard";
+const API_BASE_URL = "/api/myDashboard";
 
 export default function Main() {
     const { id: rawId } = useParams();

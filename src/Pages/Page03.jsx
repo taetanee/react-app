@@ -45,9 +45,9 @@ export default function Page03() {
                         <section>
                             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">사이트</h2>
                             <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                <a href="http://124.53.139.229:23000" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-blue-500">
+                                <a href="https://mypad.kr:23000" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-blue-500">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
-                                    홈페이지 : http://124.53.139.229:23000
+                                    홈페이지 : https://mypad.kr:23000
                                 </a>
                                 <a href="https://github.com/taetanee" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-black">
                                     <img src="https://github.githubassets.com/favicons/favicon.svg" alt="GH" className="w-4 h-4 opacity-80" />
