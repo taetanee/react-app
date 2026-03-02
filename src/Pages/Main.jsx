@@ -14,26 +14,37 @@ export default function Main() {
     const [fearGreed, setFearGreed] = useState({ value: 0, rating: "", diff: 0, status: "UP" });
     const [vix, setVix] = useState({ price: "", change: "", percent: "", isUp: true, status: "" });
 
-    const bookmarksKey = `dashboard_bookmarks_${id}`;
-    const customStocksKey = `custom_stocks_${id}`;
-
-    const [bookmarks, setBookmarks] = useState(() => {
-        try {
-            const saved = localStorage.getItem(`dashboard_bookmarks_${id}`);
-            if (saved !== null) return JSON.parse(saved);
-            return ['weather', 'dust', 'snp500', 'exchange', 'feargreed', 'vix'];
-        } catch {
-            return ['weather', 'dust', 'snp500', 'exchange', 'feargreed', 'vix'];
-        }
-    });
+    const [bookmarks, setBookmarks] = useState(['weather', 'dust', 'snp500', 'exchange', 'feargreed', 'vix']);
 
     // 개별 종목 상태
-    const [customStocks, setCustomStocks] = useState(() => {
-        try {
-            const saved = localStorage.getItem(`custom_stocks_${id}`);
-            return saved ? JSON.parse(saved) : [];
-        } catch { return []; }
-    });
+    const [customStocks, setCustomStocks] = useState([]);
+
+    // 서버에서 preferences 로드
+    useEffect(() => {
+        if (!id) return;
+        fetch(`${API_BASE_URL}/getPreferences?randomWord=${encodeURIComponent(id)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data.bookmarks)) setBookmarks(data.bookmarks);
+                if (Array.isArray(data.customStocks)) setCustomStocks(data.customStocks);
+            })
+            .catch(() => {
+                try {
+                    const saved = localStorage.getItem(`dashboard_bookmarks_${id}`);
+                    if (saved) setBookmarks(JSON.parse(saved));
+                    const savedStocks = localStorage.getItem(`custom_stocks_${id}`);
+                    if (savedStocks) setCustomStocks(JSON.parse(savedStocks));
+                } catch {}
+            });
+    }, [id]);
+
+    const savePreferences = (newBookmarks, newStocks) => {
+        fetch(`${API_BASE_URL}/savePreferences`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ randomWord: id, bookmarks: newBookmarks, customStocks: newStocks })
+        }).catch(e => console.error('환경설정 저장 실패', e));
+    };
     const [stockData, setStockData] = useState({});
     const [searchQuery, setSearchQuery] = useState('');
     const [searching, setSearching] = useState(false);
@@ -141,18 +152,15 @@ export default function Main() {
 
             const newStocks = [...customStocks, ticker];
             setCustomStocks(newStocks);
-            localStorage.setItem(customStocksKey, JSON.stringify(newStocks));
 
             if (data && !data.error) {
                 setStockData(prev => ({ ...prev, [ticker]: data }));
             }
 
             // 자동 즐겨찾기 등록
-            setBookmarks(prev => {
-                const next = [...prev, `stock_${ticker}`];
-                localStorage.setItem(bookmarksKey, JSON.stringify(next));
-                return next;
-            });
+            const newBookmarks = [...bookmarks, `stock_${ticker}`];
+            setBookmarks(newBookmarks);
+            savePreferences(newBookmarks, newStocks);
 
             setSearchResults([]);
             setSearchQuery('');
@@ -170,13 +178,10 @@ export default function Main() {
         e.stopPropagation();
         const newStocks = customStocks.filter(t => t !== ticker);
         setCustomStocks(newStocks);
-        localStorage.setItem(customStocksKey, JSON.stringify(newStocks));
 
-        setBookmarks(prev => {
-            const next = prev.filter(id => id !== `stock_${ticker}`);
-            localStorage.setItem(bookmarksKey, JSON.stringify(next));
-            return next;
-        });
+        const newBookmarks = bookmarks.filter(b => b !== `stock_${ticker}`);
+        setBookmarks(newBookmarks);
+        savePreferences(newBookmarks, newStocks);
 
         setStockData(prev => {
             const copy = { ...prev };
@@ -189,13 +194,11 @@ export default function Main() {
     const toggleBookmark = (cardId, e) => {
         e.preventDefault();
         e.stopPropagation();
-        setBookmarks(prev => {
-            const next = prev.includes(cardId)
-                ? prev.filter(id => id !== cardId)
-                : [...prev, cardId];
-            localStorage.setItem(bookmarksKey, JSON.stringify(next));
-            return next;
-        });
+        const next = bookmarks.includes(cardId)
+            ? bookmarks.filter(b => b !== cardId)
+            : [...bookmarks, cardId];
+        setBookmarks(next);
+        savePreferences(next, customStocks);
     };
 
     const cardStyle = {
