@@ -98,10 +98,11 @@ function Layout() {
 
     return (
         <>
+            {/* 메뉴 행 */}
             <nav style={{
-                padding: '10px 0',
+                padding: '8px 0',
                 backgroundColor: '#f8f8f8',
-                borderBottom: '2px solid #eee',
+                borderBottom: '1px solid #e0e0e0',
                 textAlign: 'center',
                 display: 'flex',
                 justifyContent: 'center',
@@ -132,103 +133,115 @@ function Layout() {
                 >
                     포트폴리오
                 </span>
-                <div style={{
-                    marginLeft: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                }}>
-                    {editing ? (
-                        <>
-                            <input
-                                type="text"
-                                value={newId}
-                                onChange={(e) => setNewId(e.target.value.toLowerCase())}
-                                onKeyDown={handleKeyDown}
-                                autoFocus
-                                disabled={migrating}
-                                style={{
-                                    padding: '4px 8px',
-                                    fontSize: '12px',
-                                    fontFamily: 'monospace',
-                                    border: '1px solid #007bff',
-                                    borderRadius: '4px',
-                                    outline: 'none',
-                                    width: '120px',
-                                }}
-                            />
-                            <button
-                                onClick={handleConfirmEdit}
-                                disabled={migrating}
-                                style={{
-                                    padding: '5px 8px',
-                                    backgroundColor: migrating ? '#95a5a6' : '#28a745',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: migrating ? 'default' : 'pointer',
-                                    fontSize: '11px',
-                                }}
-                            >
-                                {migrating ? '...' : '확인'}
-                            </button>
-                            <button
-                                onClick={handleCancelEdit}
-                                disabled={migrating}
-                                style={{
-                                    padding: '5px 8px',
-                                    backgroundColor: '#dc3545',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '11px',
-                                }}
-                            >
-                                취소
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <span
-                                onClick={handleStartEdit}
-                                style={{
-                                    fontSize: '12px',
-                                    fontFamily: 'monospace',
-                                    color: '#555',
-                                    cursor: 'pointer',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    borderBottom: '1px dashed #aaa',
-                                    transition: 'border-color 0.2s',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                }}
-                                title="클릭하여 URL 변경"
-                            >
-                                <span style={{ fontSize: '15px', opacity: 0.7 }}>&#9998;</span>
-                                {id}
-                            </span>
-                            <button
-                                onClick={handleCopyURL}
-                                style={{
-                                    padding: '5px 10px',
-                                    backgroundColor: '#6c757d',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '12px',
-                                }}
-                                title="현재 URL 복사"
-                            >
-                                URL 복사
-                            </button>
-                        </>
-                    )}
-                </div>
             </nav>
+
+            {/* 내 URL 행 */}
+            <div style={{
+                backgroundColor: '#f0f4f8',
+                borderBottom: '2px solid #e0e0e0',
+                padding: '7px 16px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '8px',
+            }}>
+                <span style={{ fontSize: '11px', color: '#7f8c8d', fontWeight: '700', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+                    내 URL
+                </span>
+                {editing ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '12px', color: '#aaa', fontFamily: 'monospace' }}>mypad.kr/@</span>
+                        <input
+                            type="text"
+                            value={newId}
+                            onChange={(e) => setNewId(e.target.value.toLowerCase())}
+                            onKeyDown={handleKeyDown}
+                            autoFocus
+                            disabled={migrating}
+                            style={{
+                                padding: '4px 8px',
+                                fontSize: '13px',
+                                fontFamily: 'monospace',
+                                border: '1.5px solid #007bff',
+                                borderRadius: '6px',
+                                outline: 'none',
+                                width: '130px',
+                                backgroundColor: '#fff',
+                            }}
+                        />
+                        <button
+                            onClick={handleConfirmEdit}
+                            disabled={migrating}
+                            style={{
+                                padding: '4px 12px',
+                                backgroundColor: migrating ? '#95a5a6' : '#007bff',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: migrating ? 'default' : 'pointer',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                            }}
+                        >
+                            {migrating ? '변경중...' : '변경'}
+                        </button>
+                        <button
+                            onClick={handleCancelEdit}
+                            disabled={migrating}
+                            style={{
+                                padding: '4px 10px',
+                                backgroundColor: 'transparent',
+                                color: '#aaa',
+                                border: '1px solid #ddd',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                            }}
+                        >
+                            취소
+                        </button>
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            backgroundColor: '#fff',
+                            border: '1px solid #ddd',
+                            borderRadius: '8px',
+                            padding: '4px 4px 4px 12px',
+                            gap: '4px',
+                            cursor: 'pointer',
+                        }}
+                            onClick={handleStartEdit}
+                        >
+                            <span style={{ fontSize: '13px', fontFamily: 'monospace', color: '#333' }}>
+                                mypad.kr/@{id}
+                            </span>
+                            <span style={{ fontSize: '15px', color: '#888', padding: '2px 6px', opacity: 0.7 }}>
+                                &#9998;
+                            </span>
+                        </div>
+                        <button
+                            onClick={handleCopyURL}
+                            style={{
+                                padding: '5px 12px',
+                                backgroundColor: '#fff',
+                                color: '#555',
+                                border: '1px solid #ddd',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            복사
+                        </button>
+                    </div>
+                )}
+            </div>
+
             <Outlet />
         </>
     );
