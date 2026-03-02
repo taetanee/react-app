@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { message } from './Message';
 
-const API_BASE_URL = "/api/onlineClipboard";
+const API_BASE_URL = "https://api.mypad.kr/onlineClipboard";
 
 const getErrorMsg = (error) => {
     const data = error.response?.data;

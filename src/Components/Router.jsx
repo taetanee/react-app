@@ -8,7 +8,7 @@ import { generateWordId, validateWordId } from "../utils/wordGenerator";
 import { message } from "./Message";
 import axios from "axios";
 
-const API_BASE_URL = "/api/onlineClipboard";
+const API_BASE_URL = "https://api.mypad.kr/onlineClipboard";
 
 function RootRedirect() {
     const saved = localStorage.getItem('my_id');
