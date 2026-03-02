@@ -3,6 +3,9 @@ import axios from 'axios';
 import { message } from './Message';
 
 const API_BASE_URL = "https://api.mypad.kr/onlineClipboard";
+const WS_BASE_URL = "wss://api.mypad.kr/ws/clipboard";
+
+const RECONNECT_DELAY = 3000;
 
 const getErrorMsg = (error) => {
     const data = error.response?.data;
@@ -12,7 +15,11 @@ const getErrorMsg = (error) => {
 const FileClipboard = ({ randomWord }) => {
     const [fileList, setFileList] = useState([]);
     const [uploading, setUploading] = useState(false);
+    const [connected, setConnected] = useState(false);
     const fileInputRef = useRef(null);
+    const wsRef = useRef(null);
+    const reconnectRef = useRef(null);
+    const unmountedRef = useRef(false);
 
     const fetchFileList = useCallback(async () => {
         try {
@@ -31,16 +38,64 @@ const FileClipboard = ({ randomWord }) => {
         }
     }, [randomWord]);
 
+    // 초기 파일 목록 로드
     useEffect(() => {
         fetchFileList();
     }, [fetchFileList]);
+
+    // WebSocket 연결 (자동 재연결 포함)
+    useEffect(() => {
+        unmountedRef.current = false;
+
+        const connect = () => {
+            if (unmountedRef.current) return;
+
+            const ws = new WebSocket(`${WS_BASE_URL}?randomWord=${encodeURIComponent(randomWord)}`);
+            wsRef.current = ws;
+
+            ws.onopen = () => {
+                setConnected(true);
+                if (reconnectRef.current) {
+                    clearTimeout(reconnectRef.current);
+                    reconnectRef.current = null;
+                }
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === "FILE_LIST") {
+                        setFileList(data.files || []);
+                    }
+                } catch (e) {}
+            };
+
+            ws.onclose = () => {
+                setConnected(false);
+                if (!unmountedRef.current) {
+                    reconnectRef.current = setTimeout(connect, RECONNECT_DELAY);
+                }
+            };
+
+            ws.onerror = () => {
+                ws.close();
+            };
+        };
+
+        connect();
+
+        return () => {
+            unmountedRef.current = true;
+            if (reconnectRef.current) clearTimeout(reconnectRef.current);
+            if (wsRef.current) wsRef.current.close();
+        };
+    }, [randomWord]);
 
     const handleFileChange = async (e) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
         setUploading(true);
-
         try {
             for (let i = 0; i < files.length; i++) {
                 const formData = new FormData();
@@ -50,7 +105,6 @@ const FileClipboard = ({ randomWord }) => {
             }
             message(`${files.length}개 파일 업로드 성공`, 'success');
             fileInputRef.current.value = "";
-            fetchFileList();
         } catch (error) {
             message(`업로드 실패: ${getErrorMsg(error)}`, 'error');
         } finally {
@@ -85,7 +139,6 @@ const FileClipboard = ({ randomWord }) => {
                 params: { randomWord, fileName }
             });
             message(`${fileName} 삭제 완료`, 'success');
-            fetchFileList();
         } catch (error) {
             message(`삭제 실패: ${getErrorMsg(error)}`, 'error');
         }
@@ -100,7 +153,23 @@ const FileClipboard = ({ randomWord }) => {
         }}>
             {/* 헤더 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', color: '#2c3e50' }}>파일</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h3 style={{ margin: 0, fontSize: '16px', color: '#2c3e50' }}>파일</h3>
+                    <span style={{
+                        fontSize: '11px',
+                        color: connected ? '#27ae60' : '#e74c3c',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                    }}>
+                        <span style={{
+                            width: '7px', height: '7px', borderRadius: '50%',
+                            backgroundColor: connected ? '#27ae60' : '#e74c3c',
+                            display: 'inline-block',
+                        }} />
+                        {connected ? '실시간 연결됨' : '연결 중...'}
+                    </span>
+                </div>
                 <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}

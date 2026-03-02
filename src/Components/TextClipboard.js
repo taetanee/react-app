@@ -1,44 +1,79 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { message } from './Message';
 
 const API_BASE_URL = "https://api.mypad.kr/onlineClipboard";
+const WS_BASE_URL = "wss://api.mypad.kr/ws/clipboard";
 
-const getErrorMsg = (error) => {
-    const data = error.response?.data;
-    return data?.result_msg || data?.message || error.message;
-};
+const RECONNECT_DELAY = 3000;
 
-const TextClipboard = ({ randomWord, refreshKey }) => {
+const TextClipboard = ({ randomWord }) => {
     const [text, setText] = useState("");
     const [loaded, setLoaded] = useState(false);
+    const [connected, setConnected] = useState(false);
+    const wsRef = useRef(null);
     const timerRef = useRef(null);
+    const reconnectRef = useRef(null);
+    const unmountedRef = useRef(false);
 
-    const fetchClipboardData = useCallback(async () => {
-        try {
-            const response = await axios.post(`${API_BASE_URL}/getContent`, { randomWord });
-            const commonResult = response.data.result;
-            if (commonResult) {
-                setText(commonResult.data || "");
-            }
-        } catch (error) {
-            console.error("데이터 로드 실패:", getErrorMsg(error));
-        } finally {
-            setLoaded(true);
-        }
+    // 초기 텍스트 REST로 로드
+    useEffect(() => {
+        axios.post(`${API_BASE_URL}/getContent`, { randomWord })
+            .then(res => {
+                const result = res.data.result;
+                if (result) setText(result.data || "");
+            })
+            .catch(err => console.error("텍스트 초기 로드 실패:", err))
+            .finally(() => setLoaded(true));
     }, [randomWord]);
 
+    // WebSocket 연결 (자동 재연결 포함)
     useEffect(() => {
-        fetchClipboardData();
-    }, [fetchClipboardData, refreshKey]);
+        unmountedRef.current = false;
 
-    const saveText = useCallback(async (content) => {
-        try {
-            await axios.post(`${API_BASE_URL}/saveContent`, { randomWord, content });
-            message('저장 완료', 'success');
-        } catch (error) {
-            message(`저장 실패: ${getErrorMsg(error)}`, 'error');
-        }
+        const connect = () => {
+            if (unmountedRef.current) return;
+
+            const ws = new WebSocket(`${WS_BASE_URL}?randomWord=${encodeURIComponent(randomWord)}`);
+            wsRef.current = ws;
+
+            ws.onopen = () => {
+                setConnected(true);
+                if (reconnectRef.current) {
+                    clearTimeout(reconnectRef.current);
+                    reconnectRef.current = null;
+                }
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === "TEXT_UPDATE") {
+                        setText(data.content);
+                    }
+                } catch (e) {}
+            };
+
+            ws.onclose = () => {
+                setConnected(false);
+                if (!unmountedRef.current) {
+                    reconnectRef.current = setTimeout(connect, RECONNECT_DELAY);
+                }
+            };
+
+            ws.onerror = () => {
+                ws.close();
+            };
+        };
+
+        connect();
+
+        return () => {
+            unmountedRef.current = true;
+            if (timerRef.current) clearTimeout(timerRef.current);
+            if (reconnectRef.current) clearTimeout(reconnectRef.current);
+            if (wsRef.current) wsRef.current.close();
+        };
     }, [randomWord]);
 
     const handleChange = (e) => {
@@ -47,15 +82,11 @@ const TextClipboard = ({ randomWord, refreshKey }) => {
 
         if (timerRef.current) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => {
-            saveText(value);
+            if (wsRef.current?.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({ type: "TEXT_UPDATE", content: value }));
+            }
         }, 300);
     };
-
-    useEffect(() => {
-        return () => {
-            if (timerRef.current) clearTimeout(timerRef.current);
-        };
-    }, []);
 
     if (!loaded) return null;
 
@@ -67,7 +98,23 @@ const TextClipboard = ({ randomWord, refreshKey }) => {
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', color: '#2c3e50' }}>텍스트</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h3 style={{ margin: 0, fontSize: '16px', color: '#2c3e50' }}>텍스트</h3>
+                    <span style={{
+                        fontSize: '11px',
+                        color: connected ? '#27ae60' : '#e74c3c',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                    }}>
+                        <span style={{
+                            width: '7px', height: '7px', borderRadius: '50%',
+                            backgroundColor: connected ? '#27ae60' : '#e74c3c',
+                            display: 'inline-block',
+                        }} />
+                        {connected ? '실시간 연결됨' : '연결 중...'}
+                    </span>
+                </div>
             </div>
             <textarea
                 value={text}
