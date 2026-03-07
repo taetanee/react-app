@@ -76,6 +76,16 @@ const TextClipboard = ({ randomWord }) => {
         };
     }, [randomWord]);
 
+    const handleCopy = () => {
+        if (!text) {
+            message("복사할 텍스트가 없습니다.", "info");
+            return;
+        }
+        navigator.clipboard.writeText(text)
+            .then(() => message("텍스트가 복사되었습니다.", "success"))
+            .catch(() => message("복사에 실패했습니다.", "error"));
+    };
+
     const handleChange = (e) => {
         const value = e.target.value;
         setText(value);
@@ -115,6 +125,20 @@ const TextClipboard = ({ randomWord }) => {
                         {connected ? '실시간 연결됨' : '연결 중...'}
                     </span>
                 </div>
+                <button
+                    onClick={handleCopy}
+                    style={{
+                        padding: '5px 12px',
+                        fontSize: '13px',
+                        backgroundColor: '#3498db',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                    }}
+                >
+                    텍스트 복사하기
+                </button>
             </div>
             <textarea
                 value={text}
