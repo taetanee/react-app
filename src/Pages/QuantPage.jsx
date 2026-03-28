@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { message } from "../Components/Message";
 
 const API      = "https://api.mypad.kr/quantInvest";
@@ -91,6 +91,41 @@ function PBtn({ children, onClick, disabled, active }) {
     );
 }
 
+// ── 검색창 ───────────────────────────────────────────────────
+function SearchBox({ value, onChange, placeholder = "종목코드 / 기업명 검색" }) {
+    return (
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+            <span style={{
+                position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                fontSize: 15, color: '#aaa', pointerEvents: 'none',
+            }}>&#128269;</span>
+            <input
+                type="text"
+                value={value}
+                onChange={e => onChange(e.target.value)}
+                placeholder={placeholder}
+                style={{
+                    width: '100%', boxSizing: 'border-box',
+                    padding: '9px 36px 9px 36px',
+                    border: '1.5px solid #e0e0e0', borderRadius: 10,
+                    fontSize: 13, outline: 'none',
+                    transition: 'border-color 0.2s',
+                    background: '#fafafa',
+                }}
+                onFocus={e => e.target.style.borderColor = '#2e86ab'}
+                onBlur={e => e.target.style.borderColor = '#e0e0e0'}
+            />
+            {value && (
+                <button onClick={() => onChange('')} style={{
+                    position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: 16, color: '#aaa', padding: '0 4px', lineHeight: 1,
+                }}>✕</button>
+            )}
+        </div>
+    );
+}
+
 // ── 섹터 필터 ─────────────────────────────────────────────────
 function SectorFilter({ sectors, sector, onChange }) {
     if (!sectors.length) return null;
@@ -136,11 +171,13 @@ function ValueTab({ id, updatedAt, refreshing }) {
     const [status, setStatus]         = useState("");
     const [sector, setSector]         = useState("ALL");
     const [sectors, setSectors]       = useState([]);
+    const [search, setSearch]         = useState("");
+    const debounceRef                 = useRef(null);
 
-    const fetchList = useCallback(async (p, sec) => {
+    const fetchList = useCallback(async (p, sec, q = "") => {
         setLoading(true);
         try {
-            const res  = await fetch(`${API}/getList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}`);
+            const res  = await fetch(`${API}/getList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}&search=${encodeURIComponent(q)}`);
             const data = await res.json();
             setItems(data.items || []); setTotalPages(data.totalPages || 0);
             setTotalCount(data.totalCount || 0); setStatus(data.status || "OK");
@@ -156,11 +193,15 @@ function ValueTab({ id, updatedAt, refreshing }) {
     }, []);
 
     useEffect(() => { fetchList(0, "ALL"); fetchSectors(); }, []);
-    // 갱신 완료 감지
-    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector); fetchSectors(); } }, [updatedAt]);
+    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector, search); fetchSectors(); } }, [updatedAt]);
 
-    const handlePage = (p) => { setPage(p); fetchList(p, sector); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec); };
+    const handlePage = (p) => { setPage(p); fetchList(p, sector, search); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec, search); };
+    const handleSearch = (q) => {
+        setSearch(q);
+        clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => { setPage(0); fetchList(0, sector, q); }, 300);
+    };
 
     return (
         <>
@@ -170,6 +211,7 @@ function ValueTab({ id, updatedAt, refreshing }) {
                     : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span></>}
             </div>
 
+            <SearchBox value={search} onChange={handleSearch} />
             <SectorFilter sectors={sectors} sector={sector} onChange={handleSector} />
 
             <ScreenTable loading={loading} items={items} status={status}>
@@ -224,11 +266,13 @@ function SuperQuantTab({ updatedAt, refreshing }) {
     const [status, setStatus]         = useState("");
     const [sector, setSector]         = useState("ALL");
     const [sectors, setSectors]       = useState([]);
+    const [search, setSearch]         = useState("");
+    const debounceRef                 = useRef(null);
 
-    const fetchList = useCallback(async (p, sec) => {
+    const fetchList = useCallback(async (p, sec, q = "") => {
         setLoading(true);
         try {
-            const res  = await fetch(`${API}/getSuperQuantList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}`);
+            const res  = await fetch(`${API}/getSuperQuantList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}&search=${encodeURIComponent(q)}`);
             const data = await res.json();
             setItems(data.items || []); setTotalPages(data.totalPages || 0);
             setTotalCount(data.totalCount || 0); setStatus(data.status || "OK");
@@ -244,10 +288,15 @@ function SuperQuantTab({ updatedAt, refreshing }) {
     }, []);
 
     useEffect(() => { fetchList(0, "ALL"); fetchSectors(); }, []);
-    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector); fetchSectors(); } }, [updatedAt]);
+    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector, search); fetchSectors(); } }, [updatedAt]);
 
-    const handlePage = (p) => { setPage(p); fetchList(p, sector); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec); };
+    const handlePage = (p) => { setPage(p); fetchList(p, sector, search); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec, search); };
+    const handleSearch = (q) => {
+        setSearch(q);
+        clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => { setPage(0); fetchList(0, sector, q); }, 300);
+    };
 
     return (
         <>
@@ -257,6 +306,7 @@ function SuperQuantTab({ updatedAt, refreshing }) {
                     : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span></>}
             </div>
 
+            <SearchBox value={search} onChange={handleSearch} />
             <SectorFilter sectors={sectors} sector={sector} onChange={handleSector} />
 
             <ScreenTable loading={loading} items={items} status={status}>
@@ -321,11 +371,13 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
     const [status, setStatus]         = useState("");
     const [sector, setSector]         = useState("ALL");
     const [sectors, setSectors]       = useState([]);
+    const [search, setSearch]         = useState("");
+    const debounceRef                 = useRef(null);
 
-    const fetchList = useCallback(async (p, sec) => {
+    const fetchList = useCallback(async (p, sec, q = "") => {
         setLoading(true);
         try {
-            const res  = await fetch(`${API}/getMagicFormulaList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}`);
+            const res  = await fetch(`${API}/getMagicFormulaList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}&search=${encodeURIComponent(q)}`);
             const data = await res.json();
             setItems(data.items || []); setTotalPages(data.totalPages || 0);
             setTotalCount(data.totalCount || 0); setStatus(data.status || "OK");
@@ -341,10 +393,15 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
     }, []);
 
     useEffect(() => { fetchList(0, "ALL"); fetchSectors(); }, []);
-    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector); fetchSectors(); } }, [updatedAt]);
+    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector, search); fetchSectors(); } }, [updatedAt]);
 
-    const handlePage = (p) => { setPage(p); fetchList(p, sector); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec); };
+    const handlePage = (p) => { setPage(p); fetchList(p, sector, search); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec, search); };
+    const handleSearch = (q) => {
+        setSearch(q);
+        clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => { setPage(0); fetchList(0, sector, q); }, 300);
+    };
 
     return (
         <>
@@ -354,6 +411,7 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
                     : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span></>}
             </div>
 
+            <SearchBox value={search} onChange={handleSearch} />
             <SectorFilter sectors={sectors} sector={sector} onChange={handleSector} />
 
             <ScreenTable loading={loading} items={items} status={status}>
@@ -416,11 +474,13 @@ function CombinedTab({ updatedAt, refreshing }) {
     const [status, setStatus]         = useState("");
     const [sector, setSector]         = useState("ALL");
     const [sectors, setSectors]       = useState([]);
+    const [search, setSearch]         = useState("");
+    const debounceRef                 = useRef(null);
 
-    const fetchList = useCallback(async (p, sec) => {
+    const fetchList = useCallback(async (p, sec, q = "") => {
         setLoading(true);
         try {
-            const res  = await fetch(`${API}/getCombinedList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}`);
+            const res  = await fetch(`${API}/getCombinedList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}&search=${encodeURIComponent(q)}`);
             const data = await res.json();
             setItems(data.items || []); setTotalPages(data.totalPages || 0);
             setTotalCount(data.totalCount || 0); setStatus(data.status || "OK");
@@ -436,10 +496,15 @@ function CombinedTab({ updatedAt, refreshing }) {
     }, []);
 
     useEffect(() => { fetchList(0, "ALL"); fetchSectors(); }, []);
-    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector); fetchSectors(); } }, [updatedAt]);
+    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector, search); fetchSectors(); } }, [updatedAt]);
 
-    const handlePage = (p) => { setPage(p); fetchList(p, sector); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec); };
+    const handlePage = (p) => { setPage(p); fetchList(p, sector, search); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec, search); };
+    const handleSearch = (q) => {
+        setSearch(q);
+        clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => { setPage(0); fetchList(0, sector, q); }, 300);
+    };
 
     return (
         <>
@@ -449,6 +514,7 @@ function CombinedTab({ updatedAt, refreshing }) {
                     : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span><span style={{ color: '#888' }}>※ 세 전략 모두 적용 가능한 종목만 표시</span></>}
             </div>
 
+            <SearchBox value={search} onChange={handleSearch} />
             <SectorFilter sectors={sectors} sector={sector} onChange={handleSector} />
 
             <ScreenTable loading={loading} items={items} status={status}>
