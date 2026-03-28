@@ -91,6 +91,87 @@ function PBtn({ children, onClick, disabled, active }) {
     );
 }
 
+// ── 전략 설명 카드 ───────────────────────────────────────────
+const STRATEGY_INFO = {
+    value: {
+        icon: "💰",
+        title: "저평가 주식을 찾는 전략",
+        desc: "주가가 기업의 실제 가치보다 싸게 거래되는 종목을 고릅니다. PER(주가 ÷ 순이익)과 PBR(주가 ÷ 순자산)이 낮을수록 더 싼 주식입니다.",
+        metrics: [
+            { label: "PER", tip: "낮을수록 이익 대비 주가가 싸다" },
+            { label: "PBR", tip: "낮을수록 자산 대비 주가가 싸다" },
+        ],
+        color: "#1a7a4a",
+        bg: "#e6f9f0",
+    },
+    quality: {
+        icon: "⭐",
+        title: "우량한 기업을 찾는 전략",
+        desc: "수익성이 높은 진짜 좋은 기업을 찾습니다. ROE(자기자본이익률)는 주주 돈을 얼마나 잘 불리는지, GP/A(총이익/총자산)는 사업 자체의 경쟁력을 나타냅니다. 두 지표가 모두 높은 기업은 장기적으로 우수한 성과를 냅니다.",
+        metrics: [
+            { label: "ROE", tip: "높을수록 자기자본 대비 이익이 크다" },
+            { label: "GP/A", tip: "높을수록 자산 대비 총이익이 크다 — 사업 경쟁력" },
+        ],
+        color: "#2e86ab",
+        bg: "#e3f2fd",
+    },
+    smallcap: {
+        icon: "🌱",
+        title: "빠르게 성장하는 소형주를 찾는 전략",
+        desc: "시가총액이 작지만 매출이 빠르게 성장하는 기업을 찾습니다. 소형주는 대형주보다 장기 수익률이 높은 경향(소형주 프리미엄)이 있고, 높은 성장률은 미래 가치 상승을 기대하게 합니다.",
+        metrics: [
+            { label: "시가총액", tip: "낮을수록 아직 주목받지 못한 소형주" },
+            { label: "매출 성장률", tip: "높을수록 빠르게 성장 중인 기업" },
+        ],
+        color: "#1a7a4a",
+        bg: "#e6f9f0",
+    },
+    momentum: {
+        icon: "🚀",
+        title: "오르는 주식이 계속 오르는 전략",
+        desc: "최근 1년간 주가 상승세가 강하고 매출도 성장 중인 기업을 찾습니다. 수십 년의 연구로 검증된 '모멘텀 효과' — 오르는 주식은 계속 오르는 경향이 있습니다.",
+        metrics: [
+            { label: "52주 수익률", tip: "높을수록 최근 1년 주가 상승이 강하다" },
+            { label: "매출 성장률", tip: "높을수록 사업이 빠르게 성장 중" },
+        ],
+        color: "#c77b2d",
+        bg: "#fff3e0",
+    },
+};
+
+function StrategyCard({ strategyKey }) {
+    const info = STRATEGY_INFO[strategyKey];
+    if (!info) return null;
+    return (
+        <div style={{
+            display: 'flex', gap: 14, alignItems: 'flex-start',
+            background: info.bg, border: `1.5px solid ${info.color}22`,
+            borderRadius: 12, padding: '14px 18px', marginBottom: 16,
+        }}>
+            <span style={{ fontSize: 28, lineHeight: 1, flexShrink: 0 }}>{info.icon}</span>
+            <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: info.color, marginBottom: 4 }}>
+                    {info.title}
+                </div>
+                <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6, marginBottom: 8 }}>
+                    {info.desc}
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {info.metrics.map(m => (
+                        <span key={m.label} title={m.tip} style={{
+                            fontSize: 11, padding: '3px 10px', borderRadius: 20,
+                            background: '#fff', border: `1px solid ${info.color}44`,
+                            color: info.color, fontWeight: 600, cursor: 'default',
+                        }}>
+                            {m.label} — {m.tip}
+                        </span>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ── 검색창 ───────────────────────────────────────────────────
 function SearchBox({ value, onChange, placeholder = "종목코드 / 기업명 검색" }) {
     return (
@@ -211,6 +292,7 @@ function ValueTab({ id, updatedAt, refreshing }) {
                     : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span></>}
             </div>
 
+            <StrategyCard strategyKey="value" />
             <SearchBox value={search} onChange={handleSearch} />
             <SectorFilter sectors={sectors} sector={sector} onChange={handleSector} />
 
@@ -246,18 +328,12 @@ function ValueTab({ id, updatedAt, refreshing }) {
 
             <Pagination page={page} totalPages={totalPages} onChange={handlePage} />
 
-            <InfoBox>
-                PER·PBR 오름차순 순위를 합산해 0~100점으로 환산. 낮을수록 저평가.<br />
-                <span style={{ color: '#1a7a4a' }}>녹색</span> PER&lt;15 / PBR&lt;1.5 &nbsp;
-                <span style={{ color: '#2e86ab' }}>파랑</span> PER&lt;25 / PBR&lt;3 &nbsp;
-                <span style={{ color: '#c0392b' }}>빨강</span> 그 이상
-            </InfoBox>
         </>
     );
 }
 
-// ── 슈퍼 퀀트 전략 탭 ───────────────────────────────────────
-function SuperQuantTab({ updatedAt, refreshing }) {
+// ── 퀄리티 전략 탭 ──────────────────────────────────────────
+function QualityTab({ updatedAt, refreshing }) {
     const [items, setItems]           = useState([]);
     const [page, setPage]             = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -272,7 +348,7 @@ function SuperQuantTab({ updatedAt, refreshing }) {
     const fetchList = useCallback(async (p, sec, q = "") => {
         setLoading(true);
         try {
-            const res  = await fetch(`${API}/getSuperQuantList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}&search=${encodeURIComponent(q)}`);
+            const res  = await fetch(`${API}/getQualityList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}&search=${encodeURIComponent(q)}`);
             const data = await res.json();
             setItems(data.items || []); setTotalPages(data.totalPages || 0);
             setTotalCount(data.totalCount || 0); setStatus(data.status || "OK");
@@ -282,7 +358,7 @@ function SuperQuantTab({ updatedAt, refreshing }) {
 
     const fetchSectors = useCallback(async () => {
         try {
-            const res = await fetch(`${API}/getSectors?strategy=super`);
+            const res = await fetch(`${API}/getSectors?strategy=quality`);
             setSectors(await res.json());
         } catch (e) {}
     }, []);
@@ -306,6 +382,7 @@ function SuperQuantTab({ updatedAt, refreshing }) {
                     : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span></>}
             </div>
 
+            <StrategyCard strategyKey="quality" />
             <SearchBox value={search} onChange={handleSearch} />
             <SectorFilter sectors={sectors} sector={sector} onChange={handleSector} />
 
@@ -314,9 +391,10 @@ function SuperQuantTab({ updatedAt, refreshing }) {
                     <thead>
                         <tr style={{ background: '#f8f9fb', borderBottom: '2px solid #eee' }}>
                             <Th w={55} center>순위</Th><Th>종목코드</Th><Th>기업명</Th>
-                            <Th>섹터</Th><Th right>현재가</Th><Th right>PBR</Th>
-                            <Th right>GP/A or ROE</Th><Th right>시가총액</Th>
-                            <Th center w={80}>가치</Th><Th center w={80}>품질</Th><Th center w={80}>종합</Th>
+                            <Th>섹터</Th><Th right>현재가</Th>
+                            <Th right>ROE(%)</Th><Th right>GP/A(%)</Th>
+                            <Th right>시가총액</Th>
+                            <Th center w={80}>ROE점수</Th><Th center w={80}>GP/A점수</Th><Th center w={80}>퀄리티점수</Th>
                         </tr>
                     </thead>
                     <tbody>
@@ -330,19 +408,20 @@ function SuperQuantTab({ updatedAt, refreshing }) {
                                 <Td><div style={{ fontSize: 13, fontWeight: 500, maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div></Td>
                                 <Td><SectorChip>{sectorKo(item.sector)}</SectorChip></Td>
                                 <Td right mono>${fmtNum(item.price, 2)}</Td>
-                                <Td right><ColorNum v={item.pb} low={1.5} mid={3} dec={2} /></Td>
                                 <Td right>
-                                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1a7a4a' }}>
-                                        {fmtNum(item.qualityMetric, 1)}%
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: item.roe >= 20 ? '#1a7a4a' : item.roe >= 10 ? '#2e86ab' : '#c0392b' }}>
+                                        {fmtNum(item.roe, 1)}%
                                     </span>
-                                    <span style={{ fontSize: 10, color: '#aaa', marginLeft: 4 }}>
-                                        {item.qualityLabel || ''}
+                                </Td>
+                                <Td right>
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: item.gpa >= 30 ? '#1a7a4a' : item.gpa >= 15 ? '#2e86ab' : '#888' }}>
+                                        {item.gpa ? `${fmtNum(item.gpa, 1)}%` : '-'}
                                     </span>
                                 </Td>
                                 <Td right muted>{fmtCap(item.marketCap)}</Td>
-                                <Td center><ScoreBadge score={item.valueScore} /></Td>
+                                <Td center><ScoreBadge score={item.roeScore} /></Td>
+                                <Td center><ScoreBadge score={item.gpaScore} /></Td>
                                 <Td center><ScoreBadge score={item.qualityScore} /></Td>
-                                <Td center><ScoreBadge score={item.combinedScore} /></Td>
                             </tr>
                         ))}
                     </tbody>
@@ -351,18 +430,12 @@ function SuperQuantTab({ updatedAt, refreshing }) {
 
             <Pagination page={page} totalPages={totalPages} onChange={handlePage} />
 
-            <InfoBox>
-                <strong>슈퍼 퀀트 전략</strong>: 저평가(Low PBR) + 우량(High GP/A) 조합.
-                GP/A(총이익/총자산) 데이터가 없는 종목은 ROE(자기자본이익률)로 대체.<br />
-                가치·품질 점수를 각 0~100점으로 환산 후 평균 → 종합점수 순 정렬.
-                PBR이 낮고 GP/A·ROE가 높을수록 높은 점수.
-            </InfoBox>
         </>
     );
 }
 
-// ── 마법공식 탭 ─────────────────────────────────────────────
-function MagicFormulaTab({ updatedAt, refreshing }) {
+// ── 소형주 전략 탭 ──────────────────────────────────────────
+function SmallCapTab({ updatedAt, refreshing }) {
     const [items, setItems]           = useState([]);
     const [page, setPage]             = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -377,7 +450,7 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
     const fetchList = useCallback(async (p, sec, q = "") => {
         setLoading(true);
         try {
-            const res  = await fetch(`${API}/getMagicFormulaList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}&search=${encodeURIComponent(q)}`);
+            const res  = await fetch(`${API}/getSmallCapList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}&search=${encodeURIComponent(q)}`);
             const data = await res.json();
             setItems(data.items || []); setTotalPages(data.totalPages || 0);
             setTotalCount(data.totalCount || 0); setStatus(data.status || "OK");
@@ -387,7 +460,7 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
 
     const fetchSectors = useCallback(async () => {
         try {
-            const res = await fetch(`${API}/getSectors?strategy=magic`);
+            const res = await fetch(`${API}/getSectors?strategy=smallcap`);
             setSectors(await res.json());
         } catch (e) {}
     }, []);
@@ -411,6 +484,7 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
                     : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span></>}
             </div>
 
+            <StrategyCard strategyKey="smallcap" />
             <SearchBox value={search} onChange={handleSearch} />
             <SectorFilter sectors={sectors} sector={sector} onChange={handleSector} />
 
@@ -419,9 +493,9 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
                     <thead>
                         <tr style={{ background: '#f8f9fb', borderBottom: '2px solid #eee' }}>
                             <Th w={55} center>순위</Th><Th>종목코드</Th><Th>기업명</Th>
-                            <Th>섹터</Th><Th right>현재가</Th><Th right>EV/EBITDA</Th>
-                            <Th right>ROA(%)</Th><Th right>시가총액</Th>
-                            <Th center w={80}>수익성</Th><Th center w={80}>효율</Th><Th center w={80}>마법점수</Th>
+                            <Th>섹터</Th><Th right>현재가</Th>
+                            <Th right>시가총액</Th><Th right>매출 성장률</Th>
+                            <Th center w={80}>소형주점수</Th><Th center w={80}>성장점수</Th><Th center w={80}>소형주종합점수</Th>
                         </tr>
                     </thead>
                     <tbody>
@@ -435,16 +509,15 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
                                 <Td><div style={{ fontSize: 13, fontWeight: 500, maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div></Td>
                                 <Td><SectorChip>{sectorKo(item.sector)}</SectorChip></Td>
                                 <Td right mono>${fmtNum(item.price, 2)}</Td>
-                                <Td right><ColorNum v={item.evToEbitda} low={10} mid={20} dec={1} /></Td>
+                                <Td right muted>{fmtCap(item.marketCap)}</Td>
                                 <Td right>
-                                    <span style={{ fontSize: 13, fontWeight: 600, color: item.roa >= 10 ? '#1a7a4a' : item.roa >= 5 ? '#2e86ab' : '#c0392b' }}>
-                                        {fmtNum(item.roa, 1)}%
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: item.revenueGrowth >= 20 ? '#1a7a4a' : item.revenueGrowth >= 5 ? '#2e86ab' : item.revenueGrowth >= 0 ? '#888' : '#c0392b' }}>
+                                        {item.revenueGrowth >= 0 ? '+' : ''}{fmtNum(item.revenueGrowth, 1)}%
                                     </span>
                                 </Td>
-                                <Td right muted>{fmtCap(item.marketCap)}</Td>
-                                <Td center><ScoreBadge score={item.earningsScore} /></Td>
-                                <Td center><ScoreBadge score={item.efficiencyScore} /></Td>
-                                <Td center><ScoreBadge score={item.magicScore} /></Td>
+                                <Td center><ScoreBadge score={item.smallScore} /></Td>
+                                <Td center><ScoreBadge score={item.growthScore} /></Td>
+                                <Td center><ScoreBadge score={item.smallCapScore} /></Td>
                             </tr>
                         ))}
                     </tbody>
@@ -453,13 +526,108 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
 
             <Pagination page={page} totalPages={totalPages} onChange={handlePage} />
 
-            <InfoBox>
-                <strong>마법공식 (Magic Formula)</strong> — Joel Greenblatt의 전략을 S&P 500에 적용.<br />
-                수익성 지표: <strong>수익률(Earnings Yield)</strong> = 1/(EV/EBITDA)×100 — 높을수록 저평가.<br />
-                효율 지표: <strong>ROA(자산수익률)</strong> — 높을수록 자본 효율성 우수.<br />
-                두 순위를 0~100점 환산 후 평균 → <strong>마법점수</strong> 높은 순 정렬.
-                EV/EBITDA가 낮고 ROA가 높을수록 높은 점수.
-            </InfoBox>
+        </>
+    );
+}
+
+// ── 모멘텀 전략 탭 ──────────────────────────────────────────
+function MomentumTab({ updatedAt, refreshing }) {
+    const [items, setItems]           = useState([]);
+    const [page, setPage]             = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
+    const [loading, setLoading]       = useState(false);
+    const [status, setStatus]         = useState("");
+    const [sector, setSector]         = useState("ALL");
+    const [sectors, setSectors]       = useState([]);
+    const [search, setSearch]         = useState("");
+    const debounceRef                 = useRef(null);
+
+    const fetchList = useCallback(async (p, sec, q = "") => {
+        setLoading(true);
+        try {
+            const res  = await fetch(`${API}/getMomentumList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}&search=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            setItems(data.items || []); setTotalPages(data.totalPages || 0);
+            setTotalCount(data.totalCount || 0); setStatus(data.status || "OK");
+        } catch (e) { message("로드 실패: " + e.message, "error"); }
+        finally { setLoading(false); }
+    }, []);
+
+    const fetchSectors = useCallback(async () => {
+        try {
+            const res = await fetch(`${API}/getSectors?strategy=momentum`);
+            setSectors(await res.json());
+        } catch (e) {}
+    }, []);
+
+    useEffect(() => { fetchList(0, "ALL"); fetchSectors(); }, []);
+    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector, search); fetchSectors(); } }, [updatedAt]);
+
+    const handlePage = (p) => { setPage(p); fetchList(p, sector, search); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec, search); };
+    const handleSearch = (q) => {
+        setSearch(q);
+        clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => { setPage(0); fetchList(0, sector, q); }, 300);
+    };
+
+    return (
+        <>
+            <div style={metaBar}>
+                {status === "NO_DATA"
+                    ? <span style={{ color: '#e74c3c' }}>캐시 없음 — 새로고침 버튼을 눌러주세요.</span>
+                    : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span></>}
+            </div>
+
+            <StrategyCard strategyKey="momentum" />
+            <SearchBox value={search} onChange={handleSearch} />
+            <SectorFilter sectors={sectors} sector={sector} onChange={handleSector} />
+
+            <ScreenTable loading={loading} items={items} status={status}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ background: '#f8f9fb', borderBottom: '2px solid #eee' }}>
+                            <Th w={55} center>순위</Th><Th>종목코드</Th><Th>기업명</Th>
+                            <Th>섹터</Th><Th right>현재가</Th>
+                            <Th right>52주 수익률</Th><Th right>매출 성장률</Th>
+                            <Th right>시가총액</Th>
+                            <Th center w={80}>주가점수</Th><Th center w={80}>성장점수</Th><Th center w={80}>모멘텀점수</Th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {items.map((item, i) => (
+                            <tr key={item.symbol} style={{ borderBottom: '1px solid #f3f3f3', background: i % 2 === 0 ? '#fff' : '#fafafa' }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#f0f7ff'}
+                                onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? '#fff' : '#fafafa'}>
+                                <Td center>{rankBadge(item.rank)}</Td>
+                                <Td><a href={`https://finance.yahoo.com/quote/${item.symbol}`} target="_blank" rel="noreferrer"
+                                    style={{ color: '#2e86ab', fontWeight: 700, textDecoration: 'none', fontSize: 13 }}>{item.symbol}</a></Td>
+                                <Td><div style={{ fontSize: 13, fontWeight: 500, maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div></Td>
+                                <Td><SectorChip>{sectorKo(item.sector)}</SectorChip></Td>
+                                <Td right mono>${fmtNum(item.price, 2)}</Td>
+                                <Td right>
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: item.fiftyTwoWeekChange >= 0 ? '#1a7a4a' : '#c0392b' }}>
+                                        {item.fiftyTwoWeekChange >= 0 ? '+' : ''}{fmtNum(item.fiftyTwoWeekChange, 1)}%
+                                    </span>
+                                </Td>
+                                <Td right>
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: item.revenueGrowth >= 0 ? '#1a7a4a' : '#c0392b' }}>
+                                        {item.revenueGrowth >= 0 ? '+' : ''}{fmtNum(item.revenueGrowth, 1)}%
+                                    </span>
+                                </Td>
+                                <Td right muted>{fmtCap(item.marketCap)}</Td>
+                                <Td center><ScoreBadge score={item.priceScore} /></Td>
+                                <Td center><ScoreBadge score={item.growthScore} /></Td>
+                                <Td center><ScoreBadge score={item.momentumScore} /></Td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </ScreenTable>
+
+            <Pagination page={page} totalPages={totalPages} onChange={handlePage} />
+
         </>
     );
 }
@@ -511,7 +679,7 @@ function CombinedTab({ updatedAt, refreshing }) {
             <div style={metaBar}>
                 {status === "NO_DATA"
                     ? <span style={{ color: '#e74c3c' }}>캐시 없음 — 새로고침 버튼을 눌러주세요.</span>
-                    : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span><span style={{ color: '#888' }}>※ 세 전략 모두 적용 가능한 종목만 표시</span></>}
+                    : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span><span style={{ color: '#888' }}>※ 4전략 모두 적용 가능한 종목만 표시</span></>}
             </div>
 
             <SearchBox value={search} onChange={handleSearch} />
@@ -523,11 +691,13 @@ function CombinedTab({ updatedAt, refreshing }) {
                         <tr style={{ background: '#f8f9fb', borderBottom: '2px solid #eee' }}>
                             <Th w={55} center>순위</Th><Th>종목코드</Th><Th>기업명</Th>
                             <Th>섹터</Th><Th right>현재가</Th>
-                            <Th center w={80} title="가치 투자 스크리닝 (Low PER+PBR)">가치</Th>
-                            <Th center w={80} title="슈퍼 퀀트 전략 (Low PBR + GP/A·ROE)">슈퍼퀀트</Th>
-                            <Th center w={80} title="마법공식 (Earnings Yield + ROA)">마법공식</Th>
+                            <Th center w={80} title="가치 전략 (Low PER + Low PBR)">가치</Th>
+                            <Th center w={80} title="퀄리티 전략 (High ROE + High GP/A)">퀄리티</Th>
+                            <Th center w={80} title="모멘텀 전략 (52주 수익률 + 매출 성장)">모멘텀</Th>
+                            <Th center w={80} title="소형주 전략 (Low Market Cap + Revenue Growth)">소형주</Th>
                             <Th center w={90}>총합점수</Th>
                             <Th right>시가총액</Th>
+                            <Th center w={80}>시총순위</Th>
                         </tr>
                     </thead>
                     <tbody>
@@ -542,8 +712,9 @@ function CombinedTab({ updatedAt, refreshing }) {
                                 <Td><SectorChip>{sectorKo(item.sector)}</SectorChip></Td>
                                 <Td right mono>${fmtNum(item.price, 2)}</Td>
                                 <Td center><ScoreBadge score={item.valueScore} /></Td>
-                                <Td center><ScoreBadge score={item.superScore} /></Td>
-                                <Td center><ScoreBadge score={item.magicScore} /></Td>
+                                <Td center><ScoreBadge score={item.qualityScore} /></Td>
+                                <Td center><ScoreBadge score={item.momentumScore} /></Td>
+                                <Td center><ScoreBadge score={item.smallCapScore} /></Td>
                                 <Td center>
                                     <span style={{
                                         display: 'inline-block', minWidth: 58, padding: '4px 10px',
@@ -556,6 +727,11 @@ function CombinedTab({ updatedAt, refreshing }) {
                                     </span>
                                 </Td>
                                 <Td right muted>{fmtCap(item.marketCap)}</Td>
+                                <Td center>
+                                    <span style={{ fontSize: 12, color: '#888' }}>
+                                        {item.mcapRank ? `${item.mcapRank}위` : '-'}
+                                    </span>
+                                </Td>
                             </tr>
                         ))}
                     </tbody>
@@ -564,11 +740,6 @@ function CombinedTab({ updatedAt, refreshing }) {
 
             <Pagination page={page} totalPages={totalPages} onChange={handlePage} />
 
-            <InfoBox>
-                <strong>총합 랭킹</strong>: 세 전략에 모두 해당하는 종목만 포함 (inner join).<br />
-                총합점수 = (가치점수 + 슈퍼퀀트 종합점수 + 마법점수) ÷ 3 → 0~100점.<br />
-                세 전략에서 균형 있게 높은 점수를 받는 종목이 상위에 랭킹됩니다.
-            </InfoBox>
         </>
     );
 }
@@ -611,10 +782,11 @@ export default function QuantPage() {
     };
 
     const tabs = [
-        { key: "combined",   label: "총합 랭킹",           sub: "세 전략 점수 평균" },
-        { key: "value",      label: "가치 투자 스크리닝",  sub: "Low PER + Low PBR" },
-        { key: "superquant", label: "슈퍼 퀀트 전략",      sub: "Low PBR + GP/A · ROE" },
-        { key: "magic",      label: "마법공식",            sub: "Earnings Yield + ROA" },
+        { key: "combined", label: "총합 랭킹",          sub: "4전략 점수 평균" },
+        { key: "value",    label: "가치 전략",           sub: "Low PER + Low PBR" },
+        { key: "quality",  label: "퀄리티 전략",         sub: "High ROE + High GP/A" },
+        { key: "momentum", label: "모멘텀 전략",         sub: "52주 수익률 + 매출 성장" },
+        { key: "smallcap", label: "소형주 전략",         sub: "Low Cap + Revenue Growth" },
     ];
 
     return (
@@ -654,10 +826,11 @@ export default function QuantPage() {
             </div>
 
             {/* 탭 콘텐츠 */}
-            {activeTab === "value"      && <ValueTab updatedAt={updatedAt} refreshing={refreshing} />}
-            {activeTab === "superquant" && <SuperQuantTab updatedAt={updatedAt} refreshing={refreshing} />}
-            {activeTab === "magic"      && <MagicFormulaTab updatedAt={updatedAt} refreshing={refreshing} />}
-            {activeTab === "combined"   && <CombinedTab updatedAt={updatedAt} refreshing={refreshing} />}
+            {activeTab === "combined" && <CombinedTab updatedAt={updatedAt} refreshing={refreshing} />}
+            {activeTab === "value"    && <ValueTab    updatedAt={updatedAt} refreshing={refreshing} />}
+            {activeTab === "quality"  && <QualityTab  updatedAt={updatedAt} refreshing={refreshing} />}
+            {activeTab === "momentum" && <MomentumTab updatedAt={updatedAt} refreshing={refreshing} />}
+            {activeTab === "smallcap" && <SmallCapTab updatedAt={updatedAt} refreshing={refreshing} />}
         </div>
     );
 }
