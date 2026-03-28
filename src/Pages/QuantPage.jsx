@@ -575,7 +575,7 @@ function CombinedTab({ updatedAt, refreshing }) {
 
 // ── 메인 페이지 ─────────────────────────────────────────────
 export default function QuantPage() {
-    const [activeTab,  setActiveTab]  = useState("value");
+    const [activeTab,  setActiveTab]  = useState("combined");
     const [refreshing, setRefreshing] = useState(false);
     const [updatedAt,  setUpdatedAt]  = useState(null);
     const [pollTimer,  setPollTimer]  = useState(null);
@@ -611,10 +611,10 @@ export default function QuantPage() {
     };
 
     const tabs = [
+        { key: "combined",   label: "총합 랭킹",           sub: "세 전략 점수 평균" },
         { key: "value",      label: "가치 투자 스크리닝",  sub: "Low PER + Low PBR" },
         { key: "superquant", label: "슈퍼 퀀트 전략",      sub: "Low PBR + GP/A · ROE" },
         { key: "magic",      label: "마법공식",            sub: "Earnings Yield + ROA" },
-        { key: "combined",   label: "총합 랭킹",           sub: "세 전략 점수 평균" },
     ];
 
     return (
