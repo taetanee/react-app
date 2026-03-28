@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { message } from "../Components/Message";
 
-const API      = "https://api.mypad.kr/valueScreening";
+const API      = "https://api.mypad.kr/quantInvest";
 const PAGE_SIZE = 20;
 
 const SECTOR_KO = {
