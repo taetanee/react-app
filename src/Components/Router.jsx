@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useParams, useNavigate, Outlet } from "react-router-dom";
 import Main from "../Pages/Main";
 import Page01 from "../Pages/Page01";
 import Page02 from "../Pages/Page02";
 import Page03 from "../Pages/Page03";
+import QuantPage from "../Pages/QuantPage";
 import { generateWordId, validateWordId } from "../utils/wordGenerator";
 import { message } from "./Message";
 import axios from "axios";
@@ -16,6 +17,99 @@ function RootRedirect() {
     return <Navigate to={`/@${target}`} replace />;
 }
 
+// ── 공통: 햄버거 드롭다운 ─────────────────────────────────────
+function HamburgerMenu() {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const dropdownLinkStyle = ({ isActive } = {}) => ({
+        display: 'block',
+        padding: '11px 20px',
+        textDecoration: 'none',
+        fontSize: '14px',
+        color: isActive ? '#007bff' : '#333',
+        fontWeight: isActive ? 'bold' : 'normal',
+        backgroundColor: isActive ? '#e9f5ff' : 'transparent',
+        borderBottom: '1px solid #f0f0f0',
+        cursor: 'pointer',
+        transition: 'background 0.15s',
+    });
+
+    return (
+        <div ref={menuRef} style={{ position: 'relative', marginLeft: 4 }}>
+            <button
+                onClick={() => setMenuOpen(v => !v)}
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '4px',
+                    width: 34,
+                    height: 34,
+                    borderRadius: '6px',
+                    border: '1px solid',
+                    borderColor: menuOpen ? '#007bff' : '#ddd',
+                    background: menuOpen ? '#e9f5ff' : '#fff',
+                    cursor: 'pointer',
+                    padding: 0,
+                }}
+            >
+                {[0, 1, 2].map(i => (
+                    <span key={i} style={{
+                        display: 'block',
+                        width: 16,
+                        height: 2,
+                        borderRadius: 2,
+                        background: menuOpen ? '#007bff' : '#555',
+                        transition: 'background 0.2s',
+                    }} />
+                ))}
+            </button>
+
+            {menuOpen && (
+                <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: '#fff',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '10px',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
+                    minWidth: 140,
+                    zIndex: 999,
+                    overflow: 'hidden',
+                }}>
+                    <NavLink style={dropdownLinkStyle} to="/openai" onClick={() => setMenuOpen(false)}>
+                        오픈AI
+                    </NavLink>
+                    <NavLink style={dropdownLinkStyle} to="/quant" onClick={() => setMenuOpen(false)}>
+                        퀀트 투자
+                    </NavLink>
+                    <span
+                        onClick={() => { setMenuOpen(false); alert('비공개 상태입니다.'); }}
+                        style={dropdownLinkStyle({ isActive: false })}
+                    >
+                        포트폴리오
+                    </span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ── Layout: /@{id} 전용 (내 URL 편집 바 포함) ────────────────
 function Layout() {
     const { id: rawId } = useParams();
     const id = rawId?.replace(/^@/, '') ?? '';
@@ -48,31 +142,17 @@ function Layout() {
         });
     };
 
-    const handleStartEdit = () => {
-        setNewId(id);
-        setEditing(true);
-    };
-
-    const handleCancelEdit = () => {
-        setEditing(false);
-        setNewId(id);
-    };
+    const handleStartEdit = () => { setNewId(id); setEditing(true); };
+    const handleCancelEdit = () => { setEditing(false); setNewId(id); };
 
     const handleConfirmEdit = async () => {
         const trimmed = newId.trim().toLowerCase();
-        if (trimmed === id) {
-            setEditing(false);
-            return;
-        }
-        if (!trimmed) {
-            message('ID를 입력해주세요.', 'error');
-            return;
-        }
+        if (trimmed === id) { setEditing(false); return; }
+        if (!trimmed) { message('ID를 입력해주세요.', 'error'); return; }
         if (!validateWordId(trimmed)) {
             message('영문 소문자, 숫자, 하이픈만 사용 가능합니다. (2~30자)', 'error');
             return;
         }
-
         setMigrating(true);
         try {
             await axios.post(`${API_BASE_URL}/migrateData`, {
@@ -98,41 +178,12 @@ function Layout() {
 
     return (
         <>
-            {/* 메뉴 행 */}
-            <nav style={{
-                padding: '8px 0',
-                backgroundColor: '#f8f8f8',
-                borderBottom: '1px solid #e0e0e0',
-                textAlign: 'center',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '2px'
-            }}>
-                <NavLink style={navLinkStyle} to={`/@${id}`} end>
-                    나만의 요약
-                </NavLink>
-                <NavLink style={navLinkStyle} to={`/@${id}/clipboard`}>
-                    나만의 복붙
-                </NavLink>
-                <NavLink style={navLinkStyle} to={`/@${id}/openai`}>
-                    오픈AI
-                </NavLink>
-                <span
-                    onClick={() => alert('비공개 상태입니다.')}
-                    style={{
-                        textDecoration: 'none',
-                        color: '#aaa',
-                        fontWeight: 'normal',
-                        padding: '8px 15px',
-                        margin: '0 5px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                    }}
-                >
-                    포트폴리오
-                </span>
+            <nav style={navStyle}>
+                <div style={{ position: 'absolute', left: 16 }}>
+                    <HamburgerMenu />
+                </div>
+                <NavLink style={navLinkStyle} to={`/@${id}`} end>나만의 요약</NavLink>
+                <NavLink style={navLinkStyle} to={`/@${id}/clipboard`}>나만의 복붙</NavLink>
             </nav>
 
             {/* 내 URL 행 */}
@@ -159,62 +210,36 @@ function Layout() {
                             autoFocus
                             disabled={migrating}
                             style={{
-                                padding: '4px 8px',
-                                fontSize: '13px',
-                                fontFamily: 'monospace',
-                                border: '1.5px solid #007bff',
-                                borderRadius: '6px',
-                                outline: 'none',
-                                width: '130px',
-                                backgroundColor: '#fff',
+                                padding: '4px 8px', fontSize: '13px', fontFamily: 'monospace',
+                                border: '1.5px solid #007bff', borderRadius: '6px',
+                                outline: 'none', width: '130px', backgroundColor: '#fff',
                             }}
                         />
-                        <button
-                            onClick={handleConfirmEdit}
-                            disabled={migrating}
+                        <button onClick={handleConfirmEdit} disabled={migrating}
                             style={{
                                 padding: '4px 12px',
                                 backgroundColor: migrating ? '#95a5a6' : '#007bff',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: migrating ? 'default' : 'pointer',
-                                fontSize: '12px',
-                                fontWeight: '600',
-                            }}
-                        >
+                                color: 'white', border: 'none', borderRadius: '6px',
+                                cursor: migrating ? 'default' : 'pointer', fontSize: '12px', fontWeight: '600',
+                            }}>
                             {migrating ? '변경중...' : '변경'}
                         </button>
-                        <button
-                            onClick={handleCancelEdit}
-                            disabled={migrating}
+                        <button onClick={handleCancelEdit} disabled={migrating}
                             style={{
-                                padding: '4px 10px',
-                                backgroundColor: 'transparent',
-                                color: '#aaa',
-                                border: '1px solid #ddd',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                            }}
-                        >
+                                padding: '4px 10px', backgroundColor: 'transparent',
+                                color: '#aaa', border: '1px solid #ddd', borderRadius: '6px',
+                                cursor: 'pointer', fontSize: '12px',
+                            }}>
                             취소
                         </button>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            backgroundColor: '#fff',
-                            border: '1px solid #ddd',
-                            borderRadius: '8px',
-                            padding: '4px 4px 4px 12px',
-                            gap: '4px',
-                            cursor: 'pointer',
-                        }}
-                            onClick={handleStartEdit}
-                        >
+                            display: 'flex', alignItems: 'center', backgroundColor: '#fff',
+                            border: '1px solid #ddd', borderRadius: '8px',
+                            padding: '4px 4px 4px 12px', gap: '4px', cursor: 'pointer',
+                        }} onClick={handleStartEdit}>
                             <span style={{ fontSize: '13px', fontFamily: 'monospace', color: '#333' }}>
                                 mypad.kr/@{id}
                             </span>
@@ -222,20 +247,12 @@ function Layout() {
                                 &#9998;
                             </span>
                         </div>
-                        <button
-                            onClick={handleCopyURL}
+                        <button onClick={handleCopyURL}
                             style={{
-                                padding: '5px 12px',
-                                backgroundColor: '#fff',
-                                color: '#555',
-                                border: '1px solid #ddd',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                fontWeight: '600',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
+                                padding: '5px 12px', backgroundColor: '#fff', color: '#555',
+                                border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer',
+                                fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap',
+                            }}>
                             복사
                         </button>
                     </div>
@@ -247,16 +264,64 @@ function Layout() {
     );
 }
 
+// ── SharedLayout: /openai, /quant, /portfolio 전용 (내 URL 바 없음) ──
+function SharedLayout() {
+    const savedId = localStorage.getItem('my_id') ?? '';
+
+    const navLinkStyle = ({ isActive }) => ({
+        textDecoration: 'none',
+        color: isActive ? '#007bff' : '#333',
+        fontWeight: isActive ? 'bold' : 'normal',
+        padding: '8px 15px',
+        margin: '0 5px',
+        borderRadius: '4px',
+        transition: 'all 0.3s ease-in-out',
+        backgroundColor: isActive ? '#e9f5ff' : 'transparent',
+    });
+
+    return (
+        <>
+            <nav style={navStyle}>
+                <div style={{ position: 'absolute', left: 16 }}>
+                    <HamburgerMenu />
+                </div>
+                <NavLink style={navLinkStyle} to={savedId ? `/@${savedId}` : '/'} end>나만의 요약</NavLink>
+                <NavLink style={navLinkStyle} to={savedId ? `/@${savedId}/clipboard` : '/'}>나만의 복붙</NavLink>
+            </nav>
+            <Outlet />
+        </>
+    );
+}
+
+const navStyle = {
+    padding: '8px 16px',
+    backgroundColor: '#f8f8f8',
+    borderBottom: '1px solid #e0e0e0',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '2px',
+    position: 'relative',
+};
+
 export default function Router() {
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<RootRedirect />} />
+
+                {/* 고유 URL 없는 공유 페이지 */}
+                <Route element={<SharedLayout />}>
+                    <Route path="/openai"    element={<Page02 />} />
+                    <Route path="/quant"     element={<QuantPage />} />
+                    <Route path="/portfolio" element={<Page03 />} />
+                </Route>
+
+                {/* 개인 URL 페이지 */}
                 <Route path="/:id" element={<Layout />}>
                     <Route index element={<Main />} />
                     <Route path="clipboard" element={<Page01 />} />
-                    <Route path="openai" element={<Page02 />} />
-                    <Route path="portfolio" element={<Page03 />} />
                 </Route>
             </Routes>
         </BrowserRouter>
