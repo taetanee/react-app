@@ -406,6 +406,107 @@ function MagicFormulaTab({ updatedAt, refreshing }) {
     );
 }
 
+// ── 총합 랭킹 탭 ────────────────────────────────────────────
+function CombinedTab({ updatedAt, refreshing }) {
+    const [items, setItems]           = useState([]);
+    const [page, setPage]             = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
+    const [loading, setLoading]       = useState(false);
+    const [status, setStatus]         = useState("");
+    const [sector, setSector]         = useState("ALL");
+    const [sectors, setSectors]       = useState([]);
+
+    const fetchList = useCallback(async (p, sec) => {
+        setLoading(true);
+        try {
+            const res  = await fetch(`${API}/getCombinedList?page=${p}&size=${PAGE_SIZE}&sector=${encodeURIComponent(sec)}`);
+            const data = await res.json();
+            setItems(data.items || []); setTotalPages(data.totalPages || 0);
+            setTotalCount(data.totalCount || 0); setStatus(data.status || "OK");
+        } catch (e) { message("로드 실패: " + e.message, "error"); }
+        finally { setLoading(false); }
+    }, []);
+
+    const fetchSectors = useCallback(async () => {
+        try {
+            const res = await fetch(`${API}/getSectors?strategy=value`);
+            setSectors(await res.json());
+        } catch (e) {}
+    }, []);
+
+    useEffect(() => { fetchList(0, "ALL"); fetchSectors(); }, []);
+    useEffect(() => { if (!refreshing && updatedAt) { fetchList(page, sector); fetchSectors(); } }, [updatedAt]);
+
+    const handlePage = (p) => { setPage(p); fetchList(p, sector); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    const handleSector = (sec) => { setSector(sec); setPage(0); fetchList(0, sec); };
+
+    return (
+        <>
+            <div style={metaBar}>
+                {status === "NO_DATA"
+                    ? <span style={{ color: '#e74c3c' }}>캐시 없음 — 새로고침 버튼을 눌러주세요.</span>
+                    : <><span>총 <strong>{totalCount.toLocaleString()}</strong>개</span><span>|</span><span>갱신: <strong>{updatedAt || "-"}</strong></span><span style={{ color: '#888' }}>※ 세 전략 모두 적용 가능한 종목만 표시</span></>}
+            </div>
+
+            <SectorFilter sectors={sectors} sector={sector} onChange={handleSector} />
+
+            <ScreenTable loading={loading} items={items} status={status}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ background: '#f8f9fb', borderBottom: '2px solid #eee' }}>
+                            <Th w={55} center>순위</Th><Th>종목코드</Th><Th>기업명</Th>
+                            <Th>섹터</Th><Th right>현재가</Th>
+                            <Th center w={80} title="가치 투자 스크리닝 (Low PER+PBR)">가치</Th>
+                            <Th center w={80} title="슈퍼 퀀트 전략 (Low PBR + GP/A·ROE)">슈퍼퀀트</Th>
+                            <Th center w={80} title="마법공식 (Earnings Yield + ROA)">마법공식</Th>
+                            <Th center w={90}>총합점수</Th>
+                            <Th right>시가총액</Th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {items.map((item, i) => (
+                            <tr key={item.symbol} style={{ borderBottom: '1px solid #f3f3f3', background: i % 2 === 0 ? '#fff' : '#fafafa' }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#f0f7ff'}
+                                onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? '#fff' : '#fafafa'}>
+                                <Td center>{rankBadge(item.rank)}</Td>
+                                <Td><a href={`https://finance.yahoo.com/quote/${item.symbol}`} target="_blank" rel="noreferrer"
+                                    style={{ color: '#2e86ab', fontWeight: 700, textDecoration: 'none', fontSize: 13 }}>{item.symbol}</a></Td>
+                                <Td><div style={{ fontSize: 13, fontWeight: 500, maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div></Td>
+                                <Td><SectorChip>{sectorKo(item.sector)}</SectorChip></Td>
+                                <Td right mono>${fmtNum(item.price, 2)}</Td>
+                                <Td center><ScoreBadge score={item.valueScore} /></Td>
+                                <Td center><ScoreBadge score={item.superScore} /></Td>
+                                <Td center><ScoreBadge score={item.magicScore} /></Td>
+                                <Td center>
+                                    <span style={{
+                                        display: 'inline-block', minWidth: 58, padding: '4px 10px',
+                                        borderRadius: 8, fontSize: 14, fontWeight: 800,
+                                        color: scoreColor(item.totalScore),
+                                        background: scoreBg(item.totalScore),
+                                        border: `1.5px solid ${scoreColor(item.totalScore)}33`,
+                                    }}>
+                                        {typeof item.totalScore === 'number' ? item.totalScore.toFixed(1) : '-'}
+                                    </span>
+                                </Td>
+                                <Td right muted>{fmtCap(item.marketCap)}</Td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </ScreenTable>
+
+            <Pagination page={page} totalPages={totalPages} onChange={handlePage} />
+
+            <InfoBox>
+                <strong>총합 랭킹</strong>: 세 전략에 모두 해당하는 종목만 포함 (inner join).<br />
+                총합점수 = (가치점수 + 슈퍼퀀트 종합점수 + 마법점수) ÷ 3 → 0~100점.<br />
+                세 전략에서 균형 있게 높은 점수를 받는 종목이 상위에 랭킹됩니다.
+            </InfoBox>
+        </>
+    );
+}
+
 // ── 메인 페이지 ─────────────────────────────────────────────
 export default function QuantPage() {
     const [activeTab,  setActiveTab]  = useState("value");
@@ -447,6 +548,7 @@ export default function QuantPage() {
         { key: "value",      label: "가치 투자 스크리닝",  sub: "Low PER + Low PBR" },
         { key: "superquant", label: "슈퍼 퀀트 전략",      sub: "Low PBR + GP/A · ROE" },
         { key: "magic",      label: "마법공식",            sub: "Earnings Yield + ROA" },
+        { key: "combined",   label: "총합 랭킹",           sub: "세 전략 점수 평균" },
     ];
 
     return (
@@ -489,6 +591,7 @@ export default function QuantPage() {
             {activeTab === "value"      && <ValueTab updatedAt={updatedAt} refreshing={refreshing} />}
             {activeTab === "superquant" && <SuperQuantTab updatedAt={updatedAt} refreshing={refreshing} />}
             {activeTab === "magic"      && <MagicFormulaTab updatedAt={updatedAt} refreshing={refreshing} />}
+            {activeTab === "combined"   && <CombinedTab updatedAt={updatedAt} refreshing={refreshing} />}
         </div>
     );
 }
