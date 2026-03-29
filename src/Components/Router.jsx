@@ -46,43 +46,48 @@ function HamburgerMenu() {
     });
 
     return (
-        <div ref={menuRef} style={{ position: 'relative', marginLeft: 4 }}>
+        <div ref={menuRef} style={{ position: 'relative' }}>
             <button
                 onClick={() => setMenuOpen(v => !v)}
                 style={{
                     display: 'flex',
-                    flexDirection: 'column',
+                    flexDirection: 'row',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    gap: '4px',
-                    width: 34,
+                    gap: '8px',
                     height: 34,
                     borderRadius: '6px',
                     border: '1px solid',
                     borderColor: menuOpen ? '#007bff' : '#ddd',
                     background: menuOpen ? '#e9f5ff' : '#fff',
                     cursor: 'pointer',
-                    padding: 0,
+                    padding: '0 12px',
+                    fontSize: '13px',
+                    color: menuOpen ? '#007bff' : '#555',
+                    fontWeight: '500',
+                    whiteSpace: 'nowrap',
                 }}
             >
-                {[0, 1, 2].map(i => (
-                    <span key={i} style={{
-                        display: 'block',
-                        width: 16,
-                        height: 2,
-                        borderRadius: 2,
-                        background: menuOpen ? '#007bff' : '#555',
-                        transition: 'background 0.2s',
-                    }} />
-                ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center', justifyContent: 'center' }}>
+                    {[0, 1, 2].map(i => (
+                        <span key={i} style={{
+                            display: 'block',
+                            width: 16,
+                            height: 2,
+                            borderRadius: 2,
+                            background: menuOpen ? '#007bff' : '#555',
+                            transition: 'background 0.2s',
+                        }} />
+                    ))}
+                </div>
+                숨겨진 메뉴 보기
             </button>
 
             {menuOpen && (
                 <div style={{
                     position: 'absolute',
                     top: 'calc(100% + 6px)',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
+                    right: 0,
                     background: '#fff',
                     border: '1px solid #e0e0e0',
                     borderRadius: '10px',
@@ -179,9 +184,7 @@ function Layout() {
     return (
         <>
             <nav style={navStyle}>
-                <div style={{ position: 'absolute', left: 16 }}>
-                    <HamburgerMenu />
-                </div>
+                <HamburgerMenu />
                 <NavLink style={navLinkStyle} to={`/@${id}`} end>나만의 요약</NavLink>
                 <NavLink style={navLinkStyle} to={`/@${id}/clipboard`}>나만의 복붙</NavLink>
             </nav>
@@ -282,9 +285,7 @@ function SharedLayout() {
     return (
         <>
             <nav style={navStyle}>
-                <div style={{ position: 'absolute', left: 16 }}>
-                    <HamburgerMenu />
-                </div>
+                <HamburgerMenu />
                 <NavLink style={navLinkStyle} to={savedId ? `/@${savedId}` : '/'} end>나만의 요약</NavLink>
                 <NavLink style={navLinkStyle} to={savedId ? `/@${savedId}/clipboard` : '/'}>나만의 복붙</NavLink>
             </nav>
