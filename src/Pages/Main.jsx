@@ -391,7 +391,7 @@ export default function Main() {
                         minWidth: '60px',
                         textAlign: 'center',
                     }}>
-                        <span style={{ fontSize: '15px', fontWeight: '700', color: s.text }}>
+                        <span style={{ fontSize: '12px', fontWeight: '700', color: s.text }}>
                             {dust || "..."}
                         </span>
                     </div>
@@ -590,10 +590,10 @@ export default function Main() {
         };
     });
 
-    // 즐겨찾기 분류
-    const bookmarkedStatic = staticCards.filter(c => bookmarks.includes(c.id));
+    // 즐겨찾기 분류 (북마크 배열 순서대로 정렬 — 나중에 추가한 것이 뒤에 옴)
+    const bookmarkedStatic = staticCards.filter(c => bookmarks.includes(c.id)).sort((a, b) => bookmarks.indexOf(a.id) - bookmarks.indexOf(b.id));
     const nonBookmarkedStatic = staticCards.filter(c => !bookmarks.includes(c.id));
-    const bookmarkedStock = stockCards.filter(c => bookmarks.includes(c.id));
+    const bookmarkedStock = stockCards.filter(c => bookmarks.includes(c.id)).sort((a, b) => bookmarks.indexOf(a.id) - bookmarks.indexOf(b.id));
     const nonBookmarkedStock = stockCards.filter(c => !bookmarks.includes(c.id));
 
     // 카드 렌더링
@@ -695,113 +695,95 @@ export default function Main() {
     };
 
     // 종목 검색 카드
-    const renderSearchCard = () => (
-        <div style={{
-            background: '#fff',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            marginBottom: '0',
-        }}>
-            <div style={{ height: '3px', background: '#74b9ff' }} />
-            <div style={{ padding: '12px 14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '13px' }}>🔍</span>
-                    <span style={{ fontSize: '11px', color: '#8e9aaf', fontWeight: '700' }}>주식 종목 검색</span>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearchStock()}
-                        placeholder="종목 코드 (예: AAPL)"
-                        style={{
-                            flex: 1,
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            border: '1px solid #dfe6e9',
-                            fontSize: '13px',
-                            outline: 'none',
-                            color: '#2d3436',
-                        }}
-                    />
-                    <button
-                        onClick={handleSearchStock}
-                        disabled={searching}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: searching ? '#b2bec3' : '#3498db',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: searching ? 'default' : 'pointer',
-                            fontSize: '13px',
-                            fontWeight: '700',
-                            whiteSpace: 'nowrap',
-                            transition: 'background-color 0.15s',
-                        }}
-                    >
-                        {searching ? '검색중...' : '검색'}
-                    </button>
-                </div>
-
-                {searchResults.length > 0 && (
-                    <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0 0 0' }}>
-                        {searchResults.map((item, index) => {
-                            const alreadyAdded = customStocks.includes(item.ticker);
-                            const isAdding = addingTicker === item.ticker;
-                            return (
-                                <li
-                                    key={item.ticker}
-                                    onClick={() => !alreadyAdded && !isAdding && handleSelectStock(item.ticker, item.name)}
-                                    style={{
-                                        padding: '9px 12px',
-                                        cursor: alreadyAdded ? 'default' : 'pointer',
-                                        backgroundColor: index % 2 === 0 ? '#f8f9fa' : '#fff',
-                                        borderBottom: '1px solid #f0f0f0',
-                                        borderRadius: index === 0 ? '8px 8px 0 0' : index === searchResults.length - 1 ? '0 0 8px 8px' : '0',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        opacity: alreadyAdded ? 0.5 : 1,
-                                    }}
-                                    onMouseEnter={(e) => { if (!alreadyAdded) e.currentTarget.style.backgroundColor = '#eaf4fb'; }}
-                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#f8f9fa' : '#fff'; }}
-                                >
-                                    <div style={{ minWidth: 0, flex: 1 }}>
-                                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#2d3436', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {item.name}
-                                        </div>
-                                        <div style={{ fontSize: '11px', color: '#95a5a6', marginTop: '2px' }}>
-                                            {item.ticker}
-                                            <span style={{ margin: '0 5px', color: '#dfe6e9' }}>|</span>
-                                            {item.exchange}
-                                            {item.type === 'ETF' && <span style={{ marginLeft: '5px', color: '#e67e22', fontWeight: '700' }}>ETF</span>}
-                                            {item.type === 'INDEX' && <span style={{ marginLeft: '5px', color: '#8e44ad', fontWeight: '700' }}>INDEX</span>}
-                                        </div>
-                                    </div>
-                                    <div style={{ marginLeft: '10px', flexShrink: 0 }}>
-                                        {alreadyAdded ? (
-                                            <span style={{ fontSize: '11px', color: '#b2bec3', fontWeight: '600' }}>추가됨</span>
-                                        ) : isAdding ? (
-                                            <span style={{ fontSize: '11px', color: '#3498db' }}>추가중...</span>
-                                        ) : (
-                                            <span style={{
-                                                fontSize: '11px',
-                                                color: '#3498db',
-                                                fontWeight: '700',
-                                                padding: '3px 9px',
-                                                border: '1px solid #3498db',
-                                                borderRadius: '6px',
-                                            }}>+ 추가</span>
-                                        )}
-                                    </div>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                )}
+    const renderSearchForm = () => (
+        <div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: searchResults.length > 0 ? '10px' : '0' }}>
+                <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearchStock()}
+                    placeholder="🔍 종목명 또는 코드 검색 (예: 삼성전자, AAPL)"
+                    style={{
+                        flex: 1,
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid #ced4da',
+                        fontSize: '13px',
+                        outline: 'none',
+                        background: '#fff',
+                        color: '#2d3436',
+                    }}
+                />
+                <button
+                    onClick={handleSearchStock}
+                    disabled={searching}
+                    style={{
+                        padding: '9px 16px',
+                        backgroundColor: searching ? '#b2bec3' : '#3498db',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: searching ? 'default' : 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        whiteSpace: 'nowrap',
+                    }}
+                >
+                    {searching ? '검색중...' : '검색'}
+                </button>
             </div>
+
+            {searchResults.length > 0 && (
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, borderRadius: '10px', overflow: 'hidden', border: '1px solid #dee2e6' }}>
+                    {searchResults.map((item, index) => {
+                        const alreadyAdded = customStocks.includes(item.ticker);
+                        const isAdding = addingTicker === item.ticker;
+                        return (
+                            <li
+                                key={item.ticker}
+                                onClick={() => !alreadyAdded && !isAdding && handleSelectStock(item.ticker, item.name)}
+                                style={{
+                                    padding: '9px 12px',
+                                    cursor: alreadyAdded ? 'default' : 'pointer',
+                                    backgroundColor: '#fff',
+                                    borderBottom: index < searchResults.length - 1 ? '1px solid #f0f0f0' : 'none',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    opacity: alreadyAdded ? 0.5 : 1,
+                                }}
+                                onMouseEnter={(e) => { if (!alreadyAdded) e.currentTarget.style.backgroundColor = '#eaf4fb'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fff'; }}
+                            >
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#2d3436', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {item.name}
+                                    </div>
+                                    <div style={{ fontSize: '11px', color: '#95a5a6', marginTop: '2px' }}>
+                                        {item.ticker}
+                                        <span style={{ margin: '0 5px', color: '#dfe6e9' }}>|</span>
+                                        {item.exchange}
+                                        {item.type === 'ETF' && <span style={{ marginLeft: '5px', color: '#e67e22', fontWeight: '700' }}>ETF</span>}
+                                        {item.type === 'INDEX' && <span style={{ marginLeft: '5px', color: '#8e44ad', fontWeight: '700' }}>INDEX</span>}
+                                    </div>
+                                </div>
+                                <div style={{ marginLeft: '10px', flexShrink: 0 }}>
+                                    {alreadyAdded ? (
+                                        <span style={{ fontSize: '11px', color: '#b2bec3', fontWeight: '600' }}>추가됨</span>
+                                    ) : isAdding ? (
+                                        <span style={{ fontSize: '11px', color: '#3498db' }}>추가중...</span>
+                                    ) : (
+                                        <span style={{ fontSize: '11px', color: '#fff', fontWeight: '700', padding: '3px 10px', background: '#3498db', borderRadius: '6px' }}>
+                                            ⭐ 추가
+                                        </span>
+                                    )}
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
         </div>
     );
 
@@ -813,19 +795,6 @@ export default function Main() {
             minHeight: "100vh",
         }}>
             <div style={{ maxWidth: "500px", margin: "0 auto" }}>
-
-                {/* 페이지 헤더 */}
-                <div style={{ marginBottom: '22px', paddingTop: '6px' }}>
-                    <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#2d3436', margin: '0 0 2px', letterSpacing: '-0.5px' }}>
-                        나만의 요약
-                    </h1>
-                    <p style={{ fontSize: '11px', color: '#b2bec3', margin: 0, fontWeight: '500' }}>
-                        🔄 10초마다 자동 갱신
-                    </p>
-                </div>
-
-                {/* ── 대시보드 ── */}
-                <BigLabel label="대시보드" />
 
                 {/* 즐겨찾기 패널 (흰 배경) */}
                 <div style={{ marginBottom: '10px' }}>
@@ -866,17 +835,17 @@ export default function Main() {
                             </div>
                         ) : (
                             <p style={{ fontSize: '12px', color: '#b2bec3', textAlign: 'center', padding: '14px 0', margin: 0 }}>
-                                종목을 추가하고 즐겨찾기 ☆을 눌러보세요
+                                아래에서 종목을 검색해 추가하면 여기에 표시됩니다
                             </p>
                         )}
                     </Panel>
                 </div>
 
-                {/* 미등록 종목 + 검색 패널 (회색 배경) */}
+                {/* 즐겨찾기 미등록 + 검색 패널 (회색 배경) */}
                 <Panel label="즐겨찾기 미등록">
-                    {renderSearchCard()}
+                    {renderSearchForm()}
                     {nonBookmarkedStock.length > 0 && (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '8px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '12px' }}>
                             {nonBookmarkedStock.map(card => renderCard(card))}
                         </div>
                     )}
