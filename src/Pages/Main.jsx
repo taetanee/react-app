@@ -4,6 +4,88 @@ import { message } from "../Components/Message";
 
 const API_BASE_URL = "https://api.mypad.kr/myDashboard";
 
+// 대분류 레이블 (대시보드 / 내 종목)
+const BigLabel = ({ label }) => (
+    <div style={{ fontSize: '11px', fontWeight: '800', color: '#adb5bd', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px' }}>
+        {label}
+    </div>
+);
+
+// 패널 컨테이너 — 흰 패널(즐겨찾기) vs 회색 패널(미등록)
+const Panel = ({ icon, label, accent, children }) => (
+    <div style={{
+        background: accent ? '#fff' : '#e9ecef',
+        borderRadius: '16px',
+        padding: '14px',
+        boxShadow: accent ? '0 2px 14px rgba(0,0,0,0.08)' : 'none',
+        border: accent ? 'none' : '1px solid #dee2e6',
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '12px' }}>
+            {icon && <span style={{ fontSize: '14px' }}>{icon}</span>}
+            <span style={{ fontSize: '12px', fontWeight: '700', color: accent ? '#2d3436' : '#868e96' }}>
+                {label}
+            </span>
+        </div>
+        {children}
+    </div>
+);
+
+// 카드별 포인트 색상
+const CARD_ACCENT = {
+    weather: '#3498db',
+    dust: '#636e72',
+    snp500: '#00b894',
+    exchange: '#f39c12',
+    feargreed: '#e17055',
+    vix: '#a29bfe',
+    kospi: '#e63946',
+    bitcoin: '#f7931a',
+    dowjones: '#1a6ef7',
+    nasdaq: '#7b2ff7',
+};
+
+// 카드별 아이콘
+const CARD_ICON = {
+    weather: '🌤️',
+    dust: '🌫️',
+    snp500: '📈',
+    exchange: '💵',
+    feargreed: '😨',
+    vix: '📊',
+    kospi: '🇰🇷',
+    bitcoin: '₿',
+    dowjones: '🏛️',
+    nasdaq: '💻',
+};
+
+// 공포탐욕지수 색상
+const getFearGreedColor = (value) => {
+    if (value <= 25) return '#e74c3c';
+    if (value <= 45) return '#e67e22';
+    if (value <= 55) return '#f39c12';
+    if (value <= 75) return '#2ecc71';
+    return '#27ae60';
+};
+
+// 미세먼지 색상
+const getDustStyle = (dust) => {
+    if (!dust) return { bg: '#f8f9fa', text: '#bdc3c7', border: '#dee2e6' };
+    if (dust.includes("매우 나쁨")) return { bg: '#ffeaea', text: '#c0392b', border: '#e74c3c' };
+    if (dust.includes("나쁨")) return { bg: '#fff3e0', text: '#d35400', border: '#e67e22' };
+    if (dust.includes("보통")) return { bg: '#eafaf1', text: '#1e8449', border: '#27ae60' };
+    return { bg: '#eaf4fb', text: '#1a5276', border: '#3498db' };
+};
+
+// VIX 상태 배지
+const getVixStatus = (price) => {
+    const v = parseFloat(price);
+    if (isNaN(v)) return null;
+    if (v < 15) return { text: '안정', color: '#00b894' };
+    if (v < 25) return { text: '주의', color: '#f39c12' };
+    if (v < 35) return { text: '경계', color: '#e67e22' };
+    return { text: '위험', color: '#e74c3c' };
+};
+
 export default function Main() {
     const { id: rawId } = useParams();
     const id = rawId?.replace(/^@/, '') ?? '';
@@ -13,10 +95,14 @@ export default function Main() {
     const [exchangeRate, setExchangeRate] = useState({ rate: "", change: "", percent: "", isUp: true });
     const [fearGreed, setFearGreed] = useState({ value: 0, rating: "", diff: 0, status: "UP" });
     const [vix, setVix] = useState({ price: "", change: "", percent: "", isUp: true, status: "" });
+    const [kospi, setKospi] = useState({ price: "", change: "", percent: "", isUp: true });
+    const [bitcoin, setBitcoin] = useState({ price: "", change: "", percent: "", isUp: true });
+    const [dowjones, setDowjones] = useState({ price: "", change: "", percent: "", isUp: true });
+    const [nasdaq, setNasdaq] = useState({ price: "", change: "", percent: "", isUp: true });
+    const [weeklyWeather, setWeeklyWeather] = useState([]);
 
-    const [bookmarks, setBookmarks] = useState(['weather', 'dust', 'snp500', 'exchange', 'feargreed', 'vix']);
+    const [bookmarks, setBookmarks] = useState(['weather', 'dust', 'snp500', 'exchange', 'feargreed', 'vix', 'kospi', 'bitcoin', 'weeklyWeather']);
 
-    // 개별 종목 상태
     const [customStocks, setCustomStocks] = useState([]);
 
     // 서버에서 preferences 로드
@@ -45,6 +131,7 @@ export default function Main() {
             body: JSON.stringify({ randomWord: id, bookmarks: newBookmarks, customStocks: newStocks })
         }).catch(e => console.error('환경설정 저장 실패', e));
     };
+
     const [stockData, setStockData] = useState({});
     const [searchQuery, setSearchQuery] = useState('');
     const [searching, setSearching] = useState(false);
@@ -89,6 +176,36 @@ export default function Main() {
                 const data = await res.json();
                 if (data && data.result_code !== 500) setVix(data);
             } catch (e) { console.error("VIX 실패", e); }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/getKospiIndex`);
+                const data = await res.json();
+                if (data && data.result_code !== 500) setKospi(data);
+            } catch (e) { console.error("KOSPI 실패", e); }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/getBitcoinPrice`);
+                const data = await res.json();
+                if (data && data.result_code !== 500) setBitcoin(data);
+            } catch (e) { console.error("비트코인 실패", e); }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/getDowJonesIndex`);
+                const data = await res.json();
+                if (data && data.result_code !== 500) setDowjones(data);
+            } catch (e) { console.error("다우존스 실패", e); }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/getNasdaqIndex`);
+                const data = await res.json();
+                if (data && data.result_code !== 500) setNasdaq(data);
+            } catch (e) { console.error("나스닥 실패", e); }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/getWeeklyWeather`);
+                const data = await res.json();
+                if (Array.isArray(data)) setWeeklyWeather(data);
+            } catch (e) { console.error("주간날씨 실패", e); }
         };
 
         fetchAll();
@@ -116,11 +233,10 @@ export default function Main() {
         return () => clearInterval(intervalId);
     }, [fetchStocks]);
 
-    // 종목 검색 (결과만 보여줌, 바로 추가하지 않음)
+    // 종목 검색
     const handleSearchStock = async () => {
         const query = searchQuery.trim();
         if (!query) return;
-
         setSearching(true);
         setSearchResults([]);
         try {
@@ -144,24 +260,18 @@ export default function Main() {
             message('이미 추가된 종목입니다.', 'error');
             return;
         }
-
         setAddingTicker(ticker);
         try {
             const res = await fetch(`${API_BASE_URL}/getStockPrice?ticker=${encodeURIComponent(ticker)}`);
             const data = await res.json();
-
             const newStocks = [...customStocks, ticker];
             setCustomStocks(newStocks);
-
             if (data && !data.error) {
                 setStockData(prev => ({ ...prev, [ticker]: data }));
             }
-
-            // 자동 즐겨찾기 등록
             const newBookmarks = [...bookmarks, `stock_${ticker}`];
             setBookmarks(newBookmarks);
             savePreferences(newBookmarks, newStocks);
-
             setSearchResults([]);
             setSearchQuery('');
             message(`${name || ticker} 추가 완료`, 'success');
@@ -178,11 +288,9 @@ export default function Main() {
         e.stopPropagation();
         const newStocks = customStocks.filter(t => t !== ticker);
         setCustomStocks(newStocks);
-
         const newBookmarks = bookmarks.filter(b => b !== `stock_${ticker}`);
         setBookmarks(newBookmarks);
         savePreferences(newBookmarks, newStocks);
-
         setStockData(prev => {
             const copy = { ...prev };
             delete copy[ticker];
@@ -201,68 +309,106 @@ export default function Main() {
         savePreferences(next, customStocks);
     };
 
-    const cardStyle = {
-        flex: '1 1 100%',
-        backgroundColor: "#fff",
-        padding: "10px 15px",
-        borderRadius: "8px",
-        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
-        textAlign: "center"
-    };
-
-    const titleStyle = {
-        margin: 0,
-        fontSize: "14px",
-        color: "#7f8c8d",
-        fontWeight: "600"
-    };
-
+    // 기본 값 스타일
     const valueStyle = {
-        fontSize: "24px",
-        fontWeight: "bold",
-        margin: "5px 0 0 0"
+        fontSize: "22px",
+        fontWeight: "700",
+        margin: "0",
+        lineHeight: 1.2,
     };
+
+    const changeStyle = (isUp) => ({
+        fontSize: "12px",
+        fontWeight: "600",
+        color: isUp ? "#e74c3c" : "#3498db",
+    });
 
     // 기본 카드 정의
     const staticCards = [
+        {
+            id: 'weeklyWeather',
+            title: '이번주 날씨',
+            fullWidth: true,
+            link: 'https://search.naver.com/search.naver?query=%EC%9D%B4%EB%B2%88%EC%A3%BC+%EB%82%A0%EC%94%A8',
+            content: () => weeklyWeather.length > 0 ? (
+                <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '2px' }}>
+                    {weeklyWeather.map((d, i) => (
+                        <div key={i} style={{
+                            flex: '1 0 0',
+                            minWidth: '42px',
+                            textAlign: 'center',
+                            padding: '6px 4px',
+                            borderRadius: '10px',
+                            background: i === 0 ? '#eaf4fb' : 'transparent',
+                        }}>
+                            <div style={{ fontSize: '11px', fontWeight: i === 0 ? '800' : '600', color: i === 0 ? '#3498db' : '#868e96' }}>
+                                {i === 0 ? '오늘' : d.day}
+                            </div>
+                            <div style={{ fontSize: '20px', margin: '4px 0 2px' }}>{d.emoji}</div>
+                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#e74c3c' }}>{d.maxTemp}°</div>
+                            <div style={{ fontSize: '11px', color: '#74b9ff' }}>{d.minTemp}°</div>
+                            {d.precip > 0 && (
+                                <div style={{ fontSize: '10px', color: '#74b9ff', marginTop: '2px' }}>💧{d.precip}%</div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            ) : <p style={{ fontSize: '13px', color: '#b2bec3', margin: '6px 0 0' }}>불러오는 중...</p>
+        },
         {
             id: 'weather',
             title: '서울 날씨',
             link: 'https://www.google.com/search?q=%EC%98%A4%EB%8A%98%EB%82%A0%EC%94%A8',
             content: () => (
                 weather && weather.temperature ? (
-                    <div style={{ ...valueStyle, fontSize: "16px", marginTop: "8px" }}>
-                        <span style={{ color: "#e74c3c" }}>{weather.temperature?.value ?? "0"}°C</span>
-                        <span style={{ color: "#bdc3c7", margin: "0 8px" }}>/</span>
-                        {weather.precipitation?.description ?? "정보 없음"}
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                            <span style={{ ...valueStyle, color: '#3498db' }}>
+                                {weather.temperature?.value ?? "0"}°C
+                            </span>
+                        </div>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#636e72' }}>
+                            {weather.precipitation?.description ?? "정보 없음"}
+                        </p>
                     </div>
-                ) : <p style={{ fontSize: "13px", color: "#bdc3c7", margin: "10px 0" }}>...</p>
+                ) : <p style={{ fontSize: "13px", color: "#bdc3c7", margin: "6px 0 0" }}>불러오는 중...</p>
             )
         },
         {
             id: 'dust',
             title: '서울 미세먼지',
             link: 'https://m.search.naver.com/search.naver?query=%EB%AF%B8%EC%84%B8%EB%A8%BC%EC%A7%80',
-            content: () => (
-                <p style={{
-                    ...valueStyle,
-                    color: dust.includes("매우 나쁨") ? "#c0392b" : dust.includes("나쁨") ? "#e67e22" : dust.includes("보통") ? "#27ae60" : "#2980b9"
-                }}>
-                    {dust || "..."}
-                </p>
-            )
+            content: () => {
+                const s = getDustStyle(dust);
+                return (
+                    <div style={{
+                        marginTop: '6px',
+                        padding: '6px 10px',
+                        background: s.bg,
+                        borderRadius: '8px',
+                        border: `1px solid ${s.border}`,
+                        display: 'inline-block',
+                        minWidth: '60px',
+                        textAlign: 'center',
+                    }}>
+                        <span style={{ fontSize: '15px', fontWeight: '700', color: s.text }}>
+                            {dust || "..."}
+                        </span>
+                    </div>
+                );
+            }
         },
         {
             id: 'snp500',
             title: 'S&P 500',
             link: 'https://www.google.com/search?q=snp500',
             content: () => (
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px' }}>
-                    <p style={{ ...valueStyle, color: "#2c3e50" }}>{snp500.price || "..."}</p>
+                <div>
+                    <p style={{ ...valueStyle, color: '#2d3436' }}>{snp500.price || "..."}</p>
                     {snp500.price && (
-                        <span style={{ fontSize: "13px", fontWeight: "bold", color: snp500.isUp ? "#e74c3c" : "#3498db" }}>
+                        <p style={{ ...changeStyle(snp500.isUp), margin: '4px 0 0' }}>
                             {snp500.isUp ? "▲" : "▼"} {snp500.change} ({snp500.percent})
-                        </span>
+                        </p>
                     )}
                 </div>
             )
@@ -272,12 +418,14 @@ export default function Main() {
             title: '달러/원 환율',
             link: 'https://kr.investing.com/currencies/usd-krw',
             content: () => (
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px' }}>
-                    <p style={{ ...valueStyle, color: "#2c3e50" }}>{exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}</p>
+                <div>
+                    <p style={{ ...valueStyle, color: '#2d3436' }}>
+                        {exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}
+                    </p>
                     {exchangeRate.rate && (
-                        <span style={{ fontSize: "13px", fontWeight: "bold", color: exchangeRate.isUp ? "#e74c3c" : "#3498db" }}>
+                        <p style={{ ...changeStyle(exchangeRate.isUp), margin: '4px 0 0' }}>
                             {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change} ({exchangeRate.percent})
-                        </span>
+                        </p>
                     )}
                 </div>
             )
@@ -286,41 +434,129 @@ export default function Main() {
             id: 'feargreed',
             title: '공포탐욕지수',
             link: 'https://edition.cnn.com/markets/fear-and-greed',
-            content: () => (
-                <>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px' }}>
-                        <p style={{ ...valueStyle, color: "#2c3e50" }}>{fearGreed.value || "0"}</p>
-                        <span style={{ fontSize: "13px", fontWeight: "bold", color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db" }}>
-                            {fearGreed.status === "UP" ? "▲" : "▼"} {Math.abs(fearGreed.diff)}
-                        </span>
+            content: () => {
+                const fgColor = getFearGreedColor(fearGreed.value);
+                return (
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                            <span style={{ ...valueStyle, color: fgColor }}>{fearGreed.value || "0"}</span>
+                            <span style={{ fontSize: "12px", fontWeight: "600", color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db" }}>
+                                {fearGreed.status === "UP" ? "▲" : "▼"} {Math.abs(fearGreed.diff)}
+                            </span>
+                        </div>
+                        {/* 게이지 바 */}
+                        <div style={{ height: '5px', background: '#f0f0f0', borderRadius: '3px', margin: '7px 0 5px', overflow: 'hidden' }}>
+                            <div style={{
+                                height: '100%',
+                                width: `${Math.min(fearGreed.value, 100)}%`,
+                                background: `linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71)`,
+                                borderRadius: '3px',
+                                transition: 'width 0.6s ease',
+                            }} />
+                        </div>
+                        <p style={{ fontSize: "11px", color: "#95a5a6", margin: "0", fontWeight: '600' }}>
+                            {fearGreed.rating}
+                        </p>
                     </div>
-                    <p style={{ fontSize: "13px", color: "#95a5a6", margin: "3px 0 0 0" }}>
-                        {fearGreed.rating}
-                    </p>
-                </>
+                );
+            }
+        },
+        {
+            id: 'nasdaq',
+            title: '나스닥',
+            link: 'https://finance.yahoo.com/quote/%5EIXIC',
+            content: () => (
+                <div>
+                    <p style={{ ...valueStyle, color: '#2d3436' }}>{nasdaq.price || "..."}</p>
+                    {nasdaq.price && (
+                        <p style={{ ...changeStyle(nasdaq.isUp), margin: '4px 0 0' }}>
+                            {nasdaq.isUp ? "▲" : "▼"} {nasdaq.change} ({nasdaq.percent})
+                        </p>
+                    )}
+                </div>
+            )
+        },
+        {
+            id: 'dowjones',
+            title: '다우존스',
+            link: 'https://finance.yahoo.com/quote/%5EDJI',
+            content: () => (
+                <div>
+                    <p style={{ ...valueStyle, color: '#2d3436' }}>{dowjones.price || "..."}</p>
+                    {dowjones.price && (
+                        <p style={{ ...changeStyle(dowjones.isUp), margin: '4px 0 0' }}>
+                            {dowjones.isUp ? "▲" : "▼"} {dowjones.change} ({dowjones.percent})
+                        </p>
+                    )}
+                </div>
+            )
+        },
+        {
+            id: 'bitcoin',
+            title: '비트코인',
+            link: 'https://www.google.com/search?q=%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8',
+            content: () => (
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <p style={{ ...valueStyle, color: '#2d3436' }}>{bitcoin.price ? `$${Number(bitcoin.price).toLocaleString()}` : "..."}</p>
+                    </div>
+                    {bitcoin.price && (
+                        <p style={{ ...changeStyle(bitcoin.isUp), margin: '4px 0 0' }}>
+                            {bitcoin.isUp ? "▲" : "▼"} ${Number(bitcoin.change).toLocaleString()} ({bitcoin.percent})
+                        </p>
+                    )}
+                </div>
+            )
+        },
+        {
+            id: 'kospi',
+            title: '코스피',
+            link: 'https://search.naver.com/search.naver?query=%EC%BD%94%EC%8A%A4%ED%94%BC',
+            content: () => (
+                <div>
+                    <p style={{ ...valueStyle, color: '#2d3436' }}>{kospi.price || "..."}</p>
+                    {kospi.price && (
+                        <p style={{ ...changeStyle(kospi.isUp), margin: '4px 0 0' }}>
+                            {kospi.isUp ? "▲" : "▼"} {kospi.change} ({kospi.percent})
+                        </p>
+                    )}
+                </div>
             )
         },
         {
             id: 'vix',
-            title: 'VIX (변동성지수)',
+            title: 'VIX (변동성)',
             link: 'https://www.google.com/search?q=vix+index',
-            content: () => (
-                <>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px' }}>
-                        <p style={{ ...valueStyle, color: "#2c3e50" }}>{vix.price || "..."}</p>
-                        {vix.price && (
-                            <span style={{ fontSize: "13px", fontWeight: "bold", color: vix.isUp ? "#e74c3c" : "#3498db" }}>
-                                {vix.isUp ? "▲" : "▼"} {vix.change} ({vix.percent})
+            content: () => {
+                const status = getVixStatus(vix.price);
+                return (
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                            <span style={{ ...valueStyle, color: '#2d3436' }}>{vix.price || "..."}</span>
+                            {vix.price && (
+                                <span style={{ ...changeStyle(vix.isUp) }}>
+                                    {vix.isUp ? "▲" : "▼"} {vix.change}
+                                </span>
+                            )}
+                        </div>
+                        {status && (
+                            <span style={{
+                                display: 'inline-block',
+                                marginTop: '5px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                color: status.color,
+                                background: `${status.color}18`,
+                                padding: '2px 8px',
+                                borderRadius: '10px',
+                                border: `1px solid ${status.color}40`,
+                            }}>
+                                {status.text}
                             </span>
                         )}
                     </div>
-                    {vix.status && (
-                        <p style={{ fontSize: "13px", color: "#95a5a6", margin: "3px 0 0 0" }}>
-                            {vix.status}
-                        </p>
-                    )}
-                </>
-            )
+                );
+            }
         },
     ];
 
@@ -332,109 +568,161 @@ export default function Main() {
             title: data.name || ticker,
             ticker: ticker,
             isStock: true,
+            isUp: data.isUp,
             link: `https://finance.yahoo.com/quote/${encodeURIComponent(ticker)}`,
             content: () => (
-                <>
-                    <p style={{ ...valueStyle, color: "#2c3e50" }}>
-                        {data.price || "..."}
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <span style={{ ...valueStyle, fontSize: '18px', color: '#2d3436' }}>
+                            {data.price || "..."}
+                        </span>
                         {data.currency && (
-                            <span style={{ fontSize: "12px", fontWeight: "normal", color: "#95a5a6", marginLeft: "5px" }}>
-                                {data.currency}
-                            </span>
+                            <span style={{ fontSize: '11px', color: '#95a5a6' }}>{data.currency}</span>
                         )}
-                    </p>
+                    </div>
                     {data.price && data.price !== "0.00" && (
-                        <p style={{ fontSize: "13px", fontWeight: "bold", margin: "3px 0 0 0", color: data.isUp ? "#e74c3c" : "#3498db" }}>
+                        <p style={{ ...changeStyle(data.isUp), margin: '4px 0 0' }}>
                             {data.isUp ? "▲" : "▼"} {data.change} ({data.percent})
                         </p>
                     )}
-                </>
+                </div>
             )
         };
     });
 
-    // 기본 카드: 즐겨찾기 분류
+    // 즐겨찾기 분류
     const bookmarkedStatic = staticCards.filter(c => bookmarks.includes(c.id));
     const nonBookmarkedStatic = staticCards.filter(c => !bookmarks.includes(c.id));
-
-    // 종목 카드: 즐겨찾기 분류
     const bookmarkedStock = stockCards.filter(c => bookmarks.includes(c.id));
     const nonBookmarkedStock = stockCards.filter(c => !bookmarks.includes(c.id));
 
-    const renderCard = (card, dimmed = false) => (
-        <div key={card.id} style={{ flex: '1 1 100%', opacity: dimmed ? 0.45 : 1, transition: 'opacity 0.3s' }}>
-            <a href={card.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-                <div style={cardStyle}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0', paddingBottom: '5px' }}>
-                        <h2 style={titleStyle}>
-                            {card.title}
-                            {card.isStock && (
-                                <span style={{ fontSize: '11px', color: '#aaa', marginLeft: '6px', fontWeight: 'normal' }}>
-                                    {card.ticker}
-                                </span>
-                            )}
-                        </h2>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            {card.isStock && (
-                                <button
-                                    onClick={(e) => handleRemoveStock(card.ticker, e)}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        fontSize: '14px',
-                                        padding: '0 3px',
-                                        color: '#dc3545',
-                                    }}
-                                    title="종목 삭제"
-                                >
-                                    ✕
-                                </button>
-                            )}
-                            <button
-                                onClick={(e) => toggleBookmark(card.id, e)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontSize: '18px',
-                                    padding: '0 5px',
-                                    color: bookmarks.includes(card.id) ? '#f1c40f' : '#ccc',
-                                    transition: 'color 0.2s',
-                                }}
-                                title={bookmarks.includes(card.id) ? '즐겨찾기 해제' : '즐겨찾기 추가'}
-                            >
-                                {bookmarks.includes(card.id) ? '\u2605' : '\u2606'}
-                            </button>
+    // 카드 렌더링
+    const renderCard = (card) => {
+        const accentColor = card.isStock
+            ? (card.isUp !== false ? '#00b894' : '#e17055')
+            : (CARD_ACCENT[card.id] || '#636e72');
+        const icon = card.isStock
+            ? (card.isUp !== false ? '📈' : '📉')
+            : (CARD_ICON[card.id] || '📌');
+        const isBookmarked = bookmarks.includes(card.id);
+        const gridStyle = card.fullWidth ? { gridColumn: '1 / -1' } : {};
+
+        return (
+            <div key={card.id} style={gridStyle}>
+                <a
+                    href={card.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+                >
+                    <div style={{
+                        background: '#fff',
+                        borderRadius: '14px',
+                        boxShadow: '0 1px 8px rgba(0,0,0,0.07)',
+                        overflow: 'hidden',
+                        height: '100%',
+                        boxSizing: 'border-box',
+                    }}>
+                        {/* 상단 컬러 바 */}
+                        <div style={{ height: '3px', background: accentColor }} />
+                        <div style={{ padding: '10px 12px 13px' }}>
+                            {/* 헤더: 아이콘 + 제목 + 즐겨찾기 */}
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                marginBottom: '7px',
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: 0, flex: 1 }}>
+                                    <span style={{ fontSize: '13px', flexShrink: 0 }}>{icon}</span>
+                                    <span style={{
+                                        fontSize: '11px',
+                                        color: '#8e9aaf',
+                                        fontWeight: '700',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}>
+                                        {card.title}
+                                    </span>
+                                    {card.isStock && (
+                                        <span style={{ fontSize: '10px', color: '#b2bec3', flexShrink: 0 }}>
+                                            {card.ticker}
+                                        </span>
+                                    )}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}>
+                                    {card.isStock && (
+                                        <button
+                                            onClick={(e) => handleRemoveStock(card.ticker, e)}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                fontSize: '11px',
+                                                padding: '2px 4px',
+                                                color: '#e17055',
+                                                lineHeight: 1,
+                                            }}
+                                            title="삭제"
+                                        >✕</button>
+                                    )}
+                                    <button
+                                        onClick={(e) => toggleBookmark(card.id, e)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            fontSize: '15px',
+                                            padding: '0 2px',
+                                            lineHeight: 1,
+                                            color: isBookmarked ? '#f1c40f' : '#dfe6e9',
+                                            transition: 'color 0.15s',
+                                        }}
+                                        title={isBookmarked ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+                                    >
+                                        {isBookmarked ? '★' : '☆'}
+                                    </button>
+                                </div>
+                            </div>
+                            {/* 콘텐츠 */}
+                            {card.content()}
                         </div>
                     </div>
-                    {card.content()}
-                </div>
-            </a>
-        </div>
-    );
+                </a>
+            </div>
+        );
+    };
 
-    // 종목 검색 카드 렌더링
+    // 종목 검색 카드
     const renderSearchCard = () => (
-        <div style={{ flex: '1 1 100%' }}>
-            <div style={cardStyle}>
-                <h2 style={{ ...titleStyle, borderBottom: '1px solid #f0f0f0', paddingBottom: '5px' }}>
-                    종목 검색
-                </h2>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+        <div style={{
+            background: '#fff',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            marginBottom: '0',
+        }}>
+            <div style={{ height: '3px', background: '#74b9ff' }} />
+            <div style={{ padding: '12px 14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '13px' }}>🔍</span>
+                    <span style={{ fontSize: '11px', color: '#8e9aaf', fontWeight: '700' }}>주식 종목 검색</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearchStock()}
-                        placeholder="종목명 또는 코드 (예: 삼성전자, AAPL)"
+                        placeholder="종목 코드 (예: AAPL)"
                         style={{
                             flex: 1,
                             padding: '8px 12px',
-                            borderRadius: '6px',
-                            border: '1px solid #ddd',
+                            borderRadius: '8px',
+                            border: '1px solid #dfe6e9',
                             fontSize: '13px',
                             outline: 'none',
+                            color: '#2d3436',
                         }}
                     />
                     <button
@@ -442,23 +730,23 @@ export default function Main() {
                         disabled={searching}
                         style={{
                             padding: '8px 16px',
-                            backgroundColor: searching ? '#aaa' : '#007bff',
+                            backgroundColor: searching ? '#b2bec3' : '#3498db',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             cursor: searching ? 'default' : 'pointer',
                             fontSize: '13px',
-                            fontWeight: 'bold',
+                            fontWeight: '700',
                             whiteSpace: 'nowrap',
+                            transition: 'background-color 0.15s',
                         }}
                     >
                         {searching ? '검색중...' : '검색'}
                     </button>
                 </div>
 
-                {/* 검색 결과 리스트 */}
                 {searchResults.length > 0 && (
-                    <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 0 0', textAlign: 'left' }}>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0 0 0' }}>
                         {searchResults.map((item, index) => {
                             const alreadyAdded = customStocks.includes(item.ticker);
                             const isAdding = addingTicker === item.ticker;
@@ -467,48 +755,45 @@ export default function Main() {
                                     key={item.ticker}
                                     onClick={() => !alreadyAdded && !isAdding && handleSelectStock(item.ticker, item.name)}
                                     style={{
-                                        padding: '10px 12px',
+                                        padding: '9px 12px',
                                         cursor: alreadyAdded ? 'default' : 'pointer',
-                                        backgroundColor: index % 2 === 0 ? '#fafafa' : '#fff',
+                                        backgroundColor: index % 2 === 0 ? '#f8f9fa' : '#fff',
                                         borderBottom: '1px solid #f0f0f0',
-                                        borderRadius: index === 0 ? '6px 6px 0 0' : index === searchResults.length - 1 ? '0 0 6px 6px' : '0',
+                                        borderRadius: index === 0 ? '8px 8px 0 0' : index === searchResults.length - 1 ? '0 0 8px 8px' : '0',
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
                                         opacity: alreadyAdded ? 0.5 : 1,
-                                        transition: 'background-color 0.15s',
                                     }}
-                                    onMouseEnter={(e) => { if (!alreadyAdded) e.currentTarget.style.backgroundColor = '#e9f5ff'; }}
-                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#fafafa' : '#fff'; }}
+                                    onMouseEnter={(e) => { if (!alreadyAdded) e.currentTarget.style.backgroundColor = '#eaf4fb'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#f8f9fa' : '#fff'; }}
                                 >
                                     <div style={{ minWidth: 0, flex: 1 }}>
-                                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#2c3e50', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#2d3436', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {item.name}
                                         </div>
-                                        <div style={{ fontSize: '11px', color: '#999', marginTop: '2px' }}>
+                                        <div style={{ fontSize: '11px', color: '#95a5a6', marginTop: '2px' }}>
                                             {item.ticker}
-                                            <span style={{ margin: '0 6px', color: '#ddd' }}>|</span>
+                                            <span style={{ margin: '0 5px', color: '#dfe6e9' }}>|</span>
                                             {item.exchange}
-                                            {item.type === 'ETF' && <span style={{ marginLeft: '6px', color: '#e67e22', fontWeight: 'bold' }}>ETF</span>}
-                                            {item.type === 'INDEX' && <span style={{ marginLeft: '6px', color: '#8e44ad', fontWeight: 'bold' }}>INDEX</span>}
+                                            {item.type === 'ETF' && <span style={{ marginLeft: '5px', color: '#e67e22', fontWeight: '700' }}>ETF</span>}
+                                            {item.type === 'INDEX' && <span style={{ marginLeft: '5px', color: '#8e44ad', fontWeight: '700' }}>INDEX</span>}
                                         </div>
                                     </div>
                                     <div style={{ marginLeft: '10px', flexShrink: 0 }}>
                                         {alreadyAdded ? (
-                                            <span style={{ fontSize: '12px', color: '#aaa', fontWeight: 'bold' }}>추가됨</span>
+                                            <span style={{ fontSize: '11px', color: '#b2bec3', fontWeight: '600' }}>추가됨</span>
                                         ) : isAdding ? (
-                                            <span style={{ fontSize: '12px', color: '#007bff' }}>추가중...</span>
+                                            <span style={{ fontSize: '11px', color: '#3498db' }}>추가중...</span>
                                         ) : (
                                             <span style={{
-                                                fontSize: '12px',
-                                                color: '#007bff',
-                                                fontWeight: 'bold',
-                                                padding: '4px 10px',
-                                                border: '1px solid #007bff',
-                                                borderRadius: '4px',
-                                            }}>
-                                                + 추가
-                                            </span>
+                                                fontSize: '11px',
+                                                color: '#3498db',
+                                                fontWeight: '700',
+                                                padding: '3px 9px',
+                                                border: '1px solid #3498db',
+                                                borderRadius: '6px',
+                                            }}>+ 추가</span>
                                         )}
                                     </div>
                                 </li>
@@ -520,74 +805,82 @@ export default function Main() {
         </div>
     );
 
-    const sectionTitleStyle = {
-        fontSize: '13px',
-        fontWeight: '600',
-        color: '#7f8c8d',
-        margin: '0 0 10px 0',
-        paddingBottom: '6px',
-        borderBottom: '2px solid #ddd',
-    };
-
     return (
         <div style={{
-            padding: "15px",
+            padding: "16px 16px 40px",
             fontFamily: "'Segoe UI', Roboto, sans-serif",
-            backgroundColor: "#ebf0f1",
+            backgroundColor: "#f4f6f8",
             minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center"
         }}>
-            <div style={{ width: "100%", maxWidth: "500px" }}>
+            <div style={{ maxWidth: "500px", margin: "0 auto" }}>
 
-                {/* 상단: 기본 대시보드 */}
-                <div style={{ marginBottom: '20px' }}>
-                    <h3 style={sectionTitleStyle}>대시보드</h3>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
-                        {bookmarkedStatic.map(card => renderCard(card, false))}
-
-                        {nonBookmarkedStatic.length > 0 && bookmarkedStatic.length > 0 && (
-                            <div style={{
-                                width: '100%',
-                                textAlign: 'center',
-                                padding: '8px 0',
-                                color: '#aaa',
-                                fontSize: '12px',
-                                letterSpacing: '2px'
-                            }}>
-                                ── 즐겨찾기 미등록 ──
-                            </div>
-                        )}
-
-                        {nonBookmarkedStatic.map(card => renderCard(card, true))}
-                    </div>
+                {/* 페이지 헤더 */}
+                <div style={{ marginBottom: '22px', paddingTop: '6px' }}>
+                    <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#2d3436', margin: '0 0 2px', letterSpacing: '-0.5px' }}>
+                        나만의 요약
+                    </h1>
+                    <p style={{ fontSize: '11px', color: '#b2bec3', margin: 0, fontWeight: '500' }}>
+                        🔄 10초마다 자동 갱신
+                    </p>
                 </div>
 
-                {/* 하단: 종목 */}
-                <div>
-                    <h3 style={sectionTitleStyle}>내 종목</h3>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
-                        {renderSearchCard()}
+                {/* ── 대시보드 ── */}
+                <BigLabel label="대시보드" />
 
-                        {bookmarkedStock.map(card => renderCard(card, false))}
-
-                        {nonBookmarkedStock.length > 0 && bookmarkedStock.length > 0 && (
-                            <div style={{
-                                width: '100%',
-                                textAlign: 'center',
-                                padding: '8px 0',
-                                color: '#aaa',
-                                fontSize: '12px',
-                                letterSpacing: '2px'
-                            }}>
-                                ── 즐겨찾기 미등록 ──
+                {/* 즐겨찾기 패널 (흰 배경) */}
+                <div style={{ marginBottom: '10px' }}>
+                    <Panel icon="⭐" label="즐겨찾기" accent>
+                        {bookmarkedStatic.length > 0 ? (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                {bookmarkedStatic.map(card => renderCard(card))}
                             </div>
+                        ) : (
+                            <p style={{ fontSize: '12px', color: '#b2bec3', textAlign: 'center', padding: '14px 0', margin: 0 }}>
+                                카드의 ☆을 눌러 즐겨찾기를 추가하세요
+                            </p>
                         )}
-
-                        {nonBookmarkedStock.map(card => renderCard(card, true))}
-                    </div>
+                    </Panel>
                 </div>
+
+                {/* 미등록 패널 (회색 배경) */}
+                {nonBookmarkedStatic.length > 0 && (
+                    <div style={{ marginBottom: '28px' }}>
+                        <Panel label="즐겨찾기 미등록">
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                {nonBookmarkedStatic.map(card => renderCard(card))}
+                            </div>
+                        </Panel>
+                    </div>
+                )}
+                {nonBookmarkedStatic.length === 0 && <div style={{ marginBottom: '28px' }} />}
+
+                {/* ── 내 종목 ── */}
+                <BigLabel label="내 종목" />
+
+                {/* 즐겨찾기 종목 패널 (흰 배경) */}
+                <div style={{ marginBottom: '10px' }}>
+                    <Panel icon="⭐" label="즐겨찾기" accent>
+                        {bookmarkedStock.length > 0 ? (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                {bookmarkedStock.map(card => renderCard(card))}
+                            </div>
+                        ) : (
+                            <p style={{ fontSize: '12px', color: '#b2bec3', textAlign: 'center', padding: '14px 0', margin: 0 }}>
+                                종목을 추가하고 즐겨찾기 ☆을 눌러보세요
+                            </p>
+                        )}
+                    </Panel>
+                </div>
+
+                {/* 미등록 종목 + 검색 패널 (회색 배경) */}
+                <Panel label="즐겨찾기 미등록">
+                    {renderSearchCard()}
+                    {nonBookmarkedStock.length > 0 && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '8px' }}>
+                            {nonBookmarkedStock.map(card => renderCard(card))}
+                        </div>
+                    )}
+                </Panel>
 
             </div>
         </div>
