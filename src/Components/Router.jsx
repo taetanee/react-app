@@ -80,7 +80,7 @@ function HamburgerMenu() {
                         }} />
                     ))}
                 </div>
-                숨겨진 메뉴 보기
+                숨겨진 메뉴
             </button>
 
             {menuOpen && (
