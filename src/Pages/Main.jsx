@@ -732,7 +732,7 @@ export default function Main() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearchStock()}
-                    placeholder="🔍 종목명 또는 코드 검색 (예: 삼성전자, AAPL)"
+                    placeholder="🔍 종목명 또는 코드 검색 (예: AAPL, SOXL)"
                     style={{
                         flex: 1,
                         padding: '9px 12px',
