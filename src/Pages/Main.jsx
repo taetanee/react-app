@@ -12,7 +12,7 @@ const BigLabel = ({ label }) => (
 );
 
 // 패널 컨테이너 — 흰 패널(즐겨찾기) vs 회색 패널(미등록)
-const Panel = ({ icon, label, accent, children }) => (
+const Panel = ({ icon, label, accent, children, headerRight }) => (
     <div style={{
         background: accent ? '#fff' : '#e9ecef',
         borderRadius: '16px',
@@ -20,11 +20,14 @@ const Panel = ({ icon, label, accent, children }) => (
         boxShadow: accent ? '0 2px 14px rgba(0,0,0,0.08)' : 'none',
         border: accent ? 'none' : '1px solid #dee2e6',
     }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '12px' }}>
-            {icon && <span style={{ fontSize: '14px' }}>{icon}</span>}
-            <span style={{ fontSize: '12px', fontWeight: '700', color: accent ? '#2d3436' : '#868e96' }}>
-                {label}
-            </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                {icon && <span style={{ fontSize: '14px' }}>{icon}</span>}
+                <span style={{ fontSize: '12px', fontWeight: '700', color: accent ? '#2d3436' : '#868e96' }}>
+                    {label}
+                </span>
+            </div>
+            {headerRight}
         </div>
         {children}
     </div>
@@ -104,6 +107,8 @@ export default function Main() {
     const [bookmarks, setBookmarks] = useState(['weather', 'dust', 'snp500', 'exchange', 'feargreed', 'vix', 'kospi', 'bitcoin', 'weeklyWeather']);
 
     const [customStocks, setCustomStocks] = useState([]);
+    const [stockHistoryData, setStockHistoryData] = useState({});
+    const [stockPeriod, setStockPeriod] = useState('1d');
 
     // 서버에서 preferences 로드
     useEffect(() => {
@@ -212,6 +217,22 @@ export default function Main() {
         const intervalId = setInterval(fetchAll, 10000);
         return () => clearInterval(intervalId);
     }, []);
+
+    // 즐겨찾기 종목 히스토리 fetch
+    useEffect(() => {
+        const bookmarkedTickers = customStocks.filter(t => bookmarks.includes(`stock_${t}`));
+        if (bookmarkedTickers.length === 0) return;
+        setStockHistoryData({});
+        bookmarkedTickers.forEach(async (ticker) => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/getStockHistory?ticker=${encodeURIComponent(ticker)}&range=${stockPeriod}`);
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    setStockHistoryData(prev => ({ ...prev, [ticker]: data }));
+                }
+            } catch (e) { console.error(`${ticker} 히스토리 실패`, e); }
+        });
+    }, [customStocks, bookmarks, stockPeriod]);
 
     // 개별 종목 데이터 fetch
     const fetchStocks = useCallback(async () => {
@@ -569,6 +590,14 @@ export default function Main() {
             ticker: ticker,
             isStock: true,
             isUp: data.isUp,
+            _price: data.price,
+            _change: data.change,
+            _percent: data.percent,
+            _prevClose: data.price && data.change
+                ? (data.isUp
+                    ? parseFloat(data.price) - parseFloat(data.change)
+                    : parseFloat(data.price) + parseFloat(data.change))
+                : null,
             link: `https://finance.yahoo.com/quote/${encodeURIComponent(ticker)}`,
             content: () => (
                 <div>
@@ -811,6 +840,58 @@ export default function Main() {
                     </Panel>
                 </div>
 
+                {/* 내 종목 즐겨찾기 패널 (흰 배경) */}
+                {bookmarkedStock.length > 0 && (
+                    <div style={{ marginBottom: '10px' }}>
+                        <Panel
+                            icon="📈"
+                            label="내 종목 즐겨찾기"
+                            accent
+                            headerRight={
+                                <div style={{ display: 'flex', gap: 3 }}>
+                                    {[
+                                        { key: '1d',  label: '1D' },
+                                        { key: '5d',  label: '5D' },
+                                        { key: '1mo', label: '1M' },
+                                        { key: '6mo', label: '6M' },
+                                    ].map(p => (
+                                        <button
+                                            key={p.key}
+                                            onClick={() => setStockPeriod(p.key)}
+                                            style={{
+                                                padding: '3px 8px',
+                                                borderRadius: 6,
+                                                border: '1.5px solid',
+                                                borderColor: stockPeriod === p.key ? '#2d3436' : '#e0e0e0',
+                                                background: stockPeriod === p.key ? '#2d3436' : '#fff',
+                                                color: stockPeriod === p.key ? '#fff' : '#999',
+                                                fontSize: 11,
+                                                fontWeight: 700,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.15s',
+                                            }}
+                                        >{p.label}</button>
+                                    ))}
+                                </div>
+                            }
+                        >
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {bookmarkedStock.map(card => (
+                                    <StockMiniCard
+                                        key={card.id}
+                                        card={card}
+                                        historyData={stockHistoryData[card.ticker]}
+                                        onRemove={handleRemoveStock}
+                                        onToggleBookmark={toggleBookmark}
+                                        isBookmarked={bookmarks.includes(card.id)}
+                                        period={stockPeriod}
+                                    />
+                                ))}
+                            </div>
+                        </Panel>
+                    </div>
+                )}
+
                 {/* 미등록 패널 (회색 배경) */}
                 {nonBookmarkedStatic.length > 0 && (
                     <div style={{ marginBottom: '28px' }}>
@@ -826,21 +907,6 @@ export default function Main() {
                 {/* ── 내 종목 ── */}
                 <BigLabel label="내 종목" />
 
-                {/* 즐겨찾기 종목 패널 (흰 배경) */}
-                <div style={{ marginBottom: '10px' }}>
-                    <Panel icon="⭐" label="즐겨찾기" accent>
-                        {bookmarkedStock.length > 0 ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                {bookmarkedStock.map(card => renderCard(card))}
-                            </div>
-                        ) : (
-                            <p style={{ fontSize: '12px', color: '#b2bec3', textAlign: 'center', padding: '14px 0', margin: 0 }}>
-                                아래에서 종목을 검색해 추가하면 여기에 표시됩니다
-                            </p>
-                        )}
-                    </Panel>
-                </div>
-
                 {/* 즐겨찾기 미등록 + 검색 패널 (회색 배경) */}
                 <Panel label="즐겨찾기 미등록">
                     {renderSearchForm()}
@@ -851,6 +917,142 @@ export default function Main() {
                     )}
                 </Panel>
 
+            </div>
+        </div>
+    );
+}
+
+// ── 스파크라인 SVG ────────────────────────────────────────────
+function Sparkline({ data, isUp, prevClose, period }) {
+    const W = 96, H = 44;
+    const color = isUp ? '#e74c3c' : '#3498db';
+    const gradId = isUp ? 'spark-up' : 'spark-dn';
+
+    if (!data || data.length < 2) {
+        return <div style={{ width: W, height: H, flexShrink: 0 }} />;
+    }
+
+    const values = data.map(d => d.close);
+
+    // 전일종가를 포함해 스케일 계산 (1D일 때 점선이 항상 보이도록)
+    const showPrevLine = period === '1d' && prevClose != null;
+    const allForScale = showPrevLine ? [...values, prevClose] : values;
+    const min = Math.min(...allForScale);
+    const max = Math.max(...allForScale);
+    const range = max - min || 1;
+
+    const gx = (i) => ((i / (values.length - 1)) * W).toFixed(1);
+    const gy = (v) => (H - ((v - min) / range) * (H - 8) - 4).toFixed(1);
+
+    const linePts = values.map((v, i) => `${gx(i)},${gy(v)}`).join(' ');
+    const areaPath = [
+        `M ${gx(0)},${H}`,
+        ...values.map((v, i) => `L ${gx(i)},${gy(v)}`),
+        `L ${W},${H} Z`,
+    ].join(' ');
+
+    const prevY = showPrevLine ? parseFloat(gy(prevClose)) : null;
+
+    return (
+        <svg width={W} height={H} style={{ display: 'block', flexShrink: 0 }}>
+            <defs>
+                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={color} stopOpacity="0.18" />
+                    <stop offset="100%" stopColor={color} stopOpacity="0.01" />
+                </linearGradient>
+            </defs>
+            {/* 전일종가 점선 */}
+            {prevY != null && (
+                <line x1={0} y1={prevY} x2={W} y2={prevY}
+                    stroke="#aaa" strokeWidth={1} strokeDasharray="3 2" />
+            )}
+            <path d={areaPath} fill={`url(#${gradId})`} />
+            <polyline points={linePts} fill="none" stroke={color} strokeWidth={1.8}
+                strokeLinejoin="round" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+// ── 내 종목 즐겨찾기 미니 카드 ──────────────────────────────────
+function StockMiniCard({ card, historyData, onRemove, onToggleBookmark, isBookmarked, period }) {
+    const isUp = card.isUp !== false;
+    const color = isUp ? '#e74c3c' : '#3498db';
+
+    return (
+        <div style={{
+            background: '#fff',
+            borderRadius: '14px',
+            border: '1px solid #f0f2f5',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'stretch',
+        }}>
+            {/* 좌측 컬러 바 */}
+            <div style={{ width: 4, background: color, flexShrink: 0 }} />
+
+            {/* 정보 영역 */}
+            <a
+                href={card.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: 'none', color: 'inherit', flex: 1, minWidth: 0, padding: '10px 12px', display: 'block' }}
+            >
+                {/* 티커 배지 + 종목명 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+                    <span style={{
+                        fontSize: 10, fontWeight: 800, color: '#fff',
+                        background: color, padding: '2px 7px', borderRadius: 5,
+                        letterSpacing: '0.3px', flexShrink: 0,
+                    }}>{card.ticker}</span>
+                    <span style={{
+                        fontSize: 11, color: '#aab', fontWeight: 500,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>{card.title}</span>
+                </div>
+
+                {/* 가격 */}
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#1a1a2e', lineHeight: 1, marginBottom: 4 }}>
+                    {card._price || '—'}
+                </div>
+
+                {/* 등락 */}
+                <div style={{ fontSize: 12, fontWeight: 600, color: card._change ? color : '#bbb' }}>
+                    {card._change
+                        ? `${isUp ? '▲' : '▼'} ${card._change} (${card._percent})`
+                        : '로딩 중...'}
+                </div>
+            </a>
+
+            {/* 우측: 스파크라인 + 버튼 */}
+            <div style={{
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'flex-end', justifyContent: 'space-between',
+                padding: '8px 10px 8px 0',
+            }}>
+                <a href={card.link} target="_blank" rel="noopener noreferrer" style={{ display: 'block', lineHeight: 0 }}>
+                    <Sparkline data={historyData} isUp={isUp} prevClose={card._prevClose} period={period} />
+                </a>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onToggleBookmark(card.id, e); }}
+                        title={isBookmarked ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+                        style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontSize: 15, padding: '2px 3px', lineHeight: 1,
+                            color: isBookmarked ? '#f1c40f' : '#ddd',
+                        }}
+                    >{isBookmarked ? '★' : '☆'}</button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onRemove(card.ticker, e); }}
+                        title="종목 삭제"
+                        style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontSize: 12, padding: '2px 3px', lineHeight: 1,
+                            color: '#ccc',
+                        }}
+                    >✕</button>
+                </div>
             </div>
         </div>
     );
