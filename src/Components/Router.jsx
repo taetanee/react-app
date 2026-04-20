@@ -98,14 +98,14 @@ function HamburgerMenu() {
                     zIndex: 999,
                     overflow: 'hidden',
                 }}>
-                    <NavLink style={dropdownLinkStyle} to="/openai" onClick={() => setMenuOpen(false)}>
-                        오픈AI
+                    <NavLink style={dropdownLinkStyle} to="/moving-average" onClick={() => setMenuOpen(false)}>
+                        지수 이동평균선
                     </NavLink>
                     <NavLink style={dropdownLinkStyle} to="/quant" onClick={() => setMenuOpen(false)}>
-                        퀀트 투자
+                        S&P 500 퀀트
                     </NavLink>
-                    <NavLink style={dropdownLinkStyle} to="/moving-average" onClick={() => setMenuOpen(false)}>
-                        이동평균선
+                    <NavLink style={dropdownLinkStyle} to="/openai" onClick={() => setMenuOpen(false)}>
+                        오픈AI
                     </NavLink>
                     <span
                         onClick={() => { setMenuOpen(false); alert('비공개 상태입니다.'); }}

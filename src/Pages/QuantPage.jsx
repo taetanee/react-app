@@ -795,7 +795,7 @@ export default function QuantPage() {
             {/* 헤더 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 20 }}>
                 <div>
-                    <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1a1a2e' }}>S&P 500 퀀트 스크리닝</h2>
+                    <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1a1a2e' }}>S&P 500 퀀트</h2>
                     <p style={{ margin: '5px 0 0', fontSize: 12, color: '#888' }}>
                         Wikipedia S&P 500 전체 종목 · Yahoo Finance 실시간 펀더멘털 · 자동 갱신 오전 7시 KST
                     </p>

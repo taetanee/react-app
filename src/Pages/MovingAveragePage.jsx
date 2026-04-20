@@ -10,7 +10,7 @@ const API_BASE_URL = "https://api.mypad.kr/myDashboard";
 const TICKERS = [
     { key: "snp500",  label: "S&P 500",  symbol: "^GSPC", color: "#00b894" },
     { key: "nasdaq",  label: "NASDAQ",   symbol: "^IXIC", color: "#7b2ff7" },
-    { key: "soxl",    label: "SOXL",     symbol: "SOXL",  color: "#e17055" },
+    { key: "kospi",   label: "KOSPI",    symbol: "^KS11", color: "#e63946" },
 ];
 
 const PERIODS = [
@@ -97,8 +97,8 @@ function CustomTooltip({ active, payload, label }) {
 // ── 메인 컴포넌트 ────────────────────────────────────────────
 export default function MovingAveragePage() {
     const [activeTicker, setActiveTicker] = useState("snp500");
-    const [activePeriod, setActivePeriod] = useState("1y");
-    const [activeMA, setActiveMA]         = useState(["ma20", "ma60", "ma120"]);
+    const [activePeriod, setActivePeriod] = useState("6mo");
+    const [activeMA, setActiveMA]         = useState(["ma20"]);
     const [chartData, setChartData]       = useState([]);
     const [loading, setLoading]           = useState(false);
     const [error, setError]               = useState(null);
@@ -175,7 +175,7 @@ export default function MovingAveragePage() {
         }}>
             {/* 헤더 */}
             <div style={{ marginBottom: 20 }}>
-                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>이동평균선 차트</h2>
+                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>지수 이동평균선</h2>
                 <p style={{ margin: "5px 0 0", fontSize: 12, color: "#888" }}>
                     Yahoo Finance 일봉 데이터 기준 · S&P 500, NASDAQ, SOXL
                 </p>
@@ -339,7 +339,7 @@ export default function MovingAveragePage() {
                             <Line
                                 type="monotone"
                                 dataKey="종가"
-                                stroke={ticker.color}
+                                stroke="#1a1a2e"
                                 strokeWidth={1.5}
                                 dot={false}
                                 activeDot={{ r: 4 }}
