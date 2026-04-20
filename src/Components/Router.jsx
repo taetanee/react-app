@@ -5,6 +5,8 @@ import Page01 from "../Pages/Page01";
 import Page02 from "../Pages/Page02";
 import Page03 from "../Pages/Page03";
 import QuantPage from "../Pages/QuantPage";
+import ProposalPage from "../Pages/ProposalPage";
+import MovingAveragePage from "../Pages/MovingAveragePage";
 import { generateWordId, validateWordId } from "../utils/wordGenerator";
 import { message } from "./Message";
 import axios from "axios";
@@ -101,6 +103,9 @@ function HamburgerMenu() {
                     </NavLink>
                     <NavLink style={dropdownLinkStyle} to="/quant" onClick={() => setMenuOpen(false)}>
                         퀀트 투자
+                    </NavLink>
+                    <NavLink style={dropdownLinkStyle} to="/moving-average" onClick={() => setMenuOpen(false)}>
+                        이동평균선
                     </NavLink>
                     <span
                         onClick={() => { setMenuOpen(false); alert('비공개 상태입니다.'); }}
@@ -312,11 +317,15 @@ export default function Router() {
             <Routes>
                 <Route path="/" element={<RootRedirect />} />
 
+                {/* 프로포즈 페이지 */}
+                <Route path="/@aye" element={<ProposalPage />} />
+
                 {/* 고유 URL 없는 공유 페이지 */}
                 <Route element={<SharedLayout />}>
-                    <Route path="/openai"    element={<Page02 />} />
-                    <Route path="/quant"     element={<QuantPage />} />
-                    <Route path="/portfolio" element={<Page03 />} />
+                    <Route path="/openai"          element={<Page02 />} />
+                    <Route path="/quant"           element={<QuantPage />} />
+                    <Route path="/moving-average"  element={<MovingAveragePage />} />
+                    <Route path="/portfolio"       element={<Page03 />} />
                 </Route>
 
                 {/* 개인 URL 페이지 */}
