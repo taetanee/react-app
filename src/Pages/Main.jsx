@@ -349,28 +349,25 @@ export default function Main() {
         {
             id: 'weeklyWeather',
             title: '이번주 날씨',
-            fullWidth: true,
+            fullWidth: false,
             link: 'https://search.naver.com/search.naver?query=%EC%9D%B4%EB%B2%88%EC%A3%BC+%EB%82%A0%EC%94%A8',
             content: () => weeklyWeather.length > 0 ? (
-                <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '2px' }}>
+                <div style={{ display: 'flex', gap: '2px', overflowX: 'auto' }}>
                     {weeklyWeather.map((d, i) => (
                         <div key={i} style={{
-                            flex: '1 0 0',
-                            minWidth: '42px',
+                            flex: '1 1 0',
+                            minWidth: '22px',
                             textAlign: 'center',
-                            padding: '6px 4px',
-                            borderRadius: '10px',
+                            padding: '2px',
+                            borderRadius: '6px',
                             background: i === 0 ? '#eaf4fb' : 'transparent',
                         }}>
-                            <div style={{ fontSize: '11px', fontWeight: i === 0 ? '800' : '600', color: i === 0 ? '#3498db' : '#868e96' }}>
+                            <div style={{ fontSize: '9px', fontWeight: i === 0 ? '800' : '600', color: i === 0 ? '#3498db' : '#868e96', lineHeight: '1.3' }}>
                                 {i === 0 ? '오늘' : d.day}
                             </div>
-                            <div style={{ fontSize: '20px', margin: '4px 0 2px' }}>{d.emoji}</div>
-                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#e74c3c' }}>{d.maxTemp}°</div>
-                            <div style={{ fontSize: '11px', color: '#74b9ff' }}>{d.minTemp}°</div>
-                            {d.precip > 0 && (
-                                <div style={{ fontSize: '10px', color: '#74b9ff', marginTop: '2px' }}>💧{d.precip}%</div>
-                            )}
+                            <div style={{ fontSize: '13px', lineHeight: '1.3' }}>{d.emoji}</div>
+                            <div style={{ fontSize: '9px', fontWeight: '700', color: '#e74c3c', lineHeight: '1.3' }}>{d.maxTemp}°</div>
+                            <div style={{ fontSize: '8px', color: '#74b9ff', lineHeight: '1.3' }}>{d.minTemp}°</div>
                         </div>
                     ))}
                 </div>
@@ -634,7 +631,7 @@ export default function Main() {
             ? (card.isUp !== false ? '📈' : '📉')
             : (CARD_ICON[card.id] || '📌');
         const isBookmarked = bookmarks.includes(card.id);
-        const gridStyle = card.fullWidth ? { gridColumn: '1 / -1' } : {};
+        const gridStyle = card.fullWidth ? { gridColumn: '1 / -1' } : { minWidth: 0 };
 
         return (
             <div key={card.id} style={gridStyle}>
