@@ -109,6 +109,15 @@ export default function Main() {
     const [customStocks, setCustomStocks] = useState([]);
     const [stockHistoryData, setStockHistoryData] = useState({});
     const [stockPeriod, setStockPeriod] = useState('1d');
+    const [snp500History, setSnp500History] = useState([]);
+    const [vixHistory, setVixHistory] = useState([]);
+    const [exchangeHistory, setExchangeHistory] = useState([]);
+    const [fearGreedHistory, setFearGreedHistory] = useState([]);
+    const [nasdaqHistory, setNasdaqHistory] = useState([]);
+    const [dowjonesHistory, setDowjonesHistory] = useState([]);
+    const [bitcoinHistory, setBitcoinHistory] = useState([]);
+    const [kospiHistory, setKospiHistory] = useState([]);
+    const [chartPeriod, setChartPeriod] = useState('1d');
 
     // 서버에서 preferences 로드
     useEffect(() => {
@@ -233,6 +242,53 @@ export default function Main() {
             } catch (e) { console.error(`${ticker} 히스토리 실패`, e); }
         });
     }, [customStocks, bookmarks, stockPeriod]);
+
+    // S&P 500 · VIX · 환율 히스토리 fetch (공통 chartPeriod)
+    useEffect(() => {
+        const fetchChartHistories = async () => {
+            try {
+                const r1 = await fetch(`${API_BASE_URL}/getStockHistory?ticker=%5EGSPC&range=${chartPeriod}`);
+                const d1 = await r1.json();
+                if (Array.isArray(d1) && d1.length > 0) setSnp500History(d1);
+            } catch (e) { console.error('S&P500 히스토리 실패', e); }
+            try {
+                const r2 = await fetch(`${API_BASE_URL}/getStockHistory?ticker=%5EVIX&range=${chartPeriod}`);
+                const d2 = await r2.json();
+                if (Array.isArray(d2) && d2.length > 0) setVixHistory(d2);
+            } catch (e) { console.error('VIX 히스토리 실패', e); }
+            try {
+                const r3 = await fetch(`${API_BASE_URL}/getStockHistory?ticker=USDKRW%3DX&range=${chartPeriod}`);
+                const d3 = await r3.json();
+                if (Array.isArray(d3) && d3.length > 0) setExchangeHistory(d3);
+            } catch (e) { console.error('환율 히스토리 실패', e); }
+            try {
+                const r4 = await fetch(`${API_BASE_URL}/getFearAndGreedHistory?range=${chartPeriod}`);
+                const d4 = await r4.json();
+                if (Array.isArray(d4) && d4.length > 0) setFearGreedHistory(d4);
+            } catch (e) { console.error('공포탐욕 히스토리 실패', e); }
+            try {
+                const r5 = await fetch(`${API_BASE_URL}/getStockHistory?ticker=%5EIXIC&range=${chartPeriod}`);
+                const d5 = await r5.json();
+                if (Array.isArray(d5) && d5.length > 0) setNasdaqHistory(d5);
+            } catch (e) { console.error('나스닥 히스토리 실패', e); }
+            try {
+                const r6 = await fetch(`${API_BASE_URL}/getStockHistory?ticker=%5EDJI&range=${chartPeriod}`);
+                const d6 = await r6.json();
+                if (Array.isArray(d6) && d6.length > 0) setDowjonesHistory(d6);
+            } catch (e) { console.error('다우존스 히스토리 실패', e); }
+            try {
+                const r7 = await fetch(`${API_BASE_URL}/getStockHistory?ticker=BTC-USD&range=${chartPeriod}`);
+                const d7 = await r7.json();
+                if (Array.isArray(d7) && d7.length > 0) setBitcoinHistory(d7);
+            } catch (e) { console.error('비트코인 히스토리 실패', e); }
+            try {
+                const r8 = await fetch(`${API_BASE_URL}/getStockHistory?ticker=%5EKS11&range=${chartPeriod}`);
+                const d8 = await r8.json();
+                if (Array.isArray(d8) && d8.length > 0) setKospiHistory(d8);
+            } catch (e) { console.error('코스피 히스토리 실패', e); }
+        };
+        fetchChartHistories();
+    }, [chartPeriod]);
 
     // 개별 종목 데이터 fetch
     const fetchStocks = useCallback(async () => {
@@ -420,33 +476,57 @@ export default function Main() {
             id: 'snp500',
             title: 'S&P 500',
             link: 'https://www.google.com/search?q=snp500',
-            content: () => (
-                <div>
-                    <p style={{ ...valueStyle, color: '#2d3436' }}>{snp500.price || "..."}</p>
-                    {snp500.price && (
-                        <p style={{ ...changeStyle(snp500.isUp), margin: '4px 0 0' }}>
-                            {snp500.isUp ? "▲" : "▼"} {snp500.change} ({snp500.percent})
-                        </p>
-                    )}
-                </div>
-            )
+            content: () => {
+                const snp500PrevClose = snp500.price && snp500.change
+                    ? (snp500.isUp
+                        ? parseFloat(snp500.price) - parseFloat(snp500.change)
+                        : parseFloat(snp500.price) + parseFloat(snp500.change))
+                    : null;
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div>
+                            <p style={{ ...valueStyle, color: '#2d3436' }}>{snp500.price || "..."}</p>
+                            {snp500.price && (
+                                <p style={{ ...changeStyle(snp500.isUp), margin: '4px 0 0' }}>
+                                    {snp500.isUp ? "▲" : "▼"} {snp500.change} ({snp500.percent})
+                                </p>
+                            )}
+                        </div>
+                        {snp500History.length > 0 && (
+                            <Sparkline data={snp500History} isUp={snp500.isUp} prevClose={snp500PrevClose} period={chartPeriod} />
+                        )}
+                    </div>
+                );
+            }
         },
         {
             id: 'exchange',
             title: '달러/원 환율',
             link: 'https://kr.investing.com/currencies/usd-krw',
-            content: () => (
-                <div>
-                    <p style={{ ...valueStyle, color: '#2d3436' }}>
-                        {exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}
-                    </p>
-                    {exchangeRate.rate && (
-                        <p style={{ ...changeStyle(exchangeRate.isUp), margin: '4px 0 0' }}>
-                            {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change} ({exchangeRate.percent})
-                        </p>
-                    )}
-                </div>
-            )
+            content: () => {
+                const exchangePrevClose = exchangeRate.rate && exchangeRate.change
+                    ? (exchangeRate.isUp
+                        ? parseFloat(exchangeRate.rate) - parseFloat(exchangeRate.change)
+                        : parseFloat(exchangeRate.rate) + parseFloat(exchangeRate.change))
+                    : null;
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div>
+                            <p style={{ ...valueStyle, color: '#2d3436' }}>
+                                {exchangeRate.rate ? `${exchangeRate.rate}원` : "..."}
+                            </p>
+                            {exchangeRate.rate && (
+                                <p style={{ ...changeStyle(exchangeRate.isUp), margin: '4px 0 0' }}>
+                                    {exchangeRate.isUp ? "▲" : "▼"} {exchangeRate.change} ({exchangeRate.percent})
+                                </p>
+                            )}
+                        </div>
+                        {exchangeHistory.length > 0 && (
+                            <Sparkline data={exchangeHistory} isUp={exchangeRate.isUp} prevClose={exchangePrevClose} period={chartPeriod} />
+                        )}
+                    </div>
+                );
+            }
         },
         {
             id: 'feargreed',
@@ -454,27 +534,33 @@ export default function Main() {
             link: 'https://edition.cnn.com/markets/fear-and-greed',
             content: () => {
                 const fgColor = getFearGreedColor(fearGreed.value);
+                const isUp = fearGreed.status === "UP";
                 return (
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                            <span style={{ ...valueStyle, color: fgColor }}>{fearGreed.value || "0"}</span>
-                            <span style={{ fontSize: "12px", fontWeight: "600", color: fearGreed.status === "UP" ? "#e74c3c" : "#3498db" }}>
-                                {fearGreed.status === "UP" ? "▲" : "▼"} {Math.abs(fearGreed.diff)}
-                            </span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                                <span style={{ ...valueStyle, color: fgColor }}>{fearGreed.value || "0"}</span>
+                                <span style={{ fontSize: "12px", fontWeight: "600", color: isUp ? "#e74c3c" : "#3498db" }}>
+                                    {isUp ? "▲" : "▼"} {Math.abs(fearGreed.diff)}
+                                </span>
+                            </div>
+                            {/* 게이지 바 */}
+                            <div style={{ height: '5px', background: '#f0f0f0', borderRadius: '3px', margin: '7px 0 5px', overflow: 'hidden' }}>
+                                <div style={{
+                                    height: '100%',
+                                    width: `${Math.min(fearGreed.value, 100)}%`,
+                                    background: `linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71)`,
+                                    borderRadius: '3px',
+                                    transition: 'width 0.6s ease',
+                                }} />
+                            </div>
+                            <p style={{ fontSize: "11px", color: "#95a5a6", margin: "0", fontWeight: '600' }}>
+                                {fearGreed.rating}
+                            </p>
                         </div>
-                        {/* 게이지 바 */}
-                        <div style={{ height: '5px', background: '#f0f0f0', borderRadius: '3px', margin: '7px 0 5px', overflow: 'hidden' }}>
-                            <div style={{
-                                height: '100%',
-                                width: `${Math.min(fearGreed.value, 100)}%`,
-                                background: `linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71)`,
-                                borderRadius: '3px',
-                                transition: 'width 0.6s ease',
-                            }} />
-                        </div>
-                        <p style={{ fontSize: "11px", color: "#95a5a6", margin: "0", fontWeight: '600' }}>
-                            {fearGreed.rating}
-                        </p>
+                        {fearGreedHistory.length > 0 && (
+                            <Sparkline data={fearGreedHistory} isUp={isUp} prevClose={fearGreed.prevValue ?? null} period={chartPeriod} />
+                        )}
                     </div>
                 );
             }
@@ -483,63 +569,109 @@ export default function Main() {
             id: 'nasdaq',
             title: '나스닥',
             link: 'https://finance.yahoo.com/quote/%5EIXIC',
-            content: () => (
-                <div>
-                    <p style={{ ...valueStyle, color: '#2d3436' }}>{nasdaq.price || "..."}</p>
-                    {nasdaq.price && (
-                        <p style={{ ...changeStyle(nasdaq.isUp), margin: '4px 0 0' }}>
-                            {nasdaq.isUp ? "▲" : "▼"} {nasdaq.change} ({nasdaq.percent})
-                        </p>
-                    )}
-                </div>
-            )
+            content: () => {
+                const nasdaqPrevClose = nasdaq.price && nasdaq.change
+                    ? (nasdaq.isUp
+                        ? parseFloat(nasdaq.price) - parseFloat(nasdaq.change)
+                        : parseFloat(nasdaq.price) + parseFloat(nasdaq.change))
+                    : null;
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div>
+                            <p style={{ ...valueStyle, color: '#2d3436' }}>{nasdaq.price || "..."}</p>
+                            {nasdaq.price && (
+                                <p style={{ ...changeStyle(nasdaq.isUp), margin: '4px 0 0' }}>
+                                    {nasdaq.isUp ? "▲" : "▼"} {nasdaq.change} ({nasdaq.percent})
+                                </p>
+                            )}
+                        </div>
+                        {nasdaqHistory.length > 0 && (
+                            <Sparkline data={nasdaqHistory} isUp={nasdaq.isUp} prevClose={nasdaqPrevClose} period={chartPeriod} />
+                        )}
+                    </div>
+                );
+            }
         },
         {
             id: 'dowjones',
             title: '다우존스',
             link: 'https://finance.yahoo.com/quote/%5EDJI',
-            content: () => (
-                <div>
-                    <p style={{ ...valueStyle, color: '#2d3436' }}>{dowjones.price || "..."}</p>
-                    {dowjones.price && (
-                        <p style={{ ...changeStyle(dowjones.isUp), margin: '4px 0 0' }}>
-                            {dowjones.isUp ? "▲" : "▼"} {dowjones.change} ({dowjones.percent})
-                        </p>
-                    )}
-                </div>
-            )
+            content: () => {
+                const dowjonesPrevClose = dowjones.price && dowjones.change
+                    ? (dowjones.isUp
+                        ? parseFloat(dowjones.price) - parseFloat(dowjones.change)
+                        : parseFloat(dowjones.price) + parseFloat(dowjones.change))
+                    : null;
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div>
+                            <p style={{ ...valueStyle, color: '#2d3436' }}>{dowjones.price || "..."}</p>
+                            {dowjones.price && (
+                                <p style={{ ...changeStyle(dowjones.isUp), margin: '4px 0 0' }}>
+                                    {dowjones.isUp ? "▲" : "▼"} {dowjones.change} ({dowjones.percent})
+                                </p>
+                            )}
+                        </div>
+                        {dowjonesHistory.length > 0 && (
+                            <Sparkline data={dowjonesHistory} isUp={dowjones.isUp} prevClose={dowjonesPrevClose} period={chartPeriod} />
+                        )}
+                    </div>
+                );
+            }
         },
         {
             id: 'bitcoin',
             title: '비트코인',
             link: 'https://www.google.com/search?q=%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8',
-            content: () => (
-                <div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                        <p style={{ ...valueStyle, color: '#2d3436' }}>{bitcoin.price ? `$${Number(bitcoin.price).toLocaleString()}` : "..."}</p>
+            content: () => {
+                const bitcoinPrevClose = bitcoin.price && bitcoin.change
+                    ? (bitcoin.isUp
+                        ? parseFloat(bitcoin.price) - parseFloat(bitcoin.change)
+                        : parseFloat(bitcoin.price) + parseFloat(bitcoin.change))
+                    : null;
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div>
+                            <p style={{ ...valueStyle, color: '#2d3436' }}>{bitcoin.price ? `$${Number(bitcoin.price).toLocaleString()}` : "..."}</p>
+                            {bitcoin.price && (
+                                <p style={{ ...changeStyle(bitcoin.isUp), margin: '4px 0 0' }}>
+                                    {bitcoin.isUp ? "▲" : "▼"} ${Number(bitcoin.change).toLocaleString()} ({bitcoin.percent})
+                                </p>
+                            )}
+                        </div>
+                        {bitcoinHistory.length > 0 && (
+                            <Sparkline data={bitcoinHistory} isUp={bitcoin.isUp} prevClose={bitcoinPrevClose} period={chartPeriod} />
+                        )}
                     </div>
-                    {bitcoin.price && (
-                        <p style={{ ...changeStyle(bitcoin.isUp), margin: '4px 0 0' }}>
-                            {bitcoin.isUp ? "▲" : "▼"} ${Number(bitcoin.change).toLocaleString()} ({bitcoin.percent})
-                        </p>
-                    )}
-                </div>
-            )
+                );
+            }
         },
         {
             id: 'kospi',
             title: '코스피',
             link: 'https://search.naver.com/search.naver?query=%EC%BD%94%EC%8A%A4%ED%94%BC',
-            content: () => (
-                <div>
-                    <p style={{ ...valueStyle, color: '#2d3436' }}>{kospi.price || "..."}</p>
-                    {kospi.price && (
-                        <p style={{ ...changeStyle(kospi.isUp), margin: '4px 0 0' }}>
-                            {kospi.isUp ? "▲" : "▼"} {kospi.change} ({kospi.percent})
-                        </p>
-                    )}
-                </div>
-            )
+            content: () => {
+                const kospiPrevClose = kospi.price && kospi.change
+                    ? (kospi.isUp
+                        ? parseFloat(kospi.price) - parseFloat(kospi.change)
+                        : parseFloat(kospi.price) + parseFloat(kospi.change))
+                    : null;
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div>
+                            <p style={{ ...valueStyle, color: '#2d3436' }}>{kospi.price || "..."}</p>
+                            {kospi.price && (
+                                <p style={{ ...changeStyle(kospi.isUp), margin: '4px 0 0' }}>
+                                    {kospi.isUp ? "▲" : "▼"} {kospi.change} ({kospi.percent})
+                                </p>
+                            )}
+                        </div>
+                        {kospiHistory.length > 0 && (
+                            <Sparkline data={kospiHistory} isUp={kospi.isUp} prevClose={kospiPrevClose} period={chartPeriod} />
+                        )}
+                    </div>
+                );
+            }
         },
         {
             id: 'vix',
@@ -547,30 +679,40 @@ export default function Main() {
             link: 'https://www.google.com/search?q=vix+index',
             content: () => {
                 const status = getVixStatus(vix.price);
+                const vixPrevClose = vix.price && vix.change
+                    ? (vix.isUp
+                        ? parseFloat(vix.price) - parseFloat(vix.change)
+                        : parseFloat(vix.price) + parseFloat(vix.change))
+                    : null;
                 return (
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                            <span style={{ ...valueStyle, color: '#2d3436' }}>{vix.price || "..."}</span>
-                            {vix.price && (
-                                <span style={{ ...changeStyle(vix.isUp) }}>
-                                    {vix.isUp ? "▲" : "▼"} {vix.change}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                                <span style={{ ...valueStyle, color: '#2d3436' }}>{vix.price || "..."}</span>
+                                {vix.price && (
+                                    <span style={{ ...changeStyle(vix.isUp) }}>
+                                        {vix.isUp ? "▲" : "▼"} {vix.change}
+                                    </span>
+                                )}
+                            </div>
+                            {status && (
+                                <span style={{
+                                    display: 'inline-block',
+                                    marginTop: '5px',
+                                    fontSize: '11px',
+                                    fontWeight: '700',
+                                    color: status.color,
+                                    background: `${status.color}18`,
+                                    padding: '2px 8px',
+                                    borderRadius: '10px',
+                                    border: `1px solid ${status.color}40`,
+                                }}>
+                                    {status.text}
                                 </span>
                             )}
                         </div>
-                        {status && (
-                            <span style={{
-                                display: 'inline-block',
-                                marginTop: '5px',
-                                fontSize: '11px',
-                                fontWeight: '700',
-                                color: status.color,
-                                background: `${status.color}18`,
-                                padding: '2px 8px',
-                                borderRadius: '10px',
-                                border: `1px solid ${status.color}40`,
-                            }}>
-                                {status.text}
-                            </span>
+                        {vixHistory.length > 0 && (
+                            <Sparkline data={vixHistory} isUp={vix.isUp} prevClose={vixPrevClose} period={chartPeriod} />
                         )}
                     </div>
                 );
@@ -639,7 +781,7 @@ export default function Main() {
                     href={card.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+                    style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}
                 >
                     <div style={{
                         background: '#fff',
@@ -677,7 +819,8 @@ export default function Main() {
                                         </span>
                                     )}
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                                    {card.headerRight && card.headerRight()}
                                     {card.isStock && (
                                         <button
                                             onClick={(e) => handleRemoveStock(card.ticker, e)}
@@ -824,9 +967,21 @@ export default function Main() {
 
                 {/* 즐겨찾기 패널 (흰 배경) */}
                 <div style={{ marginBottom: '10px' }}>
-                    <Panel icon="⭐" label="즐겨찾기" accent>
+                    <Panel icon="⭐" label="즐겨찾기" accent headerRight={
+                        <div style={{ display: 'flex', gap: 3 }}>
+                            {[{ key: '1d', label: '1D' }, { key: '5d', label: '5D' }, { key: '1mo', label: '1M' }, { key: '6mo', label: '6M' }].map(p => (
+                                <button key={p.key} onClick={() => setChartPeriod(p.key)} style={{
+                                    padding: '3px 8px', borderRadius: 6, border: '1.5px solid',
+                                    borderColor: chartPeriod === p.key ? '#2d3436' : '#e0e0e0',
+                                    background: chartPeriod === p.key ? '#2d3436' : '#fff',
+                                    color: chartPeriod === p.key ? '#fff' : '#999',
+                                    fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                                }}>{p.label}</button>
+                            ))}
+                        </div>
+                    }>
                         {bookmarkedStatic.length > 0 ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', gridAutoRows: '120px' }}>
                                 {bookmarkedStatic.map(card => renderCard(card))}
                             </div>
                         ) : (
@@ -893,7 +1048,7 @@ export default function Main() {
                 {nonBookmarkedStatic.length > 0 && (
                     <div style={{ marginBottom: '28px' }}>
                         <Panel label="즐겨찾기 미등록">
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', gridAutoRows: '120px' }}>
                                 {nonBookmarkedStatic.map(card => renderCard(card))}
                             </div>
                         </Panel>
@@ -908,7 +1063,7 @@ export default function Main() {
                 <Panel label="즐겨찾기 미등록">
                     {renderSearchForm()}
                     {nonBookmarkedStock.length > 0 && (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', gridAutoRows: '120px', marginTop: '12px' }}>
                             {nonBookmarkedStock.map(card => renderCard(card))}
                         </div>
                     )}
