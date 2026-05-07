@@ -20,7 +20,7 @@ function RootRedirect() {
 }
 
 // ── 공통: 햄버거 드롭다운 ─────────────────────────────────────
-function HamburgerMenu() {
+function HamburgerMenu({ id }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
@@ -98,7 +98,7 @@ function HamburgerMenu() {
                     zIndex: 999,
                     overflow: 'hidden',
                 }}>
-                    <NavLink style={dropdownLinkStyle} to="/moving-average" onClick={() => setMenuOpen(false)}>
+                    <NavLink style={dropdownLinkStyle} to={id ? `/@${id}/moving-average` : '/'} onClick={() => setMenuOpen(false)}>
                         지수 이동평균선
                     </NavLink>
                     <NavLink style={dropdownLinkStyle} to="/quant" onClick={() => setMenuOpen(false)}>
@@ -189,7 +189,7 @@ function Layout() {
     return (
         <>
             <nav style={navStyle}>
-                <HamburgerMenu />
+                <HamburgerMenu id={id} />
                 <NavLink style={navLinkStyle} to={`/@${id}`} end>나만의 요약</NavLink>
                 <NavLink style={navLinkStyle} to={`/@${id}/clipboard`}>나만의 복붙</NavLink>
             </nav>
@@ -290,7 +290,7 @@ function SharedLayout() {
     return (
         <>
             <nav style={navStyle}>
-                <HamburgerMenu />
+                <HamburgerMenu id={savedId} />
                 <NavLink style={navLinkStyle} to={savedId ? `/@${savedId}` : '/'} end>나만의 요약</NavLink>
                 <NavLink style={navLinkStyle} to={savedId ? `/@${savedId}/clipboard` : '/'}>나만의 복붙</NavLink>
             </nav>
@@ -324,14 +324,14 @@ export default function Router() {
                 <Route element={<SharedLayout />}>
                     <Route path="/openai"          element={<Page02 />} />
                     <Route path="/quant"           element={<QuantPage />} />
-                    <Route path="/moving-average"  element={<MovingAveragePage />} />
                     <Route path="/portfolio"       element={<Page03 />} />
                 </Route>
 
                 {/* 개인 URL 페이지 */}
                 <Route path="/:id" element={<Layout />}>
                     <Route index element={<Main />} />
-                    <Route path="clipboard" element={<Page01 />} />
+                    <Route path="clipboard"        element={<Page01 />} />
+                    <Route path="moving-average"   element={<MovingAveragePage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

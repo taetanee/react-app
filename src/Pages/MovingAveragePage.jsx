@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useParams } from "react-router-dom";
 import {
     ResponsiveContainer, ComposedChart, Line, XAxis, YAxis,
     Tooltip, Legend, CartesianGrid,
@@ -7,10 +8,15 @@ import {
 // ── 설정 ─────────────────────────────────────────────────────
 const API_BASE_URL = "https://api.mypad.kr/myDashboard";
 
-const TICKERS = [
+const DEFAULT_TICKERS = [
     { key: "snp500",  label: "S&P 500",  symbol: "^GSPC", color: "#00b894" },
     { key: "nasdaq",  label: "NASDAQ",   symbol: "^IXIC", color: "#7b2ff7" },
     { key: "kospi",   label: "KOSPI",    symbol: "^KS11", color: "#e63946" },
+];
+
+const CUSTOM_COLORS = [
+    "#e67e22", "#16a085", "#8e44ad", "#c0392b", "#2980b9",
+    "#27ae60", "#d35400", "#2c3e50", "#f39c12", "#1abc9c",
 ];
 
 const PERIODS = [
@@ -96,15 +102,24 @@ function CustomTooltip({ active, payload, label }) {
 
 // ── 메인 컴포넌트 ────────────────────────────────────────────
 export default function MovingAveragePage() {
+    const { id: rawId } = useParams();
+    const id = rawId?.replace(/^@/, '') ?? '';
+
     const [activeTicker, setActiveTicker] = useState("snp500");
     const [activePeriod, setActivePeriod] = useState("6mo");
     const [activeMA, setActiveMA]         = useState(["ma20"]);
     const [chartData, setChartData]       = useState([]);
     const [loading, setLoading]           = useState(false);
     const [error, setError]               = useState(null);
-    const [info, setInfo]                 = useState(null); // { last, change, pct, high, low }
-    const abortRef = useRef(null);
+    const [info, setInfo]                 = useState(null);
+    const [customTickers, setCustomTickers] = useState([]);
+    const [searchInput, setSearchInput]   = useState("");
+    const [searching, setSearching]       = useState(false);
+    const [searchError, setSearchError]   = useState(null);
+    const abortRef   = useRef(null);
+    const prefsReady = useRef(false);
 
+    const TICKERS = [...DEFAULT_TICKERS, ...customTickers];
     const ticker = TICKERS.find(t => t.key === activeTicker);
 
     const load = useCallback(async (sym, range) => {
@@ -156,9 +171,70 @@ export default function MovingAveragePage() {
         }
     }, []);
 
+    // 개인화 링크 기준으로 저장된 커스텀 탭 로드
     useEffect(() => {
-        load(ticker.symbol, activePeriod);
-    }, [activeTicker, activePeriod, load, ticker.symbol]);
+        if (!id) return;
+        fetch(`${API_BASE_URL}/getPreferences?randomWord=${encodeURIComponent(id)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data.maTickers) && data.maTickers.length > 0) {
+                    setCustomTickers(data.maTickers);
+                }
+            })
+            .catch(() => {
+                try {
+                    const saved = localStorage.getItem(`ma_tickers_${id}`);
+                    if (saved) setCustomTickers(JSON.parse(saved));
+                } catch {}
+            })
+            .finally(() => { prefsReady.current = true; });
+    }, [id]);
+
+    // 커스텀 탭 변경 시 저장
+    useEffect(() => {
+        if (!prefsReady.current || !id) return;
+        fetch(`${API_BASE_URL}/savePreferences`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ randomWord: id, maTickers: customTickers }),
+        }).catch(() => {
+            try { localStorage.setItem(`ma_tickers_${id}`, JSON.stringify(customTickers)); } catch {}
+        });
+    }, [customTickers, id]);
+
+    useEffect(() => {
+        if (ticker) load(ticker.symbol, activePeriod);
+    }, [activeTicker, activePeriod, load, ticker]);
+
+    const addTicker = async () => {
+        const sym = searchInput.trim().toUpperCase();
+        if (!sym) return;
+        const key = `custom_${sym.toLowerCase()}`;
+        if (TICKERS.find(t => t.key === key)) {
+            setActiveTicker(key);
+            setSearchInput("");
+            return;
+        }
+        setSearching(true);
+        setSearchError(null);
+        try {
+            await fetchHistory(sym, "3mo");
+            const color = CUSTOM_COLORS[customTickers.length % CUSTOM_COLORS.length];
+            const newTicker = { key, label: sym, symbol: sym, color };
+            setCustomTickers(prev => [...prev, newTicker]);
+            setActiveTicker(key);
+            setSearchInput("");
+        } catch (e) {
+            setSearchError(`"${sym}" 종목을 찾을 수 없습니다.`);
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const removeTicker = (key) => {
+        setCustomTickers(prev => prev.filter(t => t.key !== key));
+        if (activeTicker === key) setActiveTicker("snp500");
+    };
 
     const toggleMA = (key) => {
         setActiveMA(prev =>
@@ -182,25 +258,82 @@ export default function MovingAveragePage() {
             </div>
 
             {/* 종목 선택 탭 */}
-            <div style={{ display: "flex", gap: 0, marginBottom: 16, borderBottom: "2px solid #eee" }}>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 0, marginBottom: 16, borderBottom: "2px solid #eee", flexWrap: "wrap" }}>
                 {TICKERS.map(t => (
-                    <button key={t.key} onClick={() => setActiveTicker(t.key)} style={{
-                        padding: "10px 20px",
-                        border: "none",
-                        background: "none",
-                        cursor: "pointer",
-                        borderBottom: activeTicker === t.key ? `2px solid ${t.color}` : "2px solid transparent",
-                        marginBottom: -2,
-                        color: activeTicker === t.key ? t.color : "#888",
-                        fontWeight: activeTicker === t.key ? 700 : 400,
-                        fontSize: 14,
-                        transition: "all 0.15s",
-                        whiteSpace: "nowrap",
-                    }}>
-                        {t.label}
-                    </button>
+                    <div key={t.key} style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                        <button onClick={() => setActiveTicker(t.key)} style={{
+                            padding: customTickers.find(c => c.key === t.key) ? "10px 28px 10px 16px" : "10px 20px",
+                            border: "none",
+                            background: "none",
+                            cursor: "pointer",
+                            borderBottom: activeTicker === t.key ? `2px solid ${t.color}` : "2px solid transparent",
+                            marginBottom: -2,
+                            color: activeTicker === t.key ? t.color : "#888",
+                            fontWeight: activeTicker === t.key ? 700 : 400,
+                            fontSize: 14,
+                            transition: "all 0.15s",
+                            whiteSpace: "nowrap",
+                        }}>
+                            {t.label}
+                        </button>
+                        {customTickers.find(c => c.key === t.key) && (
+                            <button onClick={() => removeTicker(t.key)} style={{
+                                position: "absolute",
+                                right: 6,
+                                top: "50%",
+                                transform: "translateY(-60%)",
+                                border: "none",
+                                background: "none",
+                                cursor: "pointer",
+                                color: "#bbb",
+                                fontSize: 13,
+                                lineHeight: 1,
+                                padding: "0 2px",
+                            }}>×</button>
+                        )}
+                    </div>
                 ))}
+
+                {/* 종목 검색 추가 */}
+                <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 8px 8px", marginLeft: 4 }}>
+                    <input
+                        value={searchInput}
+                        onChange={e => { setSearchInput(e.target.value); setSearchError(null); }}
+                        onKeyDown={e => e.key === "Enter" && addTicker()}
+                        placeholder="종목 검색 (AAPL…)"
+                        style={{
+                            width: 130,
+                            padding: "5px 10px",
+                            border: `1.5px solid ${searchError ? "#e74c3c" : "#ddd"}`,
+                            borderRadius: 20,
+                            fontSize: 12,
+                            outline: "none",
+                            color: "#333",
+                        }}
+                    />
+                    <button onClick={addTicker} disabled={searching || !searchInput.trim()} style={{
+                        padding: "5px 12px",
+                        borderRadius: 20,
+                        border: "1.5px solid #2d3436",
+                        background: searching || !searchInput.trim() ? "#f0f0f0" : "#2d3436",
+                        color: searching || !searchInput.trim() ? "#aaa" : "#fff",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: searching || !searchInput.trim() ? "default" : "pointer",
+                        whiteSpace: "nowrap",
+                        transition: "all 0.15s",
+                    }}>
+                        {searching ? "..." : "+ 추가"}
+                    </button>
+                </div>
             </div>
+
+            {/* 검색 오류 메시지 */}
+            {searchError && (
+                <div style={{ fontSize: 12, color: "#e74c3c", marginBottom: 10, marginTop: -10 }}>
+                    {searchError}
+                </div>
+            )}
 
             {/* 기간 + MA 선택 */}
             <div style={{
