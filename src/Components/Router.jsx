@@ -7,6 +7,8 @@ import Page03 from "../Pages/Page03";
 import QuantPage from "../Pages/QuantPage";
 import ProposalPage from "../Pages/ProposalPage";
 import MovingAveragePage from "../Pages/MovingAveragePage";
+import StockComparePage from "../Pages/StockComparePage";
+import Wedding from "../Pages/Wedding";
 import { generateWordId, validateWordId } from "../utils/wordGenerator";
 import { message } from "./Message";
 import axios from "axios";
@@ -103,6 +105,9 @@ function HamburgerMenu({ id }) {
                     </NavLink>
                     <NavLink style={dropdownLinkStyle} to="/quant" onClick={() => setMenuOpen(false)}>
                         S&P 500 퀀트
+                    </NavLink>
+                    <NavLink style={dropdownLinkStyle} to="/stock-compare" onClick={() => setMenuOpen(false)}>
+                        종목 비교
                     </NavLink>
                     <NavLink style={dropdownLinkStyle} to="/openai" onClick={() => setMenuOpen(false)}>
                         오픈AI
@@ -320,11 +325,15 @@ export default function Router() {
                 {/* 프로포즈 페이지 */}
                 <Route path="/@aye" element={<ProposalPage />} />
 
+                {/* 모바일 청첩장 */}
+                <Route path="/wedding" element={<Wedding />} />
+
                 {/* 고유 URL 없는 공유 페이지 */}
                 <Route element={<SharedLayout />}>
                     <Route path="/openai"          element={<Page02 />} />
                     <Route path="/quant"           element={<QuantPage />} />
                     <Route path="/portfolio"       element={<Page03 />} />
+                    <Route path="/stock-compare"   element={<StockComparePage />} />
                 </Route>
 
                 {/* 개인 URL 페이지 */}
