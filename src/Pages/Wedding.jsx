@@ -9,10 +9,8 @@ const BLUSH = '#fce4ec';
 const MUSIC_VIDEO_ID = 'h-XrgiZiQgw';
 
 const ACCOUNTS = [
-  { who: '신랑 김태환', bank: '국민은행', account: '123-456-789012' },
+  { who: '신랑 김태환', bank: '토스뱅크', account: '1000-0416-8007' },
   { who: '신부 안영은', bank: '신한은행', account: '987-654-321098' },
-  { who: '신랑 아버지 김영철', bank: '우리은행', account: '111-222-333444' },
-  { who: '신부 아버지 안상훈', bank: '하나은행', account: '555-666-777888' },
 ];
 
 const EVENT_DETAILS = [
@@ -20,7 +18,7 @@ const EVENT_DETAILS = [
   { label: 'TIME', value: '오후 4시 40분' },
   { label: 'VENUE', value: '여의도웨딩컨벤션' },
   { label: 'HALL', value: '그랜드볼룸' },
-  { label: 'ADDRESS', value: '영등포구 국제금융로8길 17' },
+  { label: 'ADDRESS', value: '영등포구 여의대로 14 KT빌딩 3층' },
 ];
 
 function useCountdown(target) {
@@ -223,6 +221,53 @@ function SeptemberCalendar() {
   );
 }
 
+function KakaoMap() {
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    const initMap = () => {
+      if (!mapRef.current) return;
+      const map = new window.kakao.maps.Map(mapRef.current, {
+        center: new window.kakao.maps.LatLng(37.5250, 126.9271),
+        level: 4,
+      });
+
+      const geocoder = new window.kakao.maps.services.Geocoder();
+      geocoder.addressSearch('서울특별시 영등포구 여의대로 14', (result, status) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
+          const marker = new window.kakao.maps.Marker({ map, position: coords });
+          const infowindow = new window.kakao.maps.InfoWindow({
+            content: `<div style="padding:6px 10px;font-size:12px;font-weight:700;color:#880e4f;white-space:nowrap;">여의도웨딩컨벤션</div>`,
+          });
+          infowindow.open(map, marker);
+          map.setCenter(coords);
+        }
+      });
+    };
+
+    const tryInit = () => {
+      if (window.kakao && window.kakao.maps) {
+        window.kakao.maps.load(initMap);
+      } else {
+        const t = setInterval(() => {
+          if (window.kakao && window.kakao.maps) {
+            clearInterval(t);
+            window.kakao.maps.load(initMap);
+          }
+        }, 50);
+        return () => clearInterval(t);
+      }
+    };
+
+    return tryInit();
+  }, []);
+
+  return (
+    <div ref={mapRef} style={{ width: '100%', height: 220, borderRadius: 16, overflow: 'hidden', border: `1.5px solid ${PINK}50` }} />
+  );
+}
+
 function Divider({ icon }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 32px 32px' }}>
@@ -255,6 +300,9 @@ export default function Wedding() {
       setMeta('og:title', '태환 ♥ 영은 결혼식에 초대합니다', true),
       setMeta('og:description', desc, true),
       setMeta('og:type', 'website', true),
+      setMeta('og:image', 'https://www.gstatic.com/webp/gallery/1.jpg', true),
+      setMeta('og:image:width', '600', true),
+      setMeta('og:image:height', '315', true),
     ];
 
     return () => {
@@ -292,7 +340,7 @@ export default function Wedding() {
       {/* Hero */}
       <div style={{ position: 'relative', height: 600, overflow: 'hidden', background: `linear-gradient(160deg, ${BLUSH} 0%, #ffd6e4 50%, #fff9f5 100%)` }}>
         <img
-          src="https://picsum.photos/seed/wedding-romantic-hero/480/600"
+          src="https://www.gstatic.com/webp/gallery/1.jpg"
           alt="웨딩 대표사진"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35 }}
         />
@@ -333,24 +381,24 @@ export default function Wedding() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}>
-              <img src="https://picsum.photos/seed/groom-rom/220/220" alt="신랑"
+              <img src="https://www.gstatic.com/webp/gallery/2.jpg" alt="신랑"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div style={{ fontSize: 10, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신랑</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>김태환</div>
-            <div style={{ fontSize: 11, color: '#bbb', lineHeight: 1.8 }}>김영철 · 박선희의 장남</div>
+            <div style={{ fontSize: 11, color: '#bbb', lineHeight: 1.8 }}>김세형 · 박정순의 장남</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 24 }}>
             <div style={{ fontSize: 24, color: ROSE }}>♥</div>
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}>
-              <img src="https://picsum.photos/seed/bride-rom/220/220" alt="신부"
+              <img src="https://www.gstatic.com/webp/gallery/3.jpg" alt="신부"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div style={{ fontSize: 10, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신부</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>안영은</div>
-            <div style={{ fontSize: 11, color: '#bbb', lineHeight: 1.8 }}>안상훈 · 이미란의 장녀</div>
+            <div style={{ fontSize: 11, color: '#bbb', lineHeight: 1.8 }}>안준범 · 이미란의 장녀</div>
           </div>
         </div>
       </div>
@@ -365,7 +413,7 @@ export default function Wedding() {
         <div style={{ width: 40, height: 1, background: `linear-gradient(to right, transparent, ${PINK}, transparent)`, margin: '0 auto 22px' }} />
         <div style={{ fontSize: 17, fontWeight: 700, color: DEEP_ROSE, marginBottom: 6 }}>여의도웨딩컨벤션</div>
         <div style={{ fontSize: 13, color: '#c06080', marginBottom: 4 }}>그랜드볼룸</div>
-        <div style={{ fontSize: 12, color: '#bbb' }}>서울특별시 영등포구 국제금융로8길 17</div>
+        <div style={{ fontSize: 12, color: '#bbb' }}>서울특별시 영등포구 여의대로 14 KT빌딩 3층</div>
       </div>
 
       {/* Event Details */}
@@ -405,7 +453,7 @@ export default function Wedding() {
       <div style={{ padding: '0 20px 40px' }}>
         <div style={{ textAlign: 'center', fontSize: 13, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌹 우리의 이야기 🌹</div>
         <img
-          src="https://picsum.photos/seed/romantic-couple/440/520"
+          src="https://www.gstatic.com/webp/gallery/4.jpg"
           alt="커플 사진"
           style={{ width: '100%', height: 460, objectFit: 'cover', borderRadius: 20, display: 'block', border: `2px solid ${PINK}50`, boxShadow: `0 8px 32px ${ROSE}20` }}
         />
@@ -416,11 +464,11 @@ export default function Wedding() {
         <div style={{ textAlign: 'center', fontSize: 13, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌸 G A L L E R Y 🌸</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
           {[...Array(4)].map((_, i) => (
-            <img key={i} src={`https://picsum.photos/seed/rom-gallery-${i + 1}/300/300`} alt=""
+            <img key={i} src={`https://www.gstatic.com/webp/gallery3/${(i % 3) + 1}.jpg`} alt=""
               style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 14, border: `1.5px solid ${PINK}50` }} />
           ))}
         </div>
-        <img src="https://picsum.photos/seed/rom-gallery-wide/600/300" alt=""
+        <img src="https://www.gstatic.com/webp/gallery/5.jpg" alt=""
           style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 14, display: 'block', border: `1.5px solid ${PINK}50` }} />
       </div>
 
@@ -429,19 +477,22 @@ export default function Wedding() {
       {/* Location */}
       <div style={{ padding: '0 20px 40px' }}>
         <div style={{ textAlign: 'center', fontSize: 13, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🗺️ 오 시 는 길 🗺️</div>
-        <div style={{ borderRadius: 16, overflow: 'hidden', marginBottom: 14, border: `1.5px solid ${PINK}50` }}>
-          <img src="https://picsum.photos/seed/romantic-map/440/180" alt="지도"
-            style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }} />
+        <div style={{ marginBottom: 14 }}>
+          <KakaoMap />
         </div>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: DEEP_ROSE, marginBottom: 4 }}>여의도웨딩컨벤션 그랜드볼룸</div>
-          <div style={{ fontSize: 12, color: '#bbb' }}>서울특별시 영등포구 국제금융로8길 17</div>
+          <div style={{ fontSize: 12, color: '#bbb' }}>서울특별시 영등포구 여의대로 14 KT빌딩 2층</div>
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
-          {['카카오맵', '네이버지도', '구글맵'].map(label => (
-            <button key={label} style={{ padding: '8px 16px', borderRadius: 20, border: `1.5px solid ${PINK}`, background: 'transparent', color: ROSE, fontSize: 12, cursor: 'pointer' }}>
+          {[
+            { label: '네이버지도에서 보기', url: 'https://naver.me/FHlgBdXp' },
+            { label: '카카오맵에서 보기', url: 'https://place.map.kakao.com/8011957' },
+          ].map(({ label, url }) => (
+            <a key={label} href={url} target="_blank" rel="noopener noreferrer"
+              style={{ padding: '8px 16px', borderRadius: 20, border: `1.5px solid ${PINK}`, color: ROSE, fontSize: 12, cursor: 'pointer', textDecoration: 'none' }}>
               {label}
-            </button>
+            </a>
           ))}
         </div>
         <div style={{ background: BLUSH, borderRadius: 14, padding: '20px', fontSize: 13, color: '#9a6070', lineHeight: 2.1 }}>
