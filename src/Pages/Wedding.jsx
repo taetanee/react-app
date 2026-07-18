@@ -8,18 +8,10 @@ const BLUSH = '#fce4ec';
 
 const MUSIC_VIDEO_ID = 'h-XrgiZiQgw';
 
-const ACCOUNTS = [
-  { who: '신랑 김태환', bank: '토스뱅크', account: '1000-0416-8007' },
-  { who: '신부 안영은', bank: '신한은행', account: '987-654-321098' },
-];
-
-const EVENT_DETAILS = [
-  { label: 'DATE', value: '2026년 9월 13일 일요일' },
-  { label: 'TIME', value: '오후 4시 40분' },
-  { label: 'VENUE', value: '여의도웨딩컨벤션' },
-  { label: 'HALL', value: '그랜드볼룸' },
-  { label: 'ADDRESS', value: '영등포구 여의대로 14 KT빌딩 3층' },
-];
+const ACCOUNTS = {
+  groom: { label: '신랑측', name: '김태환', bank: '토스뱅크', account: '1000-0416-8007' },
+  bride: { label: '신부측', name: '안영은', bank: '신한은행', account: '110 292 341321' },
+};
 
 function useCountdown(target) {
   const [t, setT] = useState({ d: 0, h: 0, m: 0, s: 0 });
@@ -51,8 +43,8 @@ function CopyBtn({ text }) {
         background: done ? ROSE : 'transparent',
         color: done ? '#fff' : ROSE,
         borderRadius: 20,
-        padding: '5px 14px',
-        fontSize: 12,
+        padding: '7px 20px',
+        fontSize: 16,
         cursor: 'pointer',
         transition: 'all 0.2s',
         flexShrink: 0,
@@ -60,6 +52,84 @@ function CopyBtn({ text }) {
     >
       {done ? '복사됨 ✓' : '복사'}
     </button>
+  );
+}
+
+function HeartEffect() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    let animId;
+    const colors = ['#f48fb1', '#c2185b', '#f06292', '#e91e63', '#ffb7c5'];
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const drawHeart = (s) => {
+      ctx.beginPath();
+      ctx.moveTo(0, s * 0.35);
+      ctx.bezierCurveTo(-s * 0.04, s * 0.15, -s * 0.5, s * 0.02, -s * 0.5, -s * 0.1);
+      ctx.bezierCurveTo(-s * 0.5, -s * 0.45, 0, -s * 0.6, 0, -s * 0.35);
+      ctx.bezierCurveTo(0, -s * 0.6, s * 0.5, -s * 0.45, s * 0.5, -s * 0.1);
+      ctx.bezierCurveTo(s * 0.5, s * 0.02, s * 0.04, s * 0.15, 0, s * 0.35);
+      ctx.fill();
+    };
+
+    class Heart {
+      constructor(initial = false) { this.reset(initial); }
+      reset(initial = false) {
+        this.x = Math.random() * canvas.width;
+        this.y = initial ? Math.random() * canvas.height : -20;
+        this.size = Math.random() * 10 + 6;
+        this.speed = Math.random() * 0.7 + 0.3;
+        this.rot = Math.random() * Math.PI * 2;
+        this.rotSpeed = (Math.random() - 0.5) * 0.02;
+        this.opacity = Math.random() * 0.25 + 0.07;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.sway = Math.random() * Math.PI * 2;
+        this.swaySpeed = Math.random() * 0.02 + 0.01;
+      }
+      update() {
+        this.y += this.speed;
+        this.sway += this.swaySpeed;
+        this.x += Math.sin(this.sway) * 0.5;
+        this.rot += this.rotSpeed;
+        if (this.y > canvas.height + 20) this.reset();
+      }
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rot);
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = this.color;
+        drawHeart(this.size);
+        ctx.restore();
+      }
+    }
+
+    const hearts = Array.from({ length: 25 }, () => new Heart(true));
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hearts.forEach(h => { h.update(); h.draw(); });
+      animId = requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas ref={canvasRef} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }} />
   );
 }
 
@@ -77,9 +147,9 @@ function MusicPlayer() {
       if (cancelled || playerRef.current) return;
       playerRef.current = new window.YT.Player(YT_PLAYER_ID, {
         videoId: MUSIC_VIDEO_ID,
-        playerVars: { autoplay: 1, controls: 0, loop: 1, playlist: MUSIC_VIDEO_ID, rel: 0 },
+        playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: MUSIC_VIDEO_ID, rel: 0 },
         events: {
-          onReady: (e) => { if (!cancelled) { e.target.playVideo(); setReady(true); } },
+          onReady: (e) => { if (!cancelled) { e.target.pauseVideo(); setReady(true); } },
           onStateChange: (e) => { if (!cancelled) setPlaying(e.data === window.YT.PlayerState.PLAYING); },
         },
       });
@@ -118,7 +188,7 @@ function MusicPlayer() {
         background: 'rgba(255,255,255,0.93)',
         borderRadius: 50,
         boxShadow: `0 6px 28px ${ROSE}22`,
-        padding: '10px 16px 10px 10px',
+        padding: '10px 18px 10px 10px',
         display: 'flex',
         alignItems: 'center',
         gap: 10,
@@ -129,9 +199,9 @@ function MusicPlayer() {
         <button
           onClick={toggle}
           style={{
-            width: 38, height: 38, borderRadius: '50%',
+            width: 44, height: 44, borderRadius: '50%',
             background: `linear-gradient(135deg, ${ROSE}, ${DEEP_ROSE})`,
-            border: 'none', color: '#fff', fontSize: 15,
+            border: 'none', color: '#fff', fontSize: 18,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0, boxShadow: `0 3px 12px ${ROSE}45`,
           }}
@@ -139,8 +209,8 @@ function MusicPlayer() {
           {!ready ? '♪' : playing ? '⏸' : '▶'}
         </button>
         <div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 0.3 }}>love wins all</div>
-          <div style={{ fontSize: 10, color: ROSE, opacity: 0.7, marginTop: 2 }}>아이유 (IU)</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 0.3 }}>love wins all</div>
+          <div style={{ fontSize: 14, color: ROSE, opacity: 0.7, marginTop: 2 }}>아이유 (IU)</div>
         </div>
         {playing && (
           <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 14 }}>
@@ -159,8 +229,7 @@ function MusicPlayer() {
 }
 
 function SeptemberCalendar() {
-  // 2026년 9월 1일 = 화요일(2), 13일 = 일요일
-  const firstDayOfWeek = 2; // getDay() of Sep 1, 2026
+  const firstDayOfWeek = 2;
   const daysInMonth = 30;
   const weddingDay = 13;
   const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
@@ -171,13 +240,13 @@ function SeptemberCalendar() {
   while (cells.length % 7 !== 0) cells.push(null);
 
   return (
-    <div style={{ background: '#fff', borderRadius: 16, padding: '20px 16px', border: `1.5px solid ${PINK}50`, marginBottom: 16, boxShadow: `0 2px 12px ${ROSE}10` }}>
-      <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 800, color: DEEP_ROSE, marginBottom: 14, letterSpacing: 3 }}>
+    <div style={{ background: '#fff', borderRadius: 16, padding: '22px 16px', border: `1.5px solid ${PINK}50`, marginBottom: 16, boxShadow: `0 2px 12px ${ROSE}10` }}>
+      <div style={{ textAlign: 'center', fontSize: 20, fontWeight: 800, color: DEEP_ROSE, marginBottom: 14, letterSpacing: 3 }}>
         2026 . 09
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', rowGap: 2 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', rowGap: 4 }}>
         {weekdays.map((d, i) => (
-          <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: i === 0 ? ROSE : i === 6 ? '#1565c0' : '#bbb', paddingBottom: 10 }}>
+          <div key={d} style={{ textAlign: 'center', fontSize: 15, fontWeight: 700, color: i === 0 ? ROSE : i === 6 ? '#1565c0' : '#bbb', paddingBottom: 10 }}>
             {d}
           </div>
         ))}
@@ -187,21 +256,21 @@ function SeptemberCalendar() {
           const isSun = col === 0;
           const isSat = col === 6;
           return (
-            <div key={i} style={{ textAlign: 'center', paddingTop: 2, paddingBottom: 2 }}>
+            <div key={i} style={{ textAlign: 'center', paddingTop: 3, paddingBottom: 3 }}>
               {d !== null && (
                 <div style={{
                   display: 'inline-flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: 30,
-                  height: 30,
+                  width: 36,
+                  height: 36,
                   borderRadius: '50%',
                   background: isWedding ? `linear-gradient(135deg, ${ROSE}, ${DEEP_ROSE})` : 'transparent',
                   boxShadow: isWedding ? `0 3px 10px ${ROSE}50` : 'none',
                 }}>
                   <span style={{
-                    fontSize: isWedding ? 13 : 13,
+                    fontSize: 17,
                     fontWeight: isWedding ? 800 : 400,
                     color: isWedding ? '#fff' : isSun ? ROSE : isSat ? '#1565c0' : '#5a3040',
                     lineHeight: 1,
@@ -209,7 +278,7 @@ function SeptemberCalendar() {
                     {d}
                   </span>
                   {isWedding && (
-                    <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.9)', lineHeight: 1, marginTop: 1 }}>♥</span>
+                    <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.9)', lineHeight: 1, marginTop: 1 }}>♥</span>
                   )}
                 </div>
               )}
@@ -238,7 +307,7 @@ function KakaoMap() {
           const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
           const marker = new window.kakao.maps.Marker({ map, position: coords });
           const infowindow = new window.kakao.maps.InfoWindow({
-            content: `<div style="padding:6px 10px;font-size:12px;font-weight:700;color:#880e4f;white-space:nowrap;">여의도웨딩컨벤션</div>`,
+            content: `<div style="padding:6px 10px;font-size:14px;font-weight:700;color:#880e4f;white-space:nowrap;">여의도웨딩컨벤션</div>`,
           });
           infowindow.open(map, marker);
           map.setCenter(coords);
@@ -268,11 +337,61 @@ function KakaoMap() {
   );
 }
 
+function MoneySection() {
+  const [open, setOpen] = useState(null);
+
+  const toggle = (side) => setOpen(prev => prev === side ? null : side);
+
+  return (
+    <div style={{ padding: '0 20px 40px' }}>
+      <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 24 }}>💌 마 음 전 하 기 💌</div>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        {['groom', 'bride'].map(side => {
+          const isOpen = open === side;
+          const a = ACCOUNTS[side];
+          const isGroom = side === 'groom';
+          return (
+            <div key={side} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <button
+                onClick={() => toggle(side)}
+                style={{
+                  width: '100%',
+                  padding: '16px 0',
+                  borderRadius: 14,
+                  border: `1.5px solid ${isOpen ? ROSE : PINK}`,
+                  background: isOpen ? `linear-gradient(135deg, ${ROSE}, ${DEEP_ROSE})` : '#fff',
+                  color: isOpen ? '#fff' : ROSE,
+                  fontSize: 19,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.25s',
+                  letterSpacing: 1,
+                }}
+              >
+                {a.label} {isOpen ? '▲' : '▼'}
+              </button>
+              {isOpen && (
+                <div style={{ background: BLUSH, borderRadius: 14, padding: '18px 16px', border: `1.5px solid ${PINK}60`, textAlign: isGroom ? 'left' : 'right' }}>
+                  <div style={{ fontSize: 15, color: '#c06080', marginBottom: 8, fontWeight: 600 }}>{a.name}</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: DEEP_ROSE, marginBottom: 12 }}>{a.bank}<br />{a.account}</div>
+                  <div style={{ display: 'flex', justifyContent: isGroom ? 'flex-start' : 'flex-end' }}>
+                    <CopyBtn text={a.account} />
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Divider({ icon }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 32px 32px' }}>
       <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${PINK})` }} />
-      <div style={{ fontSize: 16, color: ROSE }}>{icon}</div>
+      <div style={{ fontSize: 22, color: ROSE }}>{icon}</div>
       <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${PINK})` }} />
     </div>
   );
@@ -314,7 +433,7 @@ export default function Wedding() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100vh', backgroundColor: '#fff9f5', fontFamily: "'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" }}>
+    <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100vh', backgroundColor: '#fff9f5', fontFamily: "'Gowun Batang', 'Apple SD Gothic Neo', serif" }}>
       <style>{`
         @keyframes wr-float {
           0%, 100% { transform: translateY(0) rotate(-6deg); opacity: 0.25; }
@@ -335,6 +454,7 @@ export default function Wedding() {
         .wr-fade { animation: wr-fadeUp 0.9s ease forwards; }
       `}</style>
 
+      <HeartEffect />
       <MusicPlayer />
 
       {/* Hero */}
@@ -349,31 +469,31 @@ export default function Wedding() {
         <div style={{ position: 'absolute', top: 240, left: 70, fontSize: 12, color: ROSE, animation: 'wr-float 5s ease-in-out infinite 1.4s', pointerEvents: 'none' }}>♥</div>
         <div style={{ position: 'absolute', top: 310, right: 80, fontSize: 22, color: PINK, animation: 'wr-float2 4.5s ease-in-out infinite 0.3s', pointerEvents: 'none' }}>♥</div>
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '48px 32px', textAlign: 'center', background: 'linear-gradient(to bottom, transparent 0%, rgba(255,249,245,0.88) 100%)' }}>
-          <div style={{ fontSize: 13, letterSpacing: 5, color: ROSE, marginBottom: 16, opacity: 0.8 }}>🌹 Wedding Invitation 🌹</div>
-          <div style={{ fontSize: 14, color: '#c06080', marginBottom: 12, letterSpacing: 1 }}>두 사람이 하나가 되는 날</div>
-          <div style={{ fontSize: 42, fontWeight: 800, color: DEEP_ROSE, letterSpacing: 3, marginBottom: 12, lineHeight: 1.1 }}>태환 ♥ 영은</div>
-          <div style={{ fontSize: 13, color: '#c06080', letterSpacing: 2 }}>2026년 9월 13일 일요일</div>
+          <div style={{ fontSize: 25, letterSpacing: 5, color: ROSE, marginBottom: 16, opacity: 0.8 }}>🌹 Wedding Invitation 🌹</div>
+          <div style={{ fontSize: 20, color: '#c06080', marginBottom: 12, letterSpacing: 1 }}>두 사람이 하나가 되는 날</div>
+          <div style={{ fontSize: 54, fontWeight: 800, color: DEEP_ROSE, letterSpacing: 3, marginBottom: 12, lineHeight: 1.1 }}>태환 ♥ 영은</div>
+          <div style={{ fontSize: 19, color: '#c06080', letterSpacing: 2 }}>2026년 9월 13일 일요일 16시 40분</div>
         </div>
       </div>
 
       {/* Divider */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '32px 32px 24px' }}>
         <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${PINK})` }} />
-        <div style={{ fontSize: 18, color: ROSE }}>💕</div>
+        <div style={{ fontSize: 24, color: ROSE }}>💕</div>
         <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${PINK})` }} />
       </div>
 
       {/* Greeting */}
       <div className="wr-fade" style={{ padding: '0 32px 36px', textAlign: 'center' }}>
-        <div style={{ fontSize: 22, color: PINK, marginBottom: 14, opacity: 0.6 }}>❝</div>
-        <p style={{ fontSize: 15, lineHeight: 2.4, color: '#9a6070', margin: 0 }}>
+        <div style={{ fontSize: 28, color: PINK, marginBottom: 14, opacity: 0.6 }}>❝</div>
+        <p style={{ fontSize: 20, lineHeight: 2.4, color: '#9a6070', margin: 0 }}>
           우리 두 사람의 사랑이 영원히<br />
           빛나는 날, 함께해 주세요.<br />
           <br />
           귀한 걸음 해주신다면<br />
           더없는 기쁨이 되겠습니다.
         </p>
-        <div style={{ fontSize: 22, color: PINK, marginTop: 14, opacity: 0.6 }}>❞</div>
+        <div style={{ fontSize: 28, color: PINK, marginTop: 14, opacity: 0.6 }}>❞</div>
       </div>
 
       {/* Couple Photos */}
@@ -384,21 +504,21 @@ export default function Wedding() {
               <img src="https://www.gstatic.com/webp/gallery/2.jpg" alt="신랑"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
-            <div style={{ fontSize: 10, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신랑</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>김태환</div>
-            <div style={{ fontSize: 11, color: '#bbb', lineHeight: 1.8 }}>김세형 · 박정순의 장남</div>
+            <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신랑</div>
+            <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>김태환</div>
+            <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.8 }}>김세형 박정순의 장남</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 24 }}>
-            <div style={{ fontSize: 24, color: ROSE }}>♥</div>
+            <div style={{ fontSize: 30, color: ROSE }}>♥</div>
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}>
               <img src="https://www.gstatic.com/webp/gallery/3.jpg" alt="신부"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
-            <div style={{ fontSize: 10, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신부</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>안영은</div>
-            <div style={{ fontSize: 11, color: '#bbb', lineHeight: 1.8 }}>안준범 · 이미란의 장녀</div>
+            <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신부</div>
+            <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>안영은</div>
+            <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.8 }}>안준범 박재연의 장녀</div>
           </div>
         </div>
       </div>
@@ -407,42 +527,32 @@ export default function Wedding() {
 
       {/* Date & Venue Card */}
       <div style={{ margin: '0 20px 40px', borderRadius: 20, background: `linear-gradient(135deg, ${BLUSH} 0%, #fff5f8 100%)`, padding: '32px 28px', border: `1.5px solid ${PINK}60`, textAlign: 'center', boxShadow: `0 6px 24px ${ROSE}18` }}>
-        <div style={{ fontSize: 20, marginBottom: 16 }}>🌸</div>
-        <div style={{ fontSize: 26, fontWeight: 800, color: DEEP_ROSE, marginBottom: 6, letterSpacing: 2 }}>2026. 9. 13</div>
-        <div style={{ fontSize: 14, color: ROSE, marginBottom: 22, opacity: 0.7 }}>일요일 오후 4시 40분</div>
+        <div style={{ fontSize: 26, marginBottom: 16 }}>🌸</div>
+        <div style={{ fontSize: 32, fontWeight: 800, color: DEEP_ROSE, marginBottom: 6, letterSpacing: 2 }}>2026. 9. 13</div>
+        <div style={{ fontSize: 20, color: ROSE, marginBottom: 22, opacity: 0.7 }}>일요일 오후 4시 40분</div>
         <div style={{ width: 40, height: 1, background: `linear-gradient(to right, transparent, ${PINK}, transparent)`, margin: '0 auto 22px' }} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: DEEP_ROSE, marginBottom: 6 }}>여의도웨딩컨벤션</div>
-        <div style={{ fontSize: 13, color: '#c06080', marginBottom: 4 }}>그랜드볼룸</div>
-        <div style={{ fontSize: 12, color: '#bbb' }}>서울특별시 영등포구 여의대로 14 KT빌딩 3층</div>
+        <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, marginBottom: 6 }}>여의도웨딩컨벤션</div>
+        <div style={{ fontSize: 19, color: '#c06080', marginBottom: 4 }}>그랜드볼룸</div>
+        <div style={{ fontSize: 16, color: '#bbb' }}>서울특별시 영등포구 여의대로 14 KT빌딩 3층</div>
       </div>
 
-      {/* Event Details */}
+      {/* 달력 */}
       <div style={{ padding: '0 20px 40px' }}>
-        <div style={{ textAlign: 'center', fontSize: 13, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>📋 E V E N T D E T A I L S 📋</div>
         <SeptemberCalendar />
-        <div style={{ background: BLUSH, borderRadius: 16, padding: '24px 20px', border: `1.5px solid ${PINK}50` }}>
-          {EVENT_DETAILS.map(({ label, value }, i) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: i < EVENT_DETAILS.length - 1 ? 16 : 0 }}>
-              <div style={{ fontSize: 10, letterSpacing: 2, color: ROSE, fontWeight: 700, minWidth: 60, flexShrink: 0 }}>{label}</div>
-              <div style={{ flex: 1, borderTop: `1px dotted ${PINK}` }} />
-              <div style={{ fontSize: 13, color: DEEP_ROSE, fontWeight: 600, textAlign: 'right' }}>{value}</div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Countdown */}
       <div style={{ padding: '0 20px 40px', textAlign: 'center' }}>
-        <div style={{ fontSize: 13, color: ROSE, letterSpacing: 4, marginBottom: 24 }}>💕 D - D A Y 💕</div>
+        <div style={{ fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 24 }}>💕 D - D A Y 💕</div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, alignItems: 'center' }}>
           {[['일', t.d], ['시간', t.h], ['분', t.m], ['초', t.s]].map(([label, val], i) => (
             <React.Fragment key={label}>
-              {i > 0 && <div style={{ fontSize: 18, color: PINK, paddingBottom: 20 }}>·</div>}
-              <div style={{ background: `linear-gradient(145deg, ${ROSE} 0%, ${DEEP_ROSE} 100%)`, borderRadius: 16, padding: '16px 12px 12px', minWidth: 62, textAlign: 'center', boxShadow: `0 6px 18px ${ROSE}40` }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', lineHeight: 1 }}>
+              {i > 0 && <div style={{ fontSize: 24, color: PINK, paddingBottom: 20 }}>·</div>}
+              <div style={{ background: `linear-gradient(145deg, ${ROSE} 0%, ${DEEP_ROSE} 100%)`, borderRadius: 16, padding: '16px 12px 12px', minWidth: 70, textAlign: 'center', boxShadow: `0 6px 18px ${ROSE}40` }}>
+                <div style={{ fontSize: 40, fontWeight: 900, color: '#fff', lineHeight: 1 }}>
                   {String(val).padStart(2, '0')}
                 </div>
-                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.65)', marginTop: 6, letterSpacing: 1 }}>{label}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginTop: 6, letterSpacing: 1 }}>{label}</div>
               </div>
             </React.Fragment>
           ))}
@@ -451,7 +561,7 @@ export default function Wedding() {
 
       {/* Couple Full Photo */}
       <div style={{ padding: '0 20px 40px' }}>
-        <div style={{ textAlign: 'center', fontSize: 13, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌹 우리의 이야기 🌹</div>
+        <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌹 우리의 이야기 🌹</div>
         <img
           src="https://www.gstatic.com/webp/gallery/4.jpg"
           alt="커플 사진"
@@ -461,7 +571,7 @@ export default function Wedding() {
 
       {/* Gallery */}
       <div style={{ padding: '0 20px 40px' }}>
-        <div style={{ textAlign: 'center', fontSize: 13, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌸 G A L L E R Y 🌸</div>
+        <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌸 G A L L E R Y 🌸</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
           {[...Array(4)].map((_, i) => (
             <img key={i} src={`https://www.gstatic.com/webp/gallery3/${(i % 3) + 1}.jpg`} alt=""
@@ -476,13 +586,13 @@ export default function Wedding() {
 
       {/* Location */}
       <div style={{ padding: '0 20px 40px' }}>
-        <div style={{ textAlign: 'center', fontSize: 13, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🗺️ 오 시 는 길 🗺️</div>
+        <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🗺️ 오 시 는 길 🗺️</div>
         <div style={{ marginBottom: 14 }}>
           <KakaoMap />
         </div>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: DEEP_ROSE, marginBottom: 4 }}>여의도웨딩컨벤션 그랜드볼룸</div>
-          <div style={{ fontSize: 12, color: '#bbb' }}>서울특별시 영등포구 여의대로 14 KT빌딩 2층</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: DEEP_ROSE, marginBottom: 4 }}>여의도웨딩컨벤션 그랜드볼룸</div>
+          <div style={{ fontSize: 16, color: '#bbb' }}>서울특별시 영등포구 여의대로 14 KT빌딩 3층</div>
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
           {[
@@ -490,42 +600,23 @@ export default function Wedding() {
             { label: '카카오맵에서 보기', url: 'https://place.map.kakao.com/8011957' },
           ].map(({ label, url }) => (
             <a key={label} href={url} target="_blank" rel="noopener noreferrer"
-              style={{ padding: '8px 16px', borderRadius: 20, border: `1.5px solid ${PINK}`, color: ROSE, fontSize: 12, cursor: 'pointer', textDecoration: 'none' }}>
+              style={{ padding: '10px 18px', borderRadius: 20, border: `1.5px solid ${PINK}`, color: ROSE, fontSize: 16, cursor: 'pointer', textDecoration: 'none' }}>
               {label}
             </a>
           ))}
         </div>
-        <div style={{ background: BLUSH, borderRadius: 14, padding: '20px', fontSize: 13, color: '#9a6070', lineHeight: 2.1 }}>
-          <span style={{ fontWeight: 700, color: ROSE }}>지하철</span>　5·9호선 여의도역 3번 출구 도보 5분<br />
-          <span style={{ fontWeight: 700, color: ROSE }}>버스</span>　여의도역(KBS별관) 정류장 하차 후 도보 3분<br />
-          <span style={{ fontWeight: 700, color: ROSE }}>주차</span>　지하 주차장 이용 (3시간 무료)
+        <div style={{ background: BLUSH, borderRadius: 14, padding: '20px', fontSize: 17, color: '#9a6070', lineHeight: 2.1 }}>
+          <span style={{ fontWeight: 700, color: ROSE }}>지하철</span>　5·9호선 여의도역 1번 출구<br />
+          <span style={{ fontWeight: 700, color: ROSE }}>버스</span>　한국경제인협회 정류장 하차<br />
+          <span style={{ fontWeight: 700, color: ROSE }}>주차</span>　지하 주차장 이용 (2시간 무료)
         </div>
       </div>
 
       <Divider icon="🌹" />
 
       {/* 마음 전하기 */}
-      <div style={{ padding: '0 20px 40px' }}>
-        <div style={{ textAlign: 'center', fontSize: 13, color: ROSE, letterSpacing: 4, marginBottom: 24 }}>💌 마 음 전 하 기 💌</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {ACCOUNTS.map(a => (
-            <div key={a.who} style={{ background: BLUSH, borderRadius: 14, padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1.5px solid ${PINK}60` }}>
-              <div>
-                <div style={{ fontSize: 11, color: '#c06080', marginBottom: 5 }}>{a.who}</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: DEEP_ROSE }}>{a.bank} {a.account}</div>
-              </div>
-              <CopyBtn text={a.account} />
-            </div>
-          ))}
-        </div>
-      </div>
+      <MoneySection />
 
-      {/* Footer */}
-      <div style={{ background: `linear-gradient(135deg, ${DEEP_ROSE} 0%, ${ROSE} 100%)`, padding: '48px 32px 80px', textAlign: 'center' }}>
-        <div style={{ fontSize: 28, color: 'rgba(255,255,255,0.3)', letterSpacing: 8, marginBottom: 20 }}>♥ ♥ ♥</div>
-        <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: 3, marginBottom: 10 }}>태환 ♥ 영은</div>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: 3 }}>2026년 9월 13일 일요일</div>
-      </div>
     </div>
   );
 }
