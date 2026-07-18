@@ -9,8 +9,22 @@ const BLUSH = '#fce4ec';
 const MUSIC_VIDEO_ID = 'h-XrgiZiQgw';
 
 const ACCOUNTS = {
-  groom: { label: '신랑측', name: '김태환', bank: '토스뱅크', account: '1000-0416-8007' },
-  bride: { label: '신부측', name: '안영은', bank: '신한은행', account: '110 292 341321' },
+  groom: {
+    label: '신랑측',
+    accounts: [
+      { name: '김태환', bank: '토스뱅크', account: '1000-0416-8007' },
+      { name: '아버지 김세형', bank: '신한은행', account: '' },
+      { name: '어머니 박정순', bank: '신한은행', account: '110-319-925258' },
+    ],
+  },
+  bride: {
+    label: '신부측',
+    accounts: [
+      { name: '안영은', bank: '신한은행', account: '110 292 341321' },
+      { name: '아버지 안준범', bank: '제일은행', account: '363-20-077414' },
+      { name: '어머니 박재연', bank: '농협', account: '356-0462-3160-63' },
+    ],
+  },
 };
 
 function useCountdown(target) {
@@ -371,17 +385,41 @@ function MoneySection() {
                 {a.label} {isOpen ? '▲' : '▼'}
               </button>
               {isOpen && (
-                <div style={{ background: BLUSH, borderRadius: 14, padding: '18px 16px', border: `1.5px solid ${PINK}60`, textAlign: isGroom ? 'left' : 'right' }}>
-                  <div style={{ fontSize: 15, color: '#c06080', marginBottom: 8, fontWeight: 600 }}>{a.name}</div>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: DEEP_ROSE, marginBottom: 12 }}>{a.bank}<br />{a.account}</div>
-                  <div style={{ display: 'flex', justifyContent: isGroom ? 'flex-start' : 'flex-end' }}>
-                    <CopyBtn text={a.account} />
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {a.accounts.map((acc, i) => (
+                    <div key={i} style={{ background: BLUSH, borderRadius: 14, padding: '18px 16px', border: `1.5px solid ${PINK}60`, textAlign: isGroom ? 'left' : 'right' }}>
+                      <div style={{ fontSize: 15, color: '#c06080', marginBottom: 8, fontWeight: 600 }}>{acc.name}</div>
+                      <div style={{ fontSize: 17, fontWeight: 700, color: DEEP_ROSE, marginBottom: 12 }}>{acc.bank}<br />{acc.account}</div>
+                      <div style={{ display: 'flex', justifyContent: isGroom ? 'flex-start' : 'flex-end' }}>
+                        <CopyBtn text={acc.account} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function PhotoBoothSection() {
+  return (
+    <div style={{ padding: '0 20px 48px', textAlign: 'center' }}>
+      <div style={{ fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>📸 P H O T O B O O T H 📸</div>
+      <div style={{ background: `linear-gradient(135deg, ${BLUSH} 0%, #fff5f8 100%)`, borderRadius: 20, padding: '32px 26px', border: `1.5px solid ${PINK}60`, boxShadow: `0 6px 24px ${ROSE}18` }}>
+        <p style={{ fontSize: 18, lineHeight: 2.2, color: '#9a6070', margin: 0 }}>
+          감사의 마음으로 결혼식장에<br />
+          포토부스를 준비했습니다.
+          <br /><br />
+          멋지고 예쁜 모습 사진으로 남기고<br />
+          선물로 한 장씩 가져가세요.
+          <br /><br />
+          축복해주신 마음들 소중히 간직하고<br />
+          잘 살겠습니다.
+        </p>
       </div>
     </div>
   );
@@ -419,7 +457,7 @@ export default function Wedding() {
       setMeta('og:title', '태환 ♥ 영은 결혼식에 초대합니다', true),
       setMeta('og:description', desc, true),
       setMeta('og:type', 'website', true),
-      setMeta('og:image', 'https://www.gstatic.com/webp/gallery/1.jpg', true),
+      setMeta('og:image', '/images/wedding1.jpg', true),
       setMeta('og:image:width', '600', true),
       setMeta('og:image:height', '315', true),
     ];
@@ -460,9 +498,9 @@ export default function Wedding() {
       {/* Hero */}
       <div style={{ position: 'relative', height: 600, overflow: 'hidden', background: `linear-gradient(160deg, ${BLUSH} 0%, #ffd6e4 50%, #fff9f5 100%)` }}>
         <img
-          src="https://www.gstatic.com/webp/gallery/1.jpg"
+          src="/images/wedding1.jpg"
           alt="웨딩 대표사진"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35 }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }}
         />
         <div style={{ position: 'absolute', top: 80, left: 36, fontSize: 30, color: ROSE, animation: 'wr-float 3.5s ease-in-out infinite', pointerEvents: 'none' }}>♥</div>
         <div style={{ position: 'absolute', top: 160, right: 44, fontSize: 18, color: PINK, animation: 'wr-float2 4s ease-in-out infinite 0.7s', pointerEvents: 'none' }}>♥</div>
@@ -501,7 +539,7 @@ export default function Wedding() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}>
-              <img src="https://www.gstatic.com/webp/gallery/2.jpg" alt="신랑"
+              <img src="/images/wedding2.jpg" alt="신랑"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신랑</div>
@@ -513,7 +551,7 @@ export default function Wedding() {
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}>
-              <img src="https://www.gstatic.com/webp/gallery/3.jpg" alt="신부"
+              <img src="/images/wedding3.jpg" alt="신부"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신부</div>
@@ -563,7 +601,7 @@ export default function Wedding() {
       <div style={{ padding: '0 20px 40px' }}>
         <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌹 우리의 이야기 🌹</div>
         <img
-          src="https://www.gstatic.com/webp/gallery/4.jpg"
+          src="/images/wedding4.jpg"
           alt="커플 사진"
           style={{ width: '100%', height: 460, objectFit: 'cover', borderRadius: 20, display: 'block', border: `2px solid ${PINK}50`, boxShadow: `0 8px 32px ${ROSE}20` }}
         />
@@ -573,13 +611,17 @@ export default function Wedding() {
       <div style={{ padding: '0 20px 40px' }}>
         <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌸 G A L L E R Y 🌸</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-          {[...Array(4)].map((_, i) => (
-            <img key={i} src={`https://www.gstatic.com/webp/gallery3/${(i % 3) + 1}.jpg`} alt=""
+          {[...Array(8)].map((_, i) => (
+            <img key={i} src={`/images/wedding${i + 5}.jpg`} alt=""
               style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 14, border: `1.5px solid ${PINK}50` }} />
           ))}
         </div>
-        <img src="https://www.gstatic.com/webp/gallery/5.jpg" alt=""
-          style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 14, display: 'block', border: `1.5px solid ${PINK}50` }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {[13, 14].map(n => (
+            <img key={n} src={`/images/wedding${n}.jpg`} alt=""
+              style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 14, display: 'block', border: `1.5px solid ${PINK}50` }} />
+          ))}
+        </div>
       </div>
 
       <Divider icon="💕" />
@@ -616,6 +658,11 @@ export default function Wedding() {
 
       {/* 마음 전하기 */}
       <MoneySection />
+
+      <Divider icon="📸" />
+
+      {/* 포토부스 안내 */}
+      <PhotoBoothSection />
 
     </div>
   );
