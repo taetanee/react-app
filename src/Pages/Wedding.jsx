@@ -20,7 +20,7 @@ const ACCOUNTS = {
   bride: {
     label: '신부측',
     accounts: [
-      { name: '안영은', bank: '신한은행', account: '110 292 341321' },
+      { name: '안영은', bank: '신한은행', account: '110-292-341321' },
       { name: '아버지 안준범', bank: '제일은행', account: '363-20-077414' },
       { name: '어머니 박재연', bank: '농협', account: '356-0462-3160-63' },
     ],
@@ -304,6 +304,9 @@ function SeptemberCalendar() {
   );
 }
 
+const MARKER_LAT_OFFSET = 0.000205; // +면 위(북)로, -면 아래(남)로 이동
+const MARKER_LNG_OFFSET = 0.00004244; // +면 오른쪽(동)으로, -면 왼쪽(서)으로 이동
+
 function KakaoMap() {
   const mapRef = useRef(null);
 
@@ -318,12 +321,10 @@ function KakaoMap() {
       const geocoder = new window.kakao.maps.services.Geocoder();
       geocoder.addressSearch('서울특별시 영등포구 여의대로 14', (result, status) => {
         if (status === window.kakao.maps.services.Status.OK) {
-          const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
-          const marker = new window.kakao.maps.Marker({ map, position: coords });
-          const infowindow = new window.kakao.maps.InfoWindow({
-            content: `<div style="padding:6px 10px;font-size:14px;font-weight:700;color:#880e4f;white-space:nowrap;">여의도웨딩컨벤션</div>`,
-          });
-          infowindow.open(map, marker);
+          const lat = Number(result[0].y) + MARKER_LAT_OFFSET;
+          const lng = Number(result[0].x) + MARKER_LNG_OFFSET;
+          const coords = new window.kakao.maps.LatLng(lat, lng);
+          new window.kakao.maps.Marker({ map, position: coords });
           map.setCenter(coords);
         }
       });
@@ -411,6 +412,205 @@ function PhotoBoothSection() {
   );
 }
 
+function useInView(threshold = 0.15) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setInView(true);
+        io.unobserve(el);
+      }
+    }, { threshold });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [threshold]);
+  return [ref, inView];
+}
+
+function Reveal({ children, delay = 0 }) {
+  const [ref, inView] = useInView();
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? 'translateY(0) scale(1)' : 'translateY(26px) scale(0.96)',
+        transition: `opacity 0.65s ease ${delay}s, transform 0.65s cubic-bezier(0.22,1,0.36,1) ${delay}s`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Lightbox({ images, index, onClose, onPrev, onNext }) {
+  const startXRef = useRef(0);
+  const draggedRef = useRef(false);
+  const src = images ? images[index] : null;
+  const multi = images && images.length > 1;
+
+  useEffect(() => {
+    if (!src) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft' && multi) onPrev();
+      if (e.key === 'ArrowRight' && multi) onNext();
+    };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [src, multi, onClose, onPrev, onNext]);
+
+  if (!src) return null;
+
+  const onTouchStart = (e) => { startXRef.current = e.touches[0].clientX; draggedRef.current = false; };
+  const onTouchMove = (e) => {
+    if (Math.abs(e.touches[0].clientX - startXRef.current) > 10) draggedRef.current = true;
+  };
+  const onTouchEnd = (e) => {
+    const dx = e.changedTouches[0].clientX - startXRef.current;
+    if (dx < -50) onNext();
+    else if (dx > 50) onPrev();
+  };
+
+  const navBtnStyle = (side) => ({
+    position: 'absolute', top: '50%', [side]: 14, transform: 'translateY(-50%)',
+    width: 44, height: 44, borderRadius: '50%', border: 'none',
+    background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 24,
+    cursor: 'pointer', backdropFilter: 'blur(6px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  });
+
+  return (
+    <div
+      onClick={onClose}
+      onTouchStart={multi ? onTouchStart : undefined}
+      onTouchMove={multi ? onTouchMove : undefined}
+      onTouchEnd={multi ? onTouchEnd : undefined}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 500,
+        background: 'rgba(20,8,14,0.92)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24, animation: 'wr-lbFade 0.25s ease',
+        backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+      }}
+    >
+      <img
+        key={index}
+        src={src}
+        alt=""
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '100%', maxHeight: '86vh', borderRadius: 14,
+          boxShadow: '0 24px 70px rgba(0,0,0,0.55)',
+          animation: 'wr-lbZoom 0.3s cubic-bezier(0.22,1,0.36,1)',
+          touchAction: 'pan-y',
+        }}
+      />
+      {multi && (
+        <>
+          <button onClick={(e) => { e.stopPropagation(); onPrev(); }} aria-label="이전 사진" style={navBtnStyle('left')}>‹</button>
+          <button onClick={(e) => { e.stopPropagation(); onNext(); }} aria-label="다음 사진" style={navBtnStyle('right')}>›</button>
+          <div style={{ position: 'absolute', bottom: 26, left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.75)', fontSize: 13, letterSpacing: 1 }}>
+            {index + 1} / {images.length}
+          </div>
+        </>
+      )}
+      <button
+        onClick={onClose}
+        aria-label="닫기"
+        style={{
+          position: 'absolute', top: 20, right: 20, width: 42, height: 42, borderRadius: '50%',
+          border: 'none', background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 20,
+          cursor: 'pointer', backdropFilter: 'blur(6px)',
+        }}
+      >✕</button>
+    </div>
+  );
+}
+
+const GALLERY_IMAGES = Array.from({ length: 10 }, (_, i) => `/images/wedding${i + 5}_s.jpg`);
+const CAROUSEL_CARD_SIZE = 140;
+
+function PhotoCarousel({ images, onOpen, onActiveChange }) {
+  const ringRef = useRef(null);
+  const rotationRef = useRef(0);
+  const draggingRef = useRef(false);
+  const lastXRef = useRef(0);
+  const movedRef = useRef(0);
+  const activeRef = useRef(0);
+
+  const n = images.length;
+  const angleStep = 360 / n;
+  const radius = Math.round((CAROUSEL_CARD_SIZE / 2) / Math.tan(Math.PI / n) * 1.15);
+
+  useEffect(() => {
+    let raf;
+    const tick = () => {
+      if (!draggingRef.current) rotationRef.current += 0.015;
+      if (ringRef.current) ringRef.current.style.transform = `rotateY(${rotationRef.current}deg)`;
+      const nearest = ((Math.round(-rotationRef.current / angleStep) % n) + n) % n;
+      if (nearest !== activeRef.current) {
+        activeRef.current = nearest;
+        if (onActiveChange) onActiveChange(nearest);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [angleStep, n, onActiveChange]);
+
+  const startDrag = (clientX) => {
+    draggingRef.current = true;
+    lastXRef.current = clientX;
+    movedRef.current = 0;
+  };
+  const moveDrag = (clientX) => {
+    if (!draggingRef.current) return;
+    const dx = clientX - lastXRef.current;
+    lastXRef.current = clientX;
+    movedRef.current += Math.abs(dx);
+    rotationRef.current += dx * 0.4;
+  };
+  const endDrag = () => { draggingRef.current = false; };
+
+  return (
+    <div
+      style={{ perspective: 1100, height: CAROUSEL_CARD_SIZE + 100, display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'pan-y', userSelect: 'none' }}
+      onPointerDown={(e) => startDrag(e.clientX)}
+      onPointerMove={(e) => moveDrag(e.clientX)}
+      onPointerUp={endDrag}
+      onPointerLeave={endDrag}
+      onPointerCancel={endDrag}
+    >
+      <div
+        ref={ringRef}
+        style={{ position: 'relative', width: CAROUSEL_CARD_SIZE, height: CAROUSEL_CARD_SIZE, transformStyle: 'preserve-3d', willChange: 'transform' }}
+      >
+        {images.map((src, i) => (
+          <div
+            key={i}
+            className="wr-carousel-card"
+            onClick={() => { if (movedRef.current < 6) onOpen(i); }}
+            style={{
+              position: 'absolute', inset: 0,
+              transform: `rotateY(${i * angleStep}deg) translateZ(${radius}px)`,
+            }}
+          >
+            <img src={src} alt="" draggable={false} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Divider({ icon }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 32px 32px' }}>
@@ -423,6 +623,16 @@ function Divider({ icon }) {
 
 export default function Wedding() {
   const t = useCountdown(WEDDING_DATE);
+  const [lightbox, setLightbox] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const openLightbox = (images, index = 0) => setLightbox({ images, index });
+  const navigateLightbox = (delta) => {
+    setLightbox((prev) => {
+      if (!prev) return prev;
+      const n = prev.images.length;
+      return { ...prev, index: (prev.index + delta + n) % n };
+    });
+  };
 
   useEffect(() => {
     const prevTitle = document.title;
@@ -443,7 +653,7 @@ export default function Wedding() {
       setMeta('og:title', '태환 ♥ 영은 결혼식에 초대합니다', true),
       setMeta('og:description', desc, true),
       setMeta('og:type', 'website', true),
-      setMeta('og:image', '/images/wedding1.jpg', true),
+      setMeta('og:image', '/images/wedding1_s.jpg', true),
       setMeta('og:image:width', '600', true),
       setMeta('og:image:height', '315', true),
     ];
@@ -475,16 +685,74 @@ export default function Wedding() {
           from { transform: scaleY(0.3); }
           to { transform: scaleY(1.2); }
         }
+        @keyframes wr-lbFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes wr-lbZoom {
+          from { opacity: 0; transform: scale(0.88); }
+          to { opacity: 1; transform: scale(1); }
+        }
         .wr-fade { animation: wr-fadeUp 0.9s ease forwards; }
+        .wr-avatar {
+          cursor: pointer;
+          transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;
+        }
+        .wr-avatar:hover { transform: scale(1.06); }
+        .wr-avatar:active { transform: scale(0.96); }
+        .wr-photo {
+          cursor: pointer;
+          overflow: hidden;
+          transition: transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease;
+        }
+        .wr-photo:hover { transform: translateY(-4px); }
+        .wr-photo img { display: block; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+        .wr-photo:hover img { transform: scale(1.06); }
+        .wr-carousel-card {
+          border-radius: 14px;
+          overflow: hidden;
+          border: 2px solid ${PINK}80;
+          box-shadow: 0 10px 28px ${ROSE}35;
+          cursor: grab;
+          background: #fff;
+          backface-visibility: hidden;
+        }
+        .wr-carousel-card:active { cursor: grabbing; }
+        .wr-carousel-card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          pointer-events: none;
+        }
+        .wr-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: ${PINK}70;
+          transition: width 0.3s ease, background 0.3s ease;
+        }
+        .wr-dot-active {
+          width: 18px;
+          border-radius: 4px;
+          background: ${ROSE};
+        }
       `}</style>
 
       <HeartEffect />
       <MusicPlayer />
+      <Lightbox
+        images={lightbox?.images}
+        index={lightbox?.index}
+        onClose={() => setLightbox(null)}
+        onPrev={() => navigateLightbox(-1)}
+        onNext={() => navigateLightbox(1)}
+      />
 
       {/* Hero */}
       <div style={{ position: 'relative', height: 600, overflow: 'hidden', background: `linear-gradient(160deg, ${BLUSH} 0%, #ffd6e4 50%, #fff9f5 100%)` }}>
         <img
-          src="/images/wedding1.jpg"
+          src="/images/wedding1_s.jpg"
           alt="웨딩 대표사진"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }}
         />
@@ -523,27 +791,39 @@ export default function Wedding() {
       {/* Couple Photos */}
       <div style={{ padding: '0 24px 40px', textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}>
-              <img src="/images/wedding2.jpg" alt="신랑"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <Reveal>
+            <div style={{ textAlign: 'center' }}>
+              <div
+                className="wr-avatar"
+                onClick={() => openLightbox(['/images/wedding2_s.jpg'])}
+                style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}
+              >
+                <img src="/images/wedding2_s.jpg" alt="신랑"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신랑</div>
+              <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>김태환</div>
+              <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.8 }}>김세형 박정순의 장남</div>
             </div>
-            <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신랑</div>
-            <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>김태환</div>
-            <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.8 }}>김세형 박정순의 장남</div>
-          </div>
+          </Reveal>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 24 }}>
             <div style={{ fontSize: 30, color: ROSE }}>♥</div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}>
-              <img src="/images/wedding3.jpg" alt="신부"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <Reveal delay={0.12}>
+            <div style={{ textAlign: 'center' }}>
+              <div
+                className="wr-avatar"
+                onClick={() => openLightbox(['/images/wedding3_s.jpg'])}
+                style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}
+              >
+                <img src="/images/wedding3_s.jpg" alt="신부"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신부</div>
+              <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>안영은</div>
+              <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.8 }}>안준범 박재연의 장녀</div>
             </div>
-            <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신부</div>
-            <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>안영은</div>
-            <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.8 }}>안준범 박재연의 장녀</div>
-          </div>
+          </Reveal>
         </div>
       </div>
 
@@ -586,26 +866,28 @@ export default function Wedding() {
       {/* Couple Full Photo */}
       <div style={{ padding: '0 20px 40px' }}>
         <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌹 우리의 이야기 🌹</div>
-        <img
-          src="/images/wedding4.jpg"
-          alt="커플 사진"
-          style={{ width: '100%', height: 460, objectFit: 'cover', borderRadius: 20, display: 'block', border: `2px solid ${PINK}50`, boxShadow: `0 8px 32px ${ROSE}20` }}
-        />
+        <Reveal>
+          <div
+            className="wr-photo"
+            onClick={() => openLightbox(['/images/wedding4_s.jpg'])}
+            style={{ borderRadius: 20, border: `2px solid ${PINK}50`, boxShadow: `0 8px 32px ${ROSE}20` }}
+          >
+            <img
+              src="/images/wedding4_s.jpg"
+              alt="커플 사진"
+              style={{ width: '100%', height: 460, objectFit: 'cover' }}
+            />
+          </div>
+        </Reveal>
       </div>
 
       {/* Gallery */}
-      <div style={{ padding: '0 20px 40px' }}>
+      <div style={{ padding: '0 0 40px' }}>
         <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌸 G A L L E R Y 🌸</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-          {[...Array(8)].map((_, i) => (
-            <img key={i} src={`/images/wedding${i + 5}.jpg`} alt=""
-              style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 14, border: `1.5px solid ${PINK}50` }} />
-          ))}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {[13, 14].map(n => (
-            <img key={n} src={`/images/wedding${n}.jpg`} alt=""
-              style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 14, display: 'block', border: `1.5px solid ${PINK}50` }} />
+        <PhotoCarousel images={GALLERY_IMAGES} onOpen={(i) => openLightbox(GALLERY_IMAGES, i)} onActiveChange={setActiveIndex} />
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 16 }}>
+          {GALLERY_IMAGES.map((_, i) => (
+            <span key={i} className={`wr-dot${i === activeIndex ? ' wr-dot-active' : ''}`} />
           ))}
         </div>
       </div>
