@@ -13,7 +13,7 @@ const ACCOUNTS = {
     label: '신랑측',
     accounts: [
       { name: '김태환', bank: '토스뱅크', account: '1000-0416-8007' },
-      { name: '아버지 김세형', bank: '신한은행', account: '' },
+      { name: '아버지 김세형', bank: '신한은행', account: '1' },
       { name: '어머니 박정순', bank: '신한은행', account: '110-319-925258' },
     ],
   },
@@ -352,51 +352,37 @@ function KakaoMap() {
 }
 
 function MoneySection() {
-  const [open, setOpen] = useState(null);
-
-  const toggle = (side) => setOpen(prev => prev === side ? null : side);
-
   return (
     <div style={{ padding: '0 20px 40px' }}>
       <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 24 }}>💌 마 음 전 하 기 💌</div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         {['groom', 'bride'].map(side => {
-          const isOpen = open === side;
           const a = ACCOUNTS[side];
           const isGroom = side === 'groom';
           return (
             <div key={side} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button
-                onClick={() => toggle(side)}
-                style={{
-                  width: '100%',
-                  padding: '16px 0',
-                  borderRadius: 14,
-                  border: `1.5px solid ${isOpen ? ROSE : PINK}`,
-                  background: isOpen ? `linear-gradient(135deg, ${ROSE}, ${DEEP_ROSE})` : '#fff',
-                  color: isOpen ? '#fff' : ROSE,
-                  fontSize: 19,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.25s',
-                  letterSpacing: 1,
-                }}
-              >
-                {a.label} {isOpen ? '▲' : '▼'}
-              </button>
-              {isOpen && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {a.accounts.map((acc, i) => (
-                    <div key={i} style={{ background: BLUSH, borderRadius: 14, padding: '18px 16px', border: `1.5px solid ${PINK}60`, textAlign: isGroom ? 'left' : 'right' }}>
-                      <div style={{ fontSize: 15, color: '#c06080', marginBottom: 8, fontWeight: 600 }}>{acc.name}</div>
-                      <div style={{ fontSize: 17, fontWeight: 700, color: DEEP_ROSE, marginBottom: 12 }}>{acc.bank}<br />{acc.account}</div>
-                      <div style={{ display: 'flex', justifyContent: isGroom ? 'flex-start' : 'flex-end' }}>
-                        <CopyBtn text={acc.account} />
-                      </div>
-                    </div>
-                  ))}
+              <div style={{
+                width: '100%',
+                padding: '14px 0',
+                borderRadius: 14,
+                background: `linear-gradient(135deg, ${ROSE}, ${DEEP_ROSE})`,
+                color: '#fff',
+                fontSize: 17,
+                fontWeight: 700,
+                textAlign: 'center',
+                letterSpacing: 1,
+              }}>
+                {a.label}
+              </div>
+              {a.accounts.map((acc, i) => (
+                <div key={i} style={{ background: BLUSH, borderRadius: 14, padding: '16px 14px', border: `1.5px solid ${PINK}60`, textAlign: isGroom ? 'left' : 'right' }}>
+                  <div style={{ fontSize: 14, color: '#c06080', marginBottom: 6, fontWeight: 600 }}>{acc.name}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: DEEP_ROSE, marginBottom: 10, wordBreak: 'break-all' }}>{acc.bank}<br />{acc.account}</div>
+                  <div style={{ display: 'flex', justifyContent: isGroom ? 'flex-start' : 'flex-end' }}>
+                    <CopyBtn text={acc.account} />
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           );
         })}
