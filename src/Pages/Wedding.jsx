@@ -14,7 +14,7 @@ const ACCOUNTS = {
     label: '신랑측',
     accounts: [
       { name: '김태환', bank: '토스뱅크', account: '1000-0416-8007' },
-      { name: '아버지 김세형', bank: '신한은행', account: '1' },
+      { name: '아버지 김세형', bank: '하나은행', account: '153-910095-12507' },
       { name: '어머니 박정순', bank: '신한은행', account: '110-319-925258' },
     ],
   },
