@@ -5,6 +5,7 @@ const ROSE = '#c2185b';
 const DEEP_ROSE = '#880e4f';
 const PINK = '#f48fb1';
 const BLUSH = '#fce4ec';
+const TEXT_BLACK = '#222';
 
 const MUSIC_VIDEO_ID = 'h-XrgiZiQgw';
 
@@ -55,7 +56,7 @@ function CopyBtn({ text }) {
       style={{
         border: `1px solid ${done ? ROSE : PINK}`,
         background: done ? ROSE : 'transparent',
-        color: done ? '#fff' : ROSE,
+        color: done ? '#fff' : TEXT_BLACK,
         borderRadius: 20,
         padding: '7px 20px',
         fontSize: 16,
@@ -223,8 +224,8 @@ function MusicPlayer() {
           {!ready ? '♪' : playing ? '⏸' : '▶'}
         </button>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 0.3 }}>love wins all</div>
-          <div style={{ fontSize: 14, color: ROSE, opacity: 0.7, marginTop: 2 }}>아이유 (IU)</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: TEXT_BLACK, letterSpacing: 0.3 }}>love wins all</div>
+          <div style={{ fontSize: 14, color: TEXT_BLACK, opacity: 0.7, marginTop: 2 }}>아이유 (IU)</div>
         </div>
         {playing && (
           <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 14 }}>
@@ -255,12 +256,12 @@ function SeptemberCalendar() {
 
   return (
     <div style={{ background: '#fff', borderRadius: 16, padding: '22px 16px', border: `1.5px solid ${PINK}50`, marginBottom: 16, boxShadow: `0 2px 12px ${ROSE}10` }}>
-      <div style={{ textAlign: 'center', fontSize: 20, fontWeight: 800, color: DEEP_ROSE, marginBottom: 14, letterSpacing: 3 }}>
+      <div style={{ textAlign: 'center', fontSize: 20, fontWeight: 800, color: TEXT_BLACK, marginBottom: 14, letterSpacing: 3 }}>
         2026 . 09
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', rowGap: 4 }}>
         {weekdays.map((d, i) => (
-          <div key={d} style={{ textAlign: 'center', fontSize: 15, fontWeight: 700, color: i === 0 ? ROSE : i === 6 ? '#1565c0' : '#bbb', paddingBottom: 10 }}>
+          <div key={d} style={{ textAlign: 'center', fontSize: 15, fontWeight: 700, color: i === 0 ? TEXT_BLACK : i === 6 ? '#1565c0' : '#bbb', paddingBottom: 10 }}>
             {d}
           </div>
         ))}
@@ -286,7 +287,7 @@ function SeptemberCalendar() {
                   <span style={{
                     fontSize: 17,
                     fontWeight: isWedding ? 800 : 400,
-                    color: isWedding ? '#fff' : isSun ? ROSE : isSat ? '#1565c0' : '#5a3040',
+                    color: isWedding ? '#fff' : isSun ? TEXT_BLACK : isSat ? '#1565c0' : '#5a3040',
                     lineHeight: 1,
                   }}>
                     {d}
@@ -355,7 +356,7 @@ function KakaoMap() {
 function MoneySection() {
   return (
     <div style={{ padding: '0 20px 40px' }}>
-      <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 24 }}>💌 마 음 전 하 기 💌</div>
+      <div style={{ textAlign: 'center', fontSize: 19, color: TEXT_BLACK, letterSpacing: 4, marginBottom: 24 }}>💌 마 음 전 하 기 💌</div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         {['groom', 'bride'].map(side => {
           const a = ACCOUNTS[side];
@@ -377,8 +378,8 @@ function MoneySection() {
               </div>
               {a.accounts.map((acc, i) => (
                 <div key={i} style={{ background: BLUSH, borderRadius: 14, padding: '16px 14px', border: `1.5px solid ${PINK}60`, textAlign: isGroom ? 'left' : 'right' }}>
-                  <div style={{ fontSize: 14, color: '#c06080', marginBottom: 6, fontWeight: 600 }}>{acc.name}</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: DEEP_ROSE, marginBottom: 10, wordBreak: 'break-all' }}>{acc.bank}<br />{acc.account}</div>
+                  <div style={{ fontSize: 14, color: TEXT_BLACK, marginBottom: 6, fontWeight: 600 }}>{acc.name}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: TEXT_BLACK, marginBottom: 10, wordBreak: 'break-all' }}>{acc.bank}<br />{acc.account}</div>
                   <div style={{ display: 'flex', justifyContent: isGroom ? 'flex-start' : 'flex-end' }}>
                     <CopyBtn text={acc.account} />
                   </div>
@@ -395,9 +396,9 @@ function MoneySection() {
 function PhotoBoothSection() {
   return (
     <div style={{ padding: '0 20px 48px', textAlign: 'center' }}>
-      <div style={{ fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>📸 P H O T O B O O T H 📸</div>
+      <div style={{ fontSize: 19, color: TEXT_BLACK, letterSpacing: 4, marginBottom: 20 }}>📸 P H O T O B O O T H 📸</div>
       <div style={{ background: `linear-gradient(135deg, ${BLUSH} 0%, #fff5f8 100%)`, borderRadius: 20, padding: '32px 26px', border: `1.5px solid ${PINK}60`, boxShadow: `0 6px 24px ${ROSE}18` }}>
-        <p style={{ fontSize: 18, lineHeight: 2.2, color: '#9a6070', margin: 0 }}>
+        <p style={{ fontSize: 18, lineHeight: 2.2, color: TEXT_BLACK, margin: 0 }}>
           감사의 마음으로 결혼식장에<br />
           포토부스를 준비했습니다.
           <br /><br />
@@ -446,104 +447,14 @@ function Reveal({ children, delay = 0 }) {
   );
 }
 
-function Lightbox({ images, index, onClose, onPrev, onNext }) {
-  const startXRef = useRef(0);
-  const draggedRef = useRef(false);
-  const src = images ? images[index] : null;
-  const multi = images && images.length > 1;
-
-  useEffect(() => {
-    if (!src) return;
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft' && multi) onPrev();
-      if (e.key === 'ArrowRight' && multi) onNext();
-    };
-    window.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [src, multi, onClose, onPrev, onNext]);
-
-  if (!src) return null;
-
-  const onTouchStart = (e) => { startXRef.current = e.touches[0].clientX; draggedRef.current = false; };
-  const onTouchMove = (e) => {
-    if (Math.abs(e.touches[0].clientX - startXRef.current) > 10) draggedRef.current = true;
-  };
-  const onTouchEnd = (e) => {
-    const dx = e.changedTouches[0].clientX - startXRef.current;
-    if (dx < -50) onNext();
-    else if (dx > 50) onPrev();
-  };
-
-  const navBtnStyle = (side) => ({
-    position: 'absolute', top: '50%', [side]: 14, transform: 'translateY(-50%)',
-    width: 44, height: 44, borderRadius: '50%', border: 'none',
-    background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 24,
-    cursor: 'pointer', backdropFilter: 'blur(6px)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-  });
-
-  return (
-    <div
-      onClick={onClose}
-      onTouchStart={multi ? onTouchStart : undefined}
-      onTouchMove={multi ? onTouchMove : undefined}
-      onTouchEnd={multi ? onTouchEnd : undefined}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 500,
-        background: 'rgba(20,8,14,0.92)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24, animation: 'wr-lbFade 0.25s ease',
-        backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-      }}
-    >
-      <img
-        key={index}
-        src={src}
-        alt=""
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          maxWidth: '100%', maxHeight: '86vh', borderRadius: 14,
-          boxShadow: '0 24px 70px rgba(0,0,0,0.55)',
-          animation: 'wr-lbZoom 0.3s cubic-bezier(0.22,1,0.36,1)',
-          touchAction: 'pan-y',
-        }}
-      />
-      {multi && (
-        <>
-          <button onClick={(e) => { e.stopPropagation(); onPrev(); }} aria-label="이전 사진" style={navBtnStyle('left')}>‹</button>
-          <button onClick={(e) => { e.stopPropagation(); onNext(); }} aria-label="다음 사진" style={navBtnStyle('right')}>›</button>
-          <div style={{ position: 'absolute', bottom: 26, left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.75)', fontSize: 13, letterSpacing: 1 }}>
-            {index + 1} / {images.length}
-          </div>
-        </>
-      )}
-      <button
-        onClick={onClose}
-        aria-label="닫기"
-        style={{
-          position: 'absolute', top: 20, right: 20, width: 42, height: 42, borderRadius: '50%',
-          border: 'none', background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 20,
-          cursor: 'pointer', backdropFilter: 'blur(6px)',
-        }}
-      >✕</button>
-    </div>
-  );
-}
-
 const GALLERY_IMAGES = Array.from({ length: 10 }, (_, i) => `/images/wedding${i + 5}_s.jpg`);
 const CAROUSEL_CARD_SIZE = 140;
 
-function PhotoCarousel({ images, onOpen, onActiveChange }) {
+function PhotoCarousel({ images, onActiveChange }) {
   const ringRef = useRef(null);
   const rotationRef = useRef(0);
   const draggingRef = useRef(false);
   const lastXRef = useRef(0);
-  const movedRef = useRef(0);
   const activeRef = useRef(0);
 
   const n = images.length;
@@ -569,13 +480,11 @@ function PhotoCarousel({ images, onOpen, onActiveChange }) {
   const startDrag = (clientX) => {
     draggingRef.current = true;
     lastXRef.current = clientX;
-    movedRef.current = 0;
   };
   const moveDrag = (clientX) => {
     if (!draggingRef.current) return;
     const dx = clientX - lastXRef.current;
     lastXRef.current = clientX;
-    movedRef.current += Math.abs(dx);
     rotationRef.current += dx * 0.4;
   };
   const endDrag = () => { draggingRef.current = false; };
@@ -597,7 +506,6 @@ function PhotoCarousel({ images, onOpen, onActiveChange }) {
           <div
             key={i}
             className="wr-carousel-card"
-            onClick={() => { if (movedRef.current < 6) onOpen(i); }}
             style={{
               position: 'absolute', inset: 0,
               transform: `rotateY(${i * angleStep}deg) translateZ(${radius}px)`,
@@ -615,7 +523,7 @@ function Divider({ icon }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 32px 32px' }}>
       <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${PINK})` }} />
-      <div style={{ fontSize: 22, color: ROSE }}>{icon}</div>
+      <div style={{ fontSize: 22, color: TEXT_BLACK }}>{icon}</div>
       <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${PINK})` }} />
     </div>
   );
@@ -623,16 +531,7 @@ function Divider({ icon }) {
 
 export default function Wedding() {
   const t = useCountdown(WEDDING_DATE);
-  const [lightbox, setLightbox] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const openLightbox = (images, index = 0) => setLightbox({ images, index });
-  const navigateLightbox = (delta) => {
-    setLightbox((prev) => {
-      if (!prev) return prev;
-      const n = prev.images.length;
-      return { ...prev, index: (prev.index + delta + n) % n };
-    });
-  };
 
   useEffect(() => {
     const prevTitle = document.title;
@@ -685,29 +584,7 @@ export default function Wedding() {
           from { transform: scaleY(0.3); }
           to { transform: scaleY(1.2); }
         }
-        @keyframes wr-lbFade {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes wr-lbZoom {
-          from { opacity: 0; transform: scale(0.88); }
-          to { opacity: 1; transform: scale(1); }
-        }
         .wr-fade { animation: wr-fadeUp 0.9s ease forwards; }
-        .wr-avatar {
-          cursor: pointer;
-          transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;
-        }
-        .wr-avatar:hover { transform: scale(1.06); }
-        .wr-avatar:active { transform: scale(0.96); }
-        .wr-photo {
-          cursor: pointer;
-          overflow: hidden;
-          transition: transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease;
-        }
-        .wr-photo:hover { transform: translateY(-4px); }
-        .wr-photo img { display: block; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
-        .wr-photo:hover img { transform: scale(1.06); }
         .wr-carousel-card {
           border-radius: 14px;
           overflow: hidden;
@@ -741,13 +618,6 @@ export default function Wedding() {
 
       <HeartEffect />
       <MusicPlayer />
-      <Lightbox
-        images={lightbox?.images}
-        index={lightbox?.index}
-        onClose={() => setLightbox(null)}
-        onPrev={() => navigateLightbox(-1)}
-        onNext={() => navigateLightbox(1)}
-      />
 
       {/* Hero */}
       <div style={{ position: 'relative', height: 600, overflow: 'hidden', background: `linear-gradient(160deg, ${BLUSH} 0%, #ffd6e4 50%, #fff9f5 100%)` }}>
@@ -756,29 +626,29 @@ export default function Wedding() {
           alt="웨딩 대표사진"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }}
         />
-        <div style={{ position: 'absolute', top: 80, left: 36, fontSize: 30, color: ROSE, animation: 'wr-float 3.5s ease-in-out infinite', pointerEvents: 'none' }}>♥</div>
+        <div style={{ position: 'absolute', top: 80, left: 36, fontSize: 30, color: TEXT_BLACK, animation: 'wr-float 3.5s ease-in-out infinite', pointerEvents: 'none' }}>♥</div>
         <div style={{ position: 'absolute', top: 160, right: 44, fontSize: 18, color: PINK, animation: 'wr-float2 4s ease-in-out infinite 0.7s', pointerEvents: 'none' }}>♥</div>
-        <div style={{ position: 'absolute', top: 240, left: 70, fontSize: 12, color: ROSE, animation: 'wr-float 5s ease-in-out infinite 1.4s', pointerEvents: 'none' }}>♥</div>
+        <div style={{ position: 'absolute', top: 240, left: 70, fontSize: 12, color: TEXT_BLACK, animation: 'wr-float 5s ease-in-out infinite 1.4s', pointerEvents: 'none' }}>♥</div>
         <div style={{ position: 'absolute', top: 310, right: 80, fontSize: 22, color: PINK, animation: 'wr-float2 4.5s ease-in-out infinite 0.3s', pointerEvents: 'none' }}>♥</div>
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '48px 32px', textAlign: 'center', background: 'linear-gradient(to bottom, transparent 0%, rgba(255,249,245,0.88) 100%)' }}>
-          <div style={{ fontSize: 25, letterSpacing: 5, color: ROSE, marginBottom: 16, opacity: 0.8 }}>🌹 Wedding Invitation 🌹</div>
-          <div style={{ fontSize: 20, color: '#c06080', marginBottom: 12, letterSpacing: 1 }}>두 사람이 하나가 되는 날</div>
-          <div style={{ fontSize: 54, fontWeight: 800, color: DEEP_ROSE, letterSpacing: 3, marginBottom: 12, lineHeight: 1.1 }}>태환 ♥ 영은</div>
-          <div style={{ fontSize: 19, color: '#c06080', letterSpacing: 2 }}>2026년 9월 13일 일요일 16시 40분</div>
+          <div style={{ fontSize: 25, letterSpacing: 5, color: TEXT_BLACK, marginBottom: 16, opacity: 0.8 }}>🌹 Wedding Invitation 🌹</div>
+          <div style={{ fontSize: 20, color: TEXT_BLACK, marginBottom: 12, letterSpacing: 1 }}>두 사람이 하나가 되는 날</div>
+          <div style={{ fontSize: 54, fontWeight: 800, color: TEXT_BLACK, letterSpacing: 3, marginBottom: 12, lineHeight: 1.1 }}>태환 ♥ 영은</div>
+          <div style={{ fontSize: 19, color: TEXT_BLACK, letterSpacing: 2 }}>2026년 9월 13일 일요일 16시 40분</div>
         </div>
       </div>
 
       {/* Divider */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '32px 32px 24px' }}>
         <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${PINK})` }} />
-        <div style={{ fontSize: 24, color: ROSE }}>💕</div>
+        <div style={{ fontSize: 24, color: TEXT_BLACK }}>💕</div>
         <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${PINK})` }} />
       </div>
 
       {/* Greeting */}
       <div className="wr-fade" style={{ padding: '0 32px 36px', textAlign: 'center' }}>
         <div style={{ fontSize: 28, color: PINK, marginBottom: 14, opacity: 0.6 }}>❝</div>
-        <p style={{ fontSize: 20, lineHeight: 2.4, color: '#9a6070', margin: 0 }}>
+        <p style={{ fontSize: 20, lineHeight: 2.4, color: TEXT_BLACK, margin: 0 }}>
           우리 두 사람의 사랑이 영원히<br />
           빛나는 날, 함께해 주세요.<br />
           <br />
@@ -794,33 +664,29 @@ export default function Wedding() {
           <Reveal>
             <div style={{ textAlign: 'center' }}>
               <div
-                className="wr-avatar"
-                onClick={() => openLightbox(['/images/wedding2_s.jpg'])}
                 style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}
               >
                 <img src="/images/wedding2_s.jpg" alt="신랑"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신랑</div>
-              <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>김태환</div>
+              <div style={{ fontSize: 23, fontWeight: 700, color: TEXT_BLACK, letterSpacing: 1, marginBottom: 6 }}>김태환</div>
               <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.8 }}>김세형 박정순의 장남</div>
             </div>
           </Reveal>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 24 }}>
-            <div style={{ fontSize: 30, color: ROSE }}>♥</div>
+            <div style={{ fontSize: 30, color: TEXT_BLACK }}>♥</div>
           </div>
           <Reveal delay={0.12}>
             <div style={{ textAlign: 'center' }}>
               <div
-                className="wr-avatar"
-                onClick={() => openLightbox(['/images/wedding3_s.jpg'])}
                 style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}
               >
                 <img src="/images/wedding3_s.jpg" alt="신부"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신부</div>
-              <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, letterSpacing: 1, marginBottom: 6 }}>안영은</div>
+              <div style={{ fontSize: 23, fontWeight: 700, color: TEXT_BLACK, letterSpacing: 1, marginBottom: 6 }}>안영은</div>
               <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.8 }}>안준범 박재연의 장녀</div>
             </div>
           </Reveal>
@@ -832,11 +698,11 @@ export default function Wedding() {
       {/* Date & Venue Card */}
       <div style={{ margin: '0 20px 40px', borderRadius: 20, background: `linear-gradient(135deg, ${BLUSH} 0%, #fff5f8 100%)`, padding: '32px 28px', border: `1.5px solid ${PINK}60`, textAlign: 'center', boxShadow: `0 6px 24px ${ROSE}18` }}>
         <div style={{ fontSize: 26, marginBottom: 16 }}>🌸</div>
-        <div style={{ fontSize: 32, fontWeight: 800, color: DEEP_ROSE, marginBottom: 6, letterSpacing: 2 }}>2026. 9. 13</div>
-        <div style={{ fontSize: 20, color: ROSE, marginBottom: 22, opacity: 0.7 }}>일요일 오후 4시 40분</div>
+        <div style={{ fontSize: 32, fontWeight: 800, color: TEXT_BLACK, marginBottom: 6, letterSpacing: 2 }}>2026. 9. 13</div>
+        <div style={{ fontSize: 20, color: TEXT_BLACK, marginBottom: 22, opacity: 0.7 }}>일요일 오후 4시 40분</div>
         <div style={{ width: 40, height: 1, background: `linear-gradient(to right, transparent, ${PINK}, transparent)`, margin: '0 auto 22px' }} />
-        <div style={{ fontSize: 23, fontWeight: 700, color: DEEP_ROSE, marginBottom: 6 }}>여의도웨딩컨벤션</div>
-        <div style={{ fontSize: 19, color: '#c06080', marginBottom: 4 }}>그랜드볼룸</div>
+        <div style={{ fontSize: 23, fontWeight: 700, color: TEXT_BLACK, marginBottom: 6 }}>여의도웨딩컨벤션</div>
+        <div style={{ fontSize: 19, color: TEXT_BLACK, marginBottom: 4 }}>그랜드볼룸</div>
         <div style={{ fontSize: 16, color: '#bbb' }}>서울특별시 영등포구 여의대로 14 KT빌딩 3층</div>
       </div>
 
@@ -847,7 +713,7 @@ export default function Wedding() {
 
       {/* Countdown */}
       <div style={{ padding: '0 20px 40px', textAlign: 'center' }}>
-        <div style={{ fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 24 }}>💕 D - D A Y 💕</div>
+        <div style={{ fontSize: 19, color: TEXT_BLACK, letterSpacing: 4, marginBottom: 24 }}>💕 D - D A Y 💕</div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, alignItems: 'center' }}>
           {[['일', t.d], ['시간', t.h], ['분', t.m], ['초', t.s]].map(([label, val], i) => (
             <React.Fragment key={label}>
@@ -865,12 +731,10 @@ export default function Wedding() {
 
       {/* Couple Full Photo */}
       <div style={{ padding: '0 20px 40px' }}>
-        <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌹 우리의 이야기 🌹</div>
+        <div style={{ textAlign: 'center', fontSize: 19, color: TEXT_BLACK, letterSpacing: 4, marginBottom: 20 }}>🌹 우리의 이야기 🌹</div>
         <Reveal>
           <div
-            className="wr-photo"
-            onClick={() => openLightbox(['/images/wedding4_s.jpg'])}
-            style={{ borderRadius: 20, border: `2px solid ${PINK}50`, boxShadow: `0 8px 32px ${ROSE}20` }}
+            style={{ borderRadius: 20, overflow: 'hidden', border: `2px solid ${PINK}50`, boxShadow: `0 8px 32px ${ROSE}20` }}
           >
             <img
               src="/images/wedding4_s.jpg"
@@ -883,8 +747,8 @@ export default function Wedding() {
 
       {/* Gallery */}
       <div style={{ padding: '0 0 40px' }}>
-        <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🌸 G A L L E R Y 🌸</div>
-        <PhotoCarousel images={GALLERY_IMAGES} onOpen={(i) => openLightbox(GALLERY_IMAGES, i)} onActiveChange={setActiveIndex} />
+        <div style={{ textAlign: 'center', fontSize: 19, color: TEXT_BLACK, letterSpacing: 4, marginBottom: 20 }}>🌸 G A L L E R Y 🌸</div>
+        <PhotoCarousel images={GALLERY_IMAGES} onActiveChange={setActiveIndex} />
         <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 16 }}>
           {GALLERY_IMAGES.map((_, i) => (
             <span key={i} className={`wr-dot${i === activeIndex ? ' wr-dot-active' : ''}`} />
@@ -896,12 +760,12 @@ export default function Wedding() {
 
       {/* Location */}
       <div style={{ padding: '0 20px 40px' }}>
-        <div style={{ textAlign: 'center', fontSize: 19, color: ROSE, letterSpacing: 4, marginBottom: 20 }}>🗺️ 오 시 는 길 🗺️</div>
+        <div style={{ textAlign: 'center', fontSize: 19, color: TEXT_BLACK, letterSpacing: 4, marginBottom: 20 }}>🗺️ 오 시 는 길 🗺️</div>
         <div style={{ marginBottom: 14 }}>
           <KakaoMap />
         </div>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: DEEP_ROSE, marginBottom: 4 }}>여의도웨딩컨벤션 그랜드볼룸</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: TEXT_BLACK, marginBottom: 4 }}>여의도웨딩컨벤션 그랜드볼룸</div>
           <div style={{ fontSize: 16, color: '#bbb' }}>서울특별시 영등포구 여의대로 14 KT빌딩 3층</div>
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
@@ -910,15 +774,15 @@ export default function Wedding() {
             { label: '카카오맵에서 보기', url: 'https://place.map.kakao.com/8011957' },
           ].map(({ label, url }) => (
             <a key={label} href={url} target="_blank" rel="noopener noreferrer"
-              style={{ padding: '10px 18px', borderRadius: 20, border: `1.5px solid ${PINK}`, color: ROSE, fontSize: 16, cursor: 'pointer', textDecoration: 'none' }}>
+              style={{ padding: '10px 18px', borderRadius: 20, border: `1.5px solid ${PINK}`, color: TEXT_BLACK, fontSize: 16, cursor: 'pointer', textDecoration: 'none' }}>
               {label}
             </a>
           ))}
         </div>
-        <div style={{ background: BLUSH, borderRadius: 14, padding: '20px', fontSize: 17, color: '#9a6070', lineHeight: 2.1 }}>
-          <span style={{ fontWeight: 700, color: ROSE }}>지하철</span>　5·9호선 여의도역 1번 출구<br />
-          <span style={{ fontWeight: 700, color: ROSE }}>버스</span>　한국경제인협회 정류장 하차<br />
-          <span style={{ fontWeight: 700, color: ROSE }}>주차</span>　지하 주차장 이용 (2시간 무료)
+        <div style={{ background: BLUSH, borderRadius: 14, padding: '20px', fontSize: 17, color: TEXT_BLACK, lineHeight: 2.1 }}>
+          <span style={{ fontWeight: 700, color: TEXT_BLACK }}>지하철</span>　5·9호선 여의도역 1번 출구<br />
+          <span style={{ fontWeight: 700, color: TEXT_BLACK }}>버스</span>　한국경제인협회 정류장 하차<br />
+          <span style={{ fontWeight: 700, color: TEXT_BLACK }}>주차</span>　지하 주차장 이용 (2시간 무료)
         </div>
       </div>
 
