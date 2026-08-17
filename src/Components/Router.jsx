@@ -9,6 +9,8 @@ import ProposalPage from "../Pages/ProposalPage";
 import MovingAveragePage from "../Pages/MovingAveragePage";
 import StockComparePage from "../Pages/StockComparePage";
 import Wedding from "../Pages/Wedding";
+import Wedding2 from "../Pages/Wedding2";
+import WeddingVideo from "../Pages/WeddingVideo";
 import { generateWordId, validateWordId } from "../utils/wordGenerator";
 import { message } from "./Message";
 import axios from "axios";
@@ -327,6 +329,10 @@ export default function Router() {
 
                 {/* 모바일 청첩장 */}
                 <Route path="/wedding" element={<Wedding />} />
+                <Route path="/wedding2" element={<Wedding2 />} />
+
+                {/* 식전영상 */}
+                <Route path="/weddingvideo" element={<WeddingVideo />} />
 
                 {/* 고유 URL 없는 공유 페이지 */}
                 <Route element={<SharedLayout />}>
