@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import useDocumentMeta from "../hooks/useDocumentMeta";
 
 const YOUTUBE_VIDEO_ID = "ZqJ7bfgacSA"; // IU - Love Wins All MV
 
@@ -26,6 +27,11 @@ function FloatingHeart({ id, onRemove }) {
 }
 
 export default function ProposalPage() {
+    useDocumentMeta({
+        title: "프로포즈 💍",
+        description: "특별한 순간을 위한 페이지",
+    });
+
     const [step, setStep] = useState(0); // 0: 인트로, 1: 메시지, 2: 질문, 3: 수락
     const [hearts, setHearts] = useState([]);
     const [noCount, setNoCount] = useState(0);

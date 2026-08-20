@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useDocumentMeta from '../hooks/useDocumentMeta';
 
 const WEDDING_DATE = new Date('2026-09-13T16:40:00');
 
@@ -320,11 +321,11 @@ export default function Wedding() {
   const [bgmStarted, setBgmStarted] = useState(false);
   const [bgmMuted, setBgmMuted] = useState(false);
 
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = `${GROOM_FULL} ♥ ${BRIDE_FULL} 결혼식에 초대합니다`;
-    return () => { document.title = prevTitle; };
-  }, []);
+  useDocumentMeta({
+    title: `${GROOM_FULL} ♥ ${BRIDE_FULL} 결혼식에 초대합니다`,
+    description: `2026년 9월 13일 일요일 오후 4시 40분 · ${VENUE_NAME} ${VENUE_HALL}`,
+    ogImage: '/images/wedding1_s.jpg',
+  });
 
   const visibleImages = galleryExpanded ? GALLERY_IMAGES : GALLERY_IMAGES.slice(0, GALLERY_INITIAL);
   const musicSrc = bgmStarted

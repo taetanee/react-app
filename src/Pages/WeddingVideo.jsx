@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useDocumentMeta from '../hooks/useDocumentMeta';
 
 const ROSE = '#c2185b';
 const DEEP_ROSE = '#880e4f';
@@ -20,16 +21,16 @@ const SONG_IDS = [
 ];
 
 export default function WeddingVideo() {
+  useDocumentMeta({
+    title: '식전영상 · 태환 ♥ 영은',
+    description: `${GROOM} ♥ ${BRIDE} 결혼식 식전영상 (${DATE_LABEL})`,
+    ogImage: '/images/wedding1_s.jpg',
+  });
+
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = '식전영상 · 태환 ♥ 영은';
-    return () => { document.title = prevTitle; };
-  }, []);
 
   useEffect(() => {
     if (!started || paused) return;

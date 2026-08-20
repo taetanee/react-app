@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
+import useDocumentMeta from "../hooks/useDocumentMeta";
 
 export default function Page02() {
+    useDocumentMeta({
+        title: "오픈AI 챗 · MyPad",
+        description: "OpenAI와 대화할 수 있는 개인 채팅 페이지",
+    });
+
     const [input, setInput] = useState("");
     // 브라우저에 저장된 비밀번호가 있으면 불러옴
     const [password, setPassword] = useState(localStorage.getItem("chat_pwd") || "");

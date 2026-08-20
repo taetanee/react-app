@@ -3,6 +3,7 @@ import {
     BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { message } from "../Components/Message";
+import useDocumentMeta from "../hooks/useDocumentMeta";
 
 const API = "https://api.mypad.kr/quantInvest";
 
@@ -442,6 +443,11 @@ function CompareChart({ stocks, colors }) {
 
 // ── 메인 페이지 ─────────────────────────────────────────────
 export default function StockComparePage() {
+    useDocumentMeta({
+        title: "종목 비교 · MyPad",
+        description: "여러 종목의 PER·PBR·ROE 등 재무 지표를 한눈에 비교",
+    });
+
     const [stocks, setStocks]           = useState([]);
     const [addingSymbol, setAddingSymbol] = useState('');
     const [viewMode, setViewMode]       = useState('table');

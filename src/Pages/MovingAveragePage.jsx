@@ -4,6 +4,7 @@ import {
     ResponsiveContainer, ComposedChart, Line, XAxis, YAxis,
     Tooltip, Legend, CartesianGrid,
 } from "recharts";
+import useDocumentMeta from "../hooks/useDocumentMeta";
 
 // ── 설정 ─────────────────────────────────────────────────────
 const API_BASE_URL = "https://api.mypad.kr/myDashboard";
@@ -114,6 +115,11 @@ function CustomTooltip({ active, payload, label }) {
 
 // ── 메인 컴포넌트 ────────────────────────────────────────────
 export default function MovingAveragePage() {
+    useDocumentMeta({
+        title: "지수 이동평균선 · MyPad",
+        description: "S&P 500·NASDAQ·KOSPI 등 주요 지수의 이동평균선과 MDD를 확인하세요",
+    });
+
     const { id: rawId } = useParams();
     const id = rawId?.replace(/^@/, '') ?? '';
 

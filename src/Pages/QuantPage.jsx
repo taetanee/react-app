@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { message } from "../Components/Message";
+import useDocumentMeta from "../hooks/useDocumentMeta";
 
 const API      = "https://api.mypad.kr/quantInvest";
 const PAGE_SIZE = 20;
@@ -746,6 +747,11 @@ function CombinedTab({ updatedAt, refreshing }) {
 
 // ── 메인 페이지 ─────────────────────────────────────────────
 export default function QuantPage() {
+    useDocumentMeta({
+        title: "S&P 500 퀀트 스크리너 · MyPad",
+        description: "재무 지표 기반 S&P 500 종목 스크리닝 및 랭킹",
+    });
+
     const [activeTab,  setActiveTab]  = useState("combined");
     const [refreshing, setRefreshing] = useState(false);
     const [updatedAt,  setUpdatedAt]  = useState(null);

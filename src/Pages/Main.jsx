@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { message } from "../Components/Message";
+import useDocumentMeta from "../hooks/useDocumentMeta";
 
 const API_BASE_URL = "https://api.mypad.kr/myDashboard";
 
@@ -92,6 +93,11 @@ const getVixStatus = (price) => {
 export default function Main() {
     const { id: rawId } = useParams();
     const id = rawId?.replace(/^@/, '') ?? '';
+
+    useDocumentMeta({
+        title: "나만의 대시보드 · MyPad",
+        description: "날씨, 미세먼지, 환율, 주요 지수, 공포탐욕지수를 한눈에 보는 개인 대시보드",
+    });
     const [dust, setDust] = useState("");
     const [snp500, setSnp500] = useState({ price: "", change: "", percent: "", isUp: true });
     const [weather, setWeather] = useState(null);
@@ -544,19 +550,8 @@ export default function Main() {
                                     {isUp ? "▲" : "▼"} {Math.abs(fearGreed.diff)}
                                 </span>
                             </div>
-                            {/* 게이지 바 */}
-                            <div style={{ height: '5px', background: '#f0f0f0', borderRadius: '3px', margin: '7px 0 5px', overflow: 'hidden' }}>
-                                <div style={{
-                                    height: '100%',
-                                    width: `${Math.min(fearGreed.value, 100)}%`,
-                                    background: `linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71)`,
-                                    borderRadius: '3px',
-                                    transition: 'width 0.6s ease',
-                                }} />
-                            </div>
-                            <p style={{ fontSize: "11px", color: "#95a5a6", margin: "0", fontWeight: '600' }}>
-                                {fearGreed.rating}
-                            </p>
+                            {/* 나침반형 게이지 */}
+                            <FearGreedGauge value={fearGreed.value} rating={fearGreed.rating} color={fgColor} />
                         </div>
                         {fearGreedHistory.length > 0 && (
                             <Sparkline data={fearGreedHistory} isUp={isUp} prevClose={fearGreed.prevValue ?? null} period={chartPeriod} />
@@ -1071,6 +1066,50 @@ export default function Main() {
 
             </div>
         </div>
+    );
+}
+
+// ── 공포탐욕지수 나침반형 게이지 (CNN 스타일 반원 다이얼) ─────────
+const FG_SEGMENTS = [
+    { from: 0,  to: 25,  color: '#e74c3c' },
+    { from: 25, to: 45,  color: '#e67e22' },
+    { from: 45, to: 55,  color: '#f39c12' },
+    { from: 55, to: 75,  color: '#2ecc71' },
+    { from: 75, to: 100, color: '#27ae60' },
+];
+
+function FearGreedGauge({ value, rating, color }) {
+    const v = Math.max(0, Math.min(100, Number(value) || 0));
+    const W = 104, H = 44, cx = 52, cy = 38, r = 28, strokeW = 6;
+
+    const pointAt = (radius, val) => {
+        const angle = (180 - (val / 100) * 180) * (Math.PI / 180);
+        return { x: cx + radius * Math.cos(angle), y: cy - radius * Math.sin(angle) };
+    };
+    const needleTip = pointAt(r - strokeW - 3, v);
+
+    return (
+        <svg width={W} height={H} style={{ display: 'block', margin: '2px 0 0' }}>
+            {FG_SEGMENTS.map((seg, i) => {
+                const p1 = pointAt(r, seg.from);
+                const p2 = pointAt(r, seg.to);
+                return (
+                    <path
+                        key={i}
+                        d={`M ${p1.x.toFixed(2)},${p1.y.toFixed(2)} A ${r},${r} 0 0,1 ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`}
+                        stroke={seg.color}
+                        strokeWidth={strokeW}
+                        fill="none"
+                    />
+                );
+            })}
+            <line x1={cx} y1={cy} x2={needleTip.x.toFixed(2)} y2={needleTip.y.toFixed(2)}
+                stroke="#2d3436" strokeWidth={2.5} strokeLinecap="round" />
+            <circle cx={cx} cy={cy} r={4} fill="#2d3436" />
+            <text x={cx} y={H - 1} textAnchor="middle" fontSize="8" fontWeight="700" fill={color}>
+                {rating}
+            </text>
+        </svg>
     );
 }
 

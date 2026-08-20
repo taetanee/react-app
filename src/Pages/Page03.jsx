@@ -1,6 +1,12 @@
 import React from "react";
+import useDocumentMeta from "../hooks/useDocumentMeta";
 
 export default function Page03() {
+    useDocumentMeta({
+        title: "김태환 포트폴리오",
+        description: "풀스택 개발자 김태환의 이력 및 포트폴리오",
+    });
+
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 font-sans">
             <div className="max-w-5xl mx-auto space-y-6">

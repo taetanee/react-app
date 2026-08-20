@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useDocumentMeta from '../hooks/useDocumentMeta';
 
 const WEDDING_DATE = new Date('2026-09-13T16:40:00');
 const ROSE = '#c2185b';
@@ -562,40 +563,14 @@ function Divider({ icon }) {
 }
 
 export default function Wedding2() {
+  useDocumentMeta({
+    title: '태환 ♥ 영은 결혼식에 초대합니다',
+    description: '2026년 9월 13일 일요일 오후 4시 40분 · 여의도웨딩컨벤션 그랜드볼룸',
+    ogImage: '/images/wedding1_s.jpg',
+  });
+
   const t = useCountdown(WEDDING_DATE);
   const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = '태환 ♥ 영은 결혼식에 초대합니다';
-
-    const setMeta = (name, content, prop = false) => {
-      const attr = prop ? 'property' : 'name';
-      let el = document.querySelector(`meta[${attr}="${name}"]`);
-      if (!el) { el = document.createElement('meta'); el.setAttribute(attr, name); document.head.appendChild(el); }
-      el._prevContent = el.getAttribute('content');
-      el.setAttribute('content', content);
-      return el;
-    };
-
-    const desc = '2026년 9월 13일 일요일 오후 4시 40분 · 여의도웨딩컨벤션 그랜드볼룸';
-    const metas = [
-      setMeta('description', desc),
-      setMeta('og:title', '태환 ♥ 영은 결혼식에 초대합니다', true),
-      setMeta('og:description', desc, true),
-      setMeta('og:type', 'website', true),
-      setMeta('og:image', '/images/wedding1_s.jpg', true),
-      setMeta('og:image:width', '600', true),
-      setMeta('og:image:height', '315', true),
-    ];
-
-    return () => {
-      document.title = prevTitle;
-      metas.forEach(el => {
-        if (el._prevContent !== undefined) el.setAttribute('content', el._prevContent);
-      });
-    };
-  }, []);
 
   return (
     <div
