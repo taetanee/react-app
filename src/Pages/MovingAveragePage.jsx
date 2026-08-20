@@ -44,6 +44,18 @@ function calcMA(closes, period) {
     });
 }
 
+// ── MDD(최대낙폭) 계산: 기간 중 고점 대비 최대 하락폭 ────────────
+function calcMDD(rows) {
+    let peak = -Infinity, peakDate = null;
+    let mdd = 0, mddPeakDate = null, mddTroughDate = null;
+    rows.forEach(r => {
+        if (r.close > peak) { peak = r.close; peakDate = r.date; }
+        const dd = ((r.close - peak) / peak) * 100;
+        if (dd < mdd) { mdd = dd; mddPeakDate = peakDate; mddTroughDate = r.date; }
+    });
+    return { mdd, mddPeakDate, mddTroughDate };
+}
+
 // ── 날짜 포맷 ─────────────────────────────────────────────────
 function fmtShort(dateStr) {
     if (!dateStr) return "";
@@ -163,7 +175,9 @@ export default function MovingAveragePage() {
             const high  = Math.max(...closes);
             const low   = Math.min(...closes);
             const pct   = ((last - first) / first) * 100;
-            setInfo({ last, change: last - first, pct, high, low });
+            const { mdd, mddPeakDate, mddTroughDate } = calcMDD(rows);
+            const currentDD = ((last - high) / high) * 100;
+            setInfo({ last, change: last - first, pct, high, low, mdd, mddPeakDate, mddTroughDate, currentDD });
         } catch (e) {
             if (!cancelled) setError(e.message || "데이터를 불러올 수 없습니다.");
         } finally {
@@ -408,6 +422,18 @@ export default function MovingAveragePage() {
                     />
                     <InfoItem label="기간 고점" value={fmtPrice(info.high)} color="#e74c3c" />
                     <InfoItem label="기간 저점" value={fmtPrice(info.low)}  color="#3498db" />
+                    <InfoItem
+                        label="MDD (최대낙폭)"
+                        value={fmtPct(info.mdd)}
+                        color="#3498db"
+                        title={`고점 ${fmtShort(info.mddPeakDate)} → 저점 ${fmtShort(info.mddTroughDate)}`}
+                    />
+                    <InfoItem
+                        label="고점 대비 현재"
+                        value={fmtPct(info.currentDD)}
+                        color={info.currentDD < 0 ? "#3498db" : "#2d3436"}
+                        title={`최고가 ${fmtPrice(info.high)} → 현재가 ${fmtPrice(info.last)}`}
+                    />
                     <InfoItem label="데이터 수" value={`${chartData.length}거래일`} />
                 </div>
             )}
@@ -531,9 +557,9 @@ export default function MovingAveragePage() {
     );
 }
 
-function InfoItem({ label, value, color }) {
+function InfoItem({ label, value, color, title }) {
     return (
-        <div>
+        <div title={title}>
             <div style={{ fontSize: 10, color: "#aaa", fontWeight: 700, marginBottom: 2 }}>{label}</div>
             <div style={{ fontSize: 13, fontWeight: 700, color: color || "#2d3436" }}>{value}</div>
         </div>
