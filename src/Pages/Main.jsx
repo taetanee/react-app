@@ -108,6 +108,7 @@ export default function Main() {
     const [bitcoin, setBitcoin] = useState({ price: "", change: "", percent: "", isUp: true });
     const [dowjones, setDowjones] = useState({ price: "", change: "", percent: "", isUp: true });
     const [nasdaq, setNasdaq] = useState({ price: "", change: "", percent: "", isUp: true });
+    const [nasdaqHigh, setNasdaqHigh] = useState(null);
     const [weeklyWeather, setWeeklyWeather] = useState([]);
 
     const [bookmarks, setBookmarks] = useState(['weather', 'dust', 'snp500', 'exchange', 'feargreed', 'vix', 'kospi', 'bitcoin', 'weeklyWeather']);
@@ -295,6 +296,18 @@ export default function Main() {
         };
         fetchChartHistories();
     }, [chartPeriod]);
+
+    // 나스닥 고점(5년) fetch — chartPeriod와 무관하게 한 번만
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/getStockHistory?ticker=%5EIXIC&range=5y`)
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setNasdaqHigh(Math.max(...data.map(d => d.close)));
+                }
+            })
+            .catch(e => console.error('나스닥 고점 조회 실패', e));
+    }, []);
 
     // 개별 종목 데이터 fetch
     const fetchStocks = useCallback(async () => {
@@ -570,6 +583,9 @@ export default function Main() {
                         ? parseFloat(nasdaq.price) - parseFloat(nasdaq.change)
                         : parseFloat(nasdaq.price) + parseFloat(nasdaq.change))
                     : null;
+                const nasdaqDD = nasdaqHigh && nasdaq.price
+                    ? ((parseFloat(nasdaq.price) - nasdaqHigh) / nasdaqHigh) * 100
+                    : null;
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                         <div>
@@ -577,6 +593,11 @@ export default function Main() {
                             {nasdaq.price && (
                                 <p style={{ ...changeStyle(nasdaq.isUp), margin: '4px 0 0' }}>
                                     {nasdaq.isUp ? "▲" : "▼"} {nasdaq.change} ({nasdaq.percent})
+                                </p>
+                            )}
+                            {nasdaqDD != null && (
+                                <p style={{ fontSize: '10.5px', fontWeight: '700', color: '#3498db', margin: '3px 0 0' }}>
+                                    고점대비 {nasdaqDD.toFixed(2)}%
                                 </p>
                             )}
                         </div>
