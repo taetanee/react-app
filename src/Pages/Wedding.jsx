@@ -111,6 +111,38 @@ function CopyBtn({ text }) {
   );
 }
 
+// 배경(div background-image)으로 렌더링해 iOS의 "사진에 저장" 팝업을 원천적으로 피하고,
+// 투명 텍스트를 겹쳐 롱프레스 시 무의미한 텍스트 드래그만 되게 한다.
+function ProtectedPhoto({ src, alt = '', fit = 'cover', bgColor, selectable = true, style }) {
+  return (
+    <div
+      role="img"
+      aria-label={alt}
+      style={{
+        position: 'relative',
+        backgroundImage: `url(${src})`,
+        backgroundSize: fit,
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: bgColor,
+        ...style,
+      }}
+    >
+      {selectable && (
+        <span aria-hidden="true" style={{
+          position: 'absolute', inset: 0, overflow: 'hidden',
+          color: 'transparent', fontSize: 13, lineHeight: 1.6,
+          whiteSpace: 'pre-wrap',
+          WebkitUserSelect: 'text', userSelect: 'text',
+          WebkitTouchCallout: 'default',
+        }}>
+          {' '.repeat(2000)}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function useInView(threshold = 0.15) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
@@ -309,6 +341,7 @@ export default function Wedding() {
       }}
     >
       <style>{`
+        img { -webkit-user-drag: none; user-drag: none; }
         @keyframes wd-bounce {
           0%, 100% { transform: translateY(0); opacity: 0.5; }
           50% { transform: translateY(8px); opacity: 1; }
@@ -322,14 +355,13 @@ export default function Wedding() {
           position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 10px;
           background: ${CREAM_DEEP};
         }
-        .wd-gallery-item img { width: 100%; height: 100%; object-fit: contain; display: block; }
       `}</style>
 
       <StickyNav />
 
       {/* Hero */}
       <div id="wd-hero" style={{ position: 'relative', height: 520, overflow: 'hidden' }}>
-        <img src="/images/wedding1_s.jpg" alt="" draggable={false} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <ProtectedPhoto src="/images/wedding1_s.jpg" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, rgba(61,56,56,0.15) 0%, rgba(61,56,56,0.05) 40%, ${CREAM} 96%)` }} />
         <div style={{ position: 'absolute', bottom: 46, left: 0, right: 0, textAlign: 'center' }}>
           <div style={{ fontSize: 12, letterSpacing: 5, color: TEXT_DARK, opacity: 0.85, marginBottom: 14, fontWeight: 600 }}>WEDDING INVITATION</div>
@@ -369,14 +401,14 @@ export default function Wedding() {
         <SectionTitle eyebrow="Groom & Bride" title="신랑 · 신부 소개" />
         <Reveal>
           <div style={{ borderRadius: 18, overflow: 'hidden', margin: '0 auto 34px', maxWidth: 260, boxShadow: `0 8px 26px ${LAVENDER}25` }}>
-            <img src="/images/wedding4_s.jpg" alt="커플 사진" draggable={false} style={{ width: '100%', height: 260, objectFit: 'cover', display: 'block' }} />
+            <ProtectedPhoto src="/images/wedding4_s.jpg" alt="커플 사진" style={{ width: '100%', height: 260 }} />
           </div>
         </Reveal>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 36 }}>
           <Reveal>
             <div style={{ width: 130, textAlign: 'center' }}>
               <div style={{ borderRadius: '50%', overflow: 'hidden', width: 88, height: 88, margin: '0 auto 14px', border: `2px solid ${LAVENDER}50` }}>
-                <img src="/images/wedding2_s.jpg" alt="신랑" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <ProtectedPhoto src="/images/wedding2_s.jpg" alt="신랑" style={{ width: '100%', height: '100%' }} />
               </div>
               <div style={{ fontSize: 12, color: TEXT_MUTE, letterSpacing: 1, marginBottom: 4 }}>GROOM</div>
               <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 6 }}>{GROOM_FULL}</div>
@@ -386,7 +418,7 @@ export default function Wedding() {
           <Reveal delay={0.1}>
             <div style={{ width: 130, textAlign: 'center' }}>
               <div style={{ borderRadius: '50%', overflow: 'hidden', width: 88, height: 88, margin: '0 auto 14px', border: `2px solid ${LAVENDER}50` }}>
-                <img src="/images/wedding3_s.jpg" alt="신부" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <ProtectedPhoto src="/images/wedding3_s.jpg" alt="신부" style={{ width: '100%', height: '100%' }} />
               </div>
               <div style={{ fontSize: 12, color: TEXT_MUTE, letterSpacing: 1, marginBottom: 4 }}>BRIDE</div>
               <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 6 }}>{BRIDE_FULL}</div>
@@ -412,9 +444,9 @@ export default function Wedding() {
       <div id="wd-gallery" style={{ padding: '10px 24px 54px' }}>
         <SectionTitle eyebrow="Gallery"/>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-          {visibleImages.map(src => (
+          {visibleImages.map((src) => (
             <div key={src} className="wd-gallery-item">
-              <img src={src} alt="" loading="lazy" draggable={false} />
+              <ProtectedPhoto src={src} alt="" fit="contain" bgColor={CREAM_DEEP} style={{ width: '100%', height: '100%' }} />
             </div>
           ))}
         </div>
@@ -500,8 +532,8 @@ export default function Wedding() {
       {/* 마무리 사진 */}
       <div style={{ padding: '0 24px 50px' }}>
         <Reveal>
-          <div style={{ borderRadius: 18, overflow: 'hidden', boxShadow: `0 8px 26px ${LAVENDER}25` }}>
-            <img src="/images/wedding15_s.jpg" alt="" draggable={false} style={{ width: '100%', height: 'auto', display: 'block' }} />
+          <div style={{ borderRadius: 18, overflow: 'hidden', boxShadow: `0 8px 26px ${LAVENDER}25`, aspectRatio: '4 / 5' }}>
+            <ProtectedPhoto src="/images/wedding15_s.jpg" alt="" style={{ width: '100%', height: '100%' }} />
           </div>
         </Reveal>
       </div>

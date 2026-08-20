@@ -12,11 +12,11 @@ const SLIDES = Array.from({ length: 14 }, (_, i) => `/images/wedding${i + 1}_s.j
 
 // 배경음악 (임시로 채운 5곡, 추후 원하는 곡으로 교체 가능)
 const SONG_IDS = [
-  '2Vv-BfVoq4g', // Perfect - Ed Sheeran
+  'fLexgOxsZu0', // Marry You - Bruno Mars
   '450p7goxZqg', // All of Me - John Legend
   'rtOvBOTyX00', // A Thousand Years - Christina Perri
-  'fLexgOxsZu0', // Marry You - Bruno Mars
   'h-XrgiZiQgw', // Love wins all - 아이유(IU)
+  '2Vv-BfVoq4g', // Perfect - Ed Sheeran (도입부가 느려서 첫 곡에서 제외)
 ];
 
 export default function WeddingVideo() {

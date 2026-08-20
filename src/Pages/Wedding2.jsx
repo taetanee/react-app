@@ -70,6 +70,38 @@ function CopyBtn({ text }) {
   );
 }
 
+// 배경(div background-image)으로 렌더링해 iOS의 "사진에 저장" 팝업을 원천적으로 피하고,
+// 투명 텍스트를 겹쳐 롱프레스 시 무의미한 텍스트 드래그만 되게 한다.
+function ProtectedPhoto({ src, alt = '', fit = 'cover', bgColor, selectable = true, style }) {
+  return (
+    <div
+      role="img"
+      aria-label={alt}
+      style={{
+        position: 'relative',
+        backgroundImage: `url(${src})`,
+        backgroundSize: fit,
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: bgColor,
+        ...style,
+      }}
+    >
+      {selectable && (
+        <span aria-hidden="true" style={{
+          position: 'absolute', inset: 0, overflow: 'hidden',
+          color: 'transparent', fontSize: 13, lineHeight: 1.6,
+          whiteSpace: 'pre-wrap',
+          WebkitUserSelect: 'text', userSelect: 'text',
+          WebkitTouchCallout: 'default',
+        }}>
+          {' '.repeat(2000)}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function HeartEffect() {
   const canvasRef = useRef(null);
 
@@ -511,7 +543,7 @@ function PhotoCarousel({ images, onActiveChange }) {
               transform: `rotateY(${i * angleStep}deg) translateZ(${radius}px)`,
             }}
           >
-            <img src={src} alt="" draggable={false} />
+            <ProtectedPhoto src={src} alt="" selectable={false} style={{ width: '100%', height: '100%' }} />
           </div>
         ))}
       </div>
@@ -566,7 +598,14 @@ export default function Wedding2() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100vh', backgroundColor: '#fff9f5', fontFamily: "'Gowun Batang', 'Apple SD Gothic Neo', serif" }}>
+    <div
+      onContextMenu={e => e.preventDefault()}
+      style={{
+        maxWidth: 480, margin: '0 auto', minHeight: '100vh', backgroundColor: '#fff9f5',
+        fontFamily: "'Gowun Batang', 'Apple SD Gothic Neo', serif",
+        WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none',
+      }}
+    >
       <style>{`
         @keyframes wr-float {
           0%, 100% { transform: translateY(0) rotate(-6deg); opacity: 0.25; }
@@ -595,11 +634,7 @@ export default function Wedding2() {
           backface-visibility: hidden;
         }
         .wr-carousel-card:active { cursor: grabbing; }
-        .wr-carousel-card img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
+        .wr-carousel-card > div {
           pointer-events: none;
         }
         .wr-dot {
@@ -621,10 +656,10 @@ export default function Wedding2() {
 
       {/* Hero */}
       <div style={{ position: 'relative', height: 600, overflow: 'hidden', background: `linear-gradient(160deg, ${BLUSH} 0%, #ffd6e4 50%, #fff9f5 100%)` }}>
-        <img
+        <ProtectedPhoto
           src="/images/wedding1_s.jpg"
           alt="웨딩 대표사진"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.7 }}
         />
         <div style={{ position: 'absolute', top: 80, left: 36, fontSize: 30, color: TEXT_BLACK, animation: 'wr-float 3.5s ease-in-out infinite', pointerEvents: 'none' }}>♥</div>
         <div style={{ position: 'absolute', top: 160, right: 44, fontSize: 18, color: PINK, animation: 'wr-float2 4s ease-in-out infinite 0.7s', pointerEvents: 'none' }}>♥</div>
@@ -666,8 +701,8 @@ export default function Wedding2() {
               <div
                 style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}
               >
-                <img src="/images/wedding2_s.jpg" alt="신랑"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <ProtectedPhoto src="/images/wedding2_s.jpg" alt="신랑"
+                  style={{ width: '100%', height: '100%' }} />
               </div>
               <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신랑</div>
               <div style={{ fontSize: 23, fontWeight: 700, color: TEXT_BLACK, letterSpacing: 1, marginBottom: 6 }}>김태환</div>
@@ -682,8 +717,8 @@ export default function Wedding2() {
               <div
                 style={{ borderRadius: '50%', overflow: 'hidden', width: 110, height: 110, border: `3px solid ${PINK}`, boxShadow: `0 4px 16px ${ROSE}30`, margin: '0 auto 12px' }}
               >
-                <img src="/images/wedding3_s.jpg" alt="신부"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <ProtectedPhoto src="/images/wedding3_s.jpg" alt="신부"
+                  style={{ width: '100%', height: '100%' }} />
               </div>
               <div style={{ fontSize: 14, color: '#ccc', letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase' }}>신부</div>
               <div style={{ fontSize: 23, fontWeight: 700, color: TEXT_BLACK, letterSpacing: 1, marginBottom: 6 }}>안영은</div>
@@ -736,10 +771,10 @@ export default function Wedding2() {
           <div
             style={{ borderRadius: 20, overflow: 'hidden', border: `2px solid ${PINK}50`, boxShadow: `0 8px 32px ${ROSE}20` }}
           >
-            <img
+            <ProtectedPhoto
               src="/images/wedding4_s.jpg"
               alt="커플 사진"
-              style={{ width: '100%', height: 460, objectFit: 'cover' }}
+              style={{ width: '100%', height: 460 }}
             />
           </div>
         </Reveal>
