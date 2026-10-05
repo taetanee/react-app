@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import useDocumentMeta from '../hooks/useDocumentMeta';
 
 const WEDDING_DATE = new Date('2026-09-13T16:40:00');
 
@@ -46,11 +45,11 @@ const ACCOUNTS = {
 
 const NAV_ITEMS = [
   { id: 'wd-hero', label: '메인' },
+  { id: 'wd-location', label: '오시는 길' },
   { id: 'wd-greeting', label: '인사말' },
   { id: 'wd-intro', label: '소개' },
   { id: 'wd-calendar', label: '달력' },
   { id: 'wd-gallery', label: '갤러리' },
-  { id: 'wd-location', label: '오시는 길' },
   { id: 'wd-account', label: '계좌번호' },
 ];
 
@@ -321,12 +320,6 @@ export default function Wedding() {
   const [bgmStarted, setBgmStarted] = useState(false);
   const [bgmMuted, setBgmMuted] = useState(false);
 
-  useDocumentMeta({
-    title: `${GROOM_FULL} ♥ ${BRIDE_FULL} 결혼식에 초대합니다`,
-    description: `2026년 9월 13일 일요일 오후 4시 40분 · ${VENUE_NAME} ${VENUE_HALL}`,
-    ogImage: '/images/wedding1_s.jpg',
-  });
-
   const visibleImages = galleryExpanded ? GALLERY_IMAGES : GALLERY_IMAGES.slice(0, GALLERY_INITIAL);
   const musicSrc = bgmStarted
     ? `https://www.youtube.com/embed/${BGM_ID}?autoplay=1&mute=${bgmMuted ? 1 : 0}&loop=1&playlist=${BGM_ID}&controls=0&modestbranding=1&playsinline=1&rel=0`
@@ -372,6 +365,26 @@ export default function Wedding() {
         <div style={{ position: 'absolute', bottom: 10, left: 0, right: 0, textAlign: 'center', fontSize: 11, color: '#fff', letterSpacing: 2, animation: 'wd-bounce 1.8s ease-in-out infinite' }}>
           SCROLL
         </div>
+      </div>
+
+      {/* 오시는 길 */}
+      <div id="wd-location" style={{ padding: '54px 24px 54px', background: '#fff' }}>
+        <SectionTitle eyebrow="Location" title="오시는 길" />
+        <Reveal>
+          <div style={{ marginBottom: 16 }}>
+            <KakaoMap />
+          </div>
+          <div style={{ textAlign: 'center', marginBottom: 4 }}>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>{VENUE_NAME} {VENUE_HALL}</div>
+            <div style={{ fontSize: 13.5, color: TEXT_MUTE }}>{VENUE_ADDR}</div>
+          </div>
+          <NavAppButtons />
+          <div style={{ background: CREAM_DEEP, borderRadius: 14, padding: '18px 18px', fontSize: 13.5, color: TEXT_DARK, lineHeight: 2.1, marginTop: 22 }}>
+            <span style={{ fontWeight: 600 }}>지하철</span>　5·9호선 여의도역 1번 출구<br />
+            <span style={{ fontWeight: 600 }}>버스</span>　한국경제인협회 정류장 하차<br />
+            <span style={{ fontWeight: 600 }}>주차</span>　지하 주차장 이용 (2시간 무료)
+          </div>
+        </Reveal>
       </div>
 
       {/* 메인 정보 */}
@@ -462,26 +475,6 @@ export default function Wedding() {
             사진 더 보기
           </button>
         )}
-      </div>
-
-      {/* 오시는 길 */}
-      <div id="wd-location" style={{ padding: '10px 24px 54px', background: '#fff' }}>
-        <SectionTitle eyebrow="Location" title="오시는 길" />
-        <Reveal>
-          <div style={{ marginBottom: 16 }}>
-            <KakaoMap />
-          </div>
-          <div style={{ textAlign: 'center', marginBottom: 4 }}>
-            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>{VENUE_NAME} {VENUE_HALL}</div>
-            <div style={{ fontSize: 13.5, color: TEXT_MUTE }}>{VENUE_ADDR}</div>
-          </div>
-          <NavAppButtons />
-          <div style={{ background: CREAM_DEEP, borderRadius: 14, padding: '18px 18px', fontSize: 13.5, color: TEXT_DARK, lineHeight: 2.1, marginTop: 22 }}>
-            <span style={{ fontWeight: 600 }}>지하철</span>　5·9호선 여의도역 1번 출구<br />
-            <span style={{ fontWeight: 600 }}>버스</span>　한국경제인협회 정류장 하차<br />
-            <span style={{ fontWeight: 600 }}>주차</span>　지하 주차장 이용 (2시간 무료)
-          </div>
-        </Reveal>
       </div>
 
       {/* 계좌번호 */}

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import useDocumentMeta from '../hooks/useDocumentMeta';
 
 const WEDDING_DATE = new Date('2026-09-13T16:40:00');
 const ROSE = '#c2185b';
@@ -563,12 +562,6 @@ function Divider({ icon }) {
 }
 
 export default function Wedding2() {
-  useDocumentMeta({
-    title: '태환 ♥ 영은 결혼식에 초대합니다',
-    description: '2026년 9월 13일 일요일 오후 4시 40분 · 여의도웨딩컨벤션 그랜드볼룸',
-    ogImage: '/images/wedding1_s.jpg',
-  });
-
   const t = useCountdown(WEDDING_DATE);
   const [activeIndex, setActiveIndex] = useState(0);
 

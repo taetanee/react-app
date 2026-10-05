@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import useDocumentMeta from '../hooks/useDocumentMeta';
 
 const ROSE = '#c2185b';
 const DEEP_ROSE = '#880e4f';
@@ -9,24 +8,21 @@ const BRIDE = '영은';
 const DATE_LABEL = '2026. 9. 13';
 
 const SLIDE_MS = 4000; // 사진 한 장당 노출 시간
-const SLIDES = Array.from({ length: 14 }, (_, i) => `/images/wedding${i + 1}_s.jpg`);
+const SLIDES = [
+  ...Array.from({ length: 14 }, (_, i) => `/images/wedding${i + 1}_s.jpg`),
+  '/images/wedding16_s.jpg',
+  '/images/wedding17_s.jpg',
+  '/images/wedding18_s.jpg',
+];
 
-// 배경음악 (임시로 채운 5곡, 추후 원하는 곡으로 교체 가능)
+// 배경음악
 const SONG_IDS = [
-  'fLexgOxsZu0', // Marry You - Bruno Mars
-  '450p7goxZqg', // All of Me - John Legend
-  'rtOvBOTyX00', // A Thousand Years - Christina Perri
-  'h-XrgiZiQgw', // Love wins all - 아이유(IU)
-  '2Vv-BfVoq4g', // Perfect - Ed Sheeran (도입부가 느려서 첫 곡에서 제외)
+  'sSvAFjpLaGA',
+  '08Ndzf5-HxI',
+  'MVvclgDMtps'
 ];
 
 export default function WeddingVideo() {
-  useDocumentMeta({
-    title: '식전영상 · 태환 ♥ 영은',
-    description: `${GROOM} ♥ ${BRIDE} 결혼식 식전영상 (${DATE_LABEL})`,
-    ogImage: '/images/wedding1_s.jpg',
-  });
-
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { message } from "../Components/Message";
-import useDocumentMeta from "../hooks/useDocumentMeta";
 
 const API_BASE_URL = "https://api.mypad.kr/myDashboard";
 
@@ -94,10 +93,6 @@ export default function Main() {
     const { id: rawId } = useParams();
     const id = rawId?.replace(/^@/, '') ?? '';
 
-    useDocumentMeta({
-        title: "나만의 대시보드 · MyPad",
-        description: "날씨, 미세먼지, 환율, 주요 지수, 공포탐욕지수를 한눈에 보는 개인 대시보드",
-    });
     const [dust, setDust] = useState("");
     const [snp500, setSnp500] = useState({ price: "", change: "", percent: "", isUp: true });
     const [weather, setWeather] = useState(null);
