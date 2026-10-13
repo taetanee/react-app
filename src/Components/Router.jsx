@@ -18,6 +18,7 @@ import InvitationView from "../Pages/wedding-platform/InvitationView";
 import InvitationVideoView from "../Pages/wedding-platform/InvitationVideoView";
 import AdminCustomerCreate from "../Pages/wedding-platform/AdminCustomerCreate";
 import { generateWordId, validateWordId } from "../utils/wordGenerator";
+import { RouteMeta } from "../utils/pageMeta";
 import { message } from "./Message";
 import axios from "axios";
 
@@ -330,6 +331,7 @@ const navStyle = {
 export default function Router() {
     return (
         <BrowserRouter>
+            <RouteMeta />
             <Routes>
                 <Route path="/" element={<RootRedirect />} />
 

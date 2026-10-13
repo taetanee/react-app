@@ -1,0 +1,44 @@
+{
+  "default": {
+    "title": "MyPad",
+    "description": "나만의 요약 · 나만의 복붙 · 투자 도구"
+  },
+  "routes": [
+    {
+      "path": "/@aye",
+      "title": "특별한 메시지가 도착했어요 💌",
+      "description": "열어보세요"
+    },
+    {
+      "path": "/wedding",
+      "title": "태환 ♥ 영은 결혼식에 초대합니다",
+      "description": "2026년 9월 13일 일요일 오후 4시 40분 · 여의도웨딩컨벤션 그랜드볼룸",
+      "image": "https://mypad.kr/images/wedding1_s.jpg"
+    },
+    {
+      "path": "/wedding2",
+      "title": "태환 ♥ 영은 결혼식에 초대합니다",
+      "description": "2026년 9월 13일 일요일 오후 4시 40분 · 여의도웨딩컨벤션 그랜드볼룸",
+      "image": "https://mypad.kr/images/wedding1_s.jpg"
+    },
+    {
+      "path": "/weddingvideo",
+      "title": "태환 ♥ 영은 식전영상",
+      "description": "2026년 9월 13일 여의도웨딩컨벤션",
+      "image": "https://mypad.kr/images/wedding1_s.jpg"
+    },
+    { "path": "/mypage/login", "title": "모바일 청첩장 로그인", "description": "내 청첩장을 관리하세요" },
+    { "path": "/mypage", "title": "모바일 청첩장 마이페이지", "description": "내 청첩장을 관리하세요" },
+    { "path": "/invite/:slug/video", "title": "식전영상", "description": "저희의 이야기를 영상으로 담았습니다" },
+    { "path": "/invite/:slug", "title": "결혼식에 초대합니다", "description": "모바일 청첩장" },
+    { "path": "/admin/wedding", "title": "청첩장 고객 계정 발급", "description": "관리자 페이지" },
+    { "path": "/openai", "title": "오픈AI - MyPad", "description": "AI에게 물어보기" },
+    { "path": "/quant", "title": "S&P 500 퀀트 - MyPad", "description": "S&P 500 종목 퀀트 점수 순위" },
+    { "path": "/portfolio", "title": "포트폴리오 - MyPad", "description": "포트폴리오" },
+    { "path": "/stock-compare", "title": "종목 비교 - MyPad", "description": "여러 종목의 PER·PBR·ROE를 한눈에 비교" },
+    { "path": "/account-planner", "title": "어느 계좌에 투자할까? - MyPad", "description": "질문 4개로 알아보는 ISA·연금저축·IRP·일반 계좌 투자법" },
+    { "path": "/:id/clipboard", "title": "나만의 복붙 - MyPad", "description": "텍스트와 파일을 어디서든 복사·붙여넣기" },
+    { "path": "/:id/moving-average", "title": "지수 이동평균선 - MyPad", "description": "지수 이동평균선과 고점 대비 하락률" },
+    { "path": "/:id", "title": "나만의 요약 - MyPad", "description": "날씨·미세먼지·지수·환율을 한 화면에" }
+  ]
+}

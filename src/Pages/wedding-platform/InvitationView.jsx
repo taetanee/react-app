@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getInvitePublic } from '../../api/weddingPlatform';
+import { setPageMeta } from '../../utils/pageMeta';
 
 const CREAM = '#fdf8f1';
 const CREAM_DEEP = '#f6ece0';
@@ -118,6 +119,14 @@ export default function InvitationView() {
   useEffect(() => {
     getInvitePublic(slug).then(setInvite).catch(err => setError(err.message));
   }, [slug]);
+
+  useEffect(() => {
+    if (!invite) return;
+    setPageMeta({
+      title: `${invite.groomShort} ♥ ${invite.brideShort} 결혼식에 초대합니다`,
+      description: [invite.venueName, invite.venueHall].filter(Boolean).join(' ') || '모바일 청첩장',
+    });
+  }, [invite]);
 
   const weddingDate = invite?.weddingDate ? new Date(invite.weddingDate) : null;
   const daysLeft = useDaysLeft(weddingDate);

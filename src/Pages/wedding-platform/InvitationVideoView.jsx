@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getInvitePublic, getVideoPublic } from '../../api/weddingPlatform';
+import { setPageMeta } from '../../utils/pageMeta';
 
 const ROSE = '#c2185b';
 const DEEP_ROSE = '#880e4f';
@@ -19,6 +20,10 @@ export default function InvitationVideoView() {
     Promise.all([getInvitePublic(slug), getVideoPublic(slug)])
       .then(([invite, videoCfg]) => {
         setSlides(invite.gallery ?? []);
+        setPageMeta({
+          title: `${invite.groomShort} ♥ ${invite.brideShort} 식전영상`,
+          description: '저희의 이야기를 영상으로 담았습니다',
+        });
         setVideo(videoCfg);
       })
       .catch(err => setError(err.message));
