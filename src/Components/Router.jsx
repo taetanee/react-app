@@ -8,9 +8,15 @@ import QuantPage from "../Pages/QuantPage";
 import ProposalPage from "../Pages/ProposalPage";
 import MovingAveragePage from "../Pages/MovingAveragePage";
 import StockComparePage from "../Pages/StockComparePage";
+import AccountPlannerPage from "../Pages/AccountPlannerPage";
 import Wedding from "../Pages/Wedding";
 import Wedding2 from "../Pages/Wedding2";
 import WeddingVideo from "../Pages/WeddingVideo";
+import MyPageLogin from "../Pages/wedding-platform/MyPageLogin";
+import MyPageDashboard from "../Pages/wedding-platform/MyPageDashboard";
+import InvitationView from "../Pages/wedding-platform/InvitationView";
+import InvitationVideoView from "../Pages/wedding-platform/InvitationVideoView";
+import AdminCustomerCreate from "../Pages/wedding-platform/AdminCustomerCreate";
 import { generateWordId, validateWordId } from "../utils/wordGenerator";
 import { message } from "./Message";
 import axios from "axios";
@@ -110,6 +116,9 @@ function HamburgerMenu({ id }) {
                     </NavLink>
                     <NavLink style={dropdownLinkStyle} to="/stock-compare" onClick={() => setMenuOpen(false)}>
                         종목 비교
+                    </NavLink>
+                    <NavLink style={dropdownLinkStyle} to="/account-planner" onClick={() => setMenuOpen(false)}>
+                        절세 계좌 플래너
                     </NavLink>
                     <NavLink style={dropdownLinkStyle} to="/openai" onClick={() => setMenuOpen(false)}>
                         오픈AI
@@ -334,12 +343,24 @@ export default function Router() {
                 {/* 식전영상 */}
                 <Route path="/weddingvideo" element={<WeddingVideo />} />
 
+                {/* 웨딩 플랫폼: 고객 마이페이지 */}
+                <Route path="/mypage/login" element={<MyPageLogin />} />
+                <Route path="/mypage" element={<MyPageDashboard />} />
+
+                {/* 웨딩 플랫폼: 공개 청첩장 / 식전영상 (고객별 slug) */}
+                <Route path="/invite/:slug" element={<InvitationView />} />
+                <Route path="/invite/:slug/video" element={<InvitationVideoView />} />
+
+                {/* 웨딩 플랫폼: 관리자 계정 발급 */}
+                <Route path="/admin/wedding" element={<AdminCustomerCreate />} />
+
                 {/* 고유 URL 없는 공유 페이지 */}
                 <Route element={<SharedLayout />}>
                     <Route path="/openai"          element={<Page02 />} />
                     <Route path="/quant"           element={<QuantPage />} />
                     <Route path="/portfolio"       element={<Page03 />} />
                     <Route path="/stock-compare"   element={<StockComparePage />} />
+                    <Route path="/account-planner" element={<AccountPlannerPage />} />
                 </Route>
 
                 {/* 개인 URL 페이지 */}
