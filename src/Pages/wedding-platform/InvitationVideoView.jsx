@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getInvitePublic, getVideoPublic } from '../../api/weddingPlatform';
-import { babyLabel } from './DolInvitationView';
+import { babyLabel } from './inviteParts';
 import { setPageMeta } from '../../utils/pageMeta';
 
 const INK = '#0d0b0a';
