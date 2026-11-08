@@ -12,6 +12,14 @@ const API = 'https://api.mypad.kr/weddingPlatform';
 const buildDir = path.join(__dirname, '..', 'build');
 const { default: DEFAULT_META } = require(path.join(__dirname, '..', 'src', 'pageMeta.json'));
 
+// /wedding, /weddingvideo 는 웨딩 플랫폼 고객 청첩장으로 이전됨 (src/Components/Router.jsx 와 같은 slug)
+const LEGACY_WEDDING_SLUG = 'h6rxjh334n';
+const LEGACY_REDIRECTS = {
+    '/wedding': `/invite/${LEGACY_WEDDING_SLUG}`,
+    '/wedding2': `/invite/${LEGACY_WEDDING_SLUG}`,
+    '/weddingvideo': `/invite/${LEGACY_WEDDING_SLUG}/video`,
+};
+
 const MIME = {
     '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8',
     '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
@@ -97,6 +105,13 @@ const server = http.createServer(async (req, res) => {
         pathname = decodeURIComponent(new URL(req.url, 'http://x').pathname);
     } catch {
         return send(res, 400, 'Bad Request', 'text/plain', 'no-store');
+    }
+
+    // 0) 예전 고정 청첩장 링크 → 플랫폼 청첩장 (링크 미리보기 크롤러도 따라가도록 서버에서 301)
+    const legacy = LEGACY_REDIRECTS[pathname.replace(/\/+$/, '')];
+    if (legacy) {
+        res.writeHead(301, { Location: legacy, 'Cache-Control': 'public, max-age=3600' });
+        return res.end();
     }
 
     // 1) 정적 파일 (build/static/..., images, favicon 등)

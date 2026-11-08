@@ -1,39 +1,14 @@
 {
   "default": {
-    "title": "MyPad",
-    "description": "나만의 요약 · 나만의 복붙 · 투자 도구"
+    "title": "MyPad 모바일 청첩장",
+    "description": "모바일 청첩장 · 식전영상"
   },
   "routes": [
-    {
-      "path": "/@aye",
-      "title": "특별한 메시지가 도착했어요 💌",
-      "description": "열어보세요"
-    },
-    {
-      "path": "/wedding",
-      "title": "태환 ♥ 영은 결혼식에 초대합니다",
-      "description": "2026년 9월 13일 일요일 오후 4시 40분 · 여의도웨딩컨벤션 그랜드볼룸",
-      "image": "https://mypad.kr/images/wedding1_s.jpg"
-    },
-    {
-      "path": "/wedding2",
-      "title": "태환 ♥ 영은 결혼식에 초대합니다",
-      "description": "2026년 9월 13일 일요일 오후 4시 40분 · 여의도웨딩컨벤션 그랜드볼룸",
-      "image": "https://mypad.kr/images/wedding1_s.jpg"
-    },
-    {
-      "path": "/weddingvideo",
-      "title": "태환 ♥ 영은 식전영상",
-      "description": "2026년 9월 13일 여의도웨딩컨벤션",
-      "image": "https://mypad.kr/images/wedding1_s.jpg"
-    },
     { "path": "/mypage/login", "title": "모바일 청첩장 로그인", "description": "내 청첩장을 관리하세요" },
     { "path": "/mypage", "title": "모바일 청첩장 마이페이지", "description": "내 청첩장을 관리하세요" },
     { "path": "/invite/:slug/video", "title": "식전영상", "description": "저희의 이야기를 영상으로 담았습니다" },
     { "path": "/invite/:slug", "title": "결혼식에 초대합니다", "description": "모바일 청첩장" },
     { "path": "/dol/:slug", "title": "첫 번째 생일에 초대합니다", "description": "돌잔치 초대장" },
-    { "path": "/admin/wedding", "title": "청첩장 고객 계정 발급", "description": "관리자 페이지" },
-    { "path": "/:id/clipboard", "title": "나만의 복붙 - MyPad", "description": "텍스트와 파일을 어디서든 복사·붙여넣기" },
-    { "path": "/:id", "title": "나만의 요약 - MyPad", "description": "날씨·미세먼지·지수·환율을 한 화면에" }
+    { "path": "/admin/wedding", "title": "청첩장 고객 계정 발급", "description": "관리자 페이지" }
   ]
 }
