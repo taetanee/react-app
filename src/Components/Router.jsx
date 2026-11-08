@@ -23,7 +23,7 @@ export default function Router() {
 
                 {/* 공개 청첩장 / 식전영상 / 돌잔치 (고객별 slug) */}
                 <Route path="/invite/:slug" element={<InvitationView />} />
-                <Route path="/invite/:slug/video" element={<InvitationVideoView />} />
+                <Route path="/invite/video/:slug" element={<InvitationVideoView />} />
                 <Route path="/dol/:slug" element={<DolInvitationView />} />
 
                 {/* 관리자 계정 발급 */}

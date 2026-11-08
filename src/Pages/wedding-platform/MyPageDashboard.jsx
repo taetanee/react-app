@@ -287,7 +287,7 @@ function InviteTab({ me, invite, setInvite }) {
 function VideoTab({ me, invite, video, setVideo }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const publicUrl = `https://mypad.kr/invite/${me.slug}/video`;
+  const publicUrl = `https://mypad.kr/invite/video/${me.slug}`;
 
   const update = (key, value) => setVideo(prev => ({ ...prev, [key]: value }));
 

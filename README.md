@@ -6,7 +6,7 @@
 | https://mypad.kr/mypage/login | 고객 로그인 |
 | https://mypad.kr/mypage | 고객 마이페이지 |
 | https://mypad.kr/invite/:slug | 모바일 청첩장 |
-| https://mypad.kr/invite/:slug/video | 식전영상 |
+| https://mypad.kr/invite/video/:slug | 식전영상 |
 | https://mypad.kr/dol/:slug | 돌잔치 초대장 |
 | https://mypad.kr/admin/wedding | 관리자 (고객 계정 발급) |
 

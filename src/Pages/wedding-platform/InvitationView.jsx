@@ -284,7 +284,7 @@ export default function InvitationView() {
       )}
 
       <div style={{ padding: '0 24px 40px', textAlign: 'center' }}>
-        <Link to={`/invite/${slug}/video`} style={{ fontSize: 13, color: accent.deep, textDecoration: 'none' }}>
+        <Link to={`/invite/video/${slug}`} style={{ fontSize: 13, color: accent.deep, textDecoration: 'none' }}>
           🎬 식전영상 보기
         </Link>
       </div>

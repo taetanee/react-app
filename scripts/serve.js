@@ -64,7 +64,7 @@ function metaFor(kind, inv) {
 
 function matchDynamic(pathname) {
     let m;
-    if ((m = pathname.match(/^\/invite\/([^/]+)\/video\/?$/))) return { kind: 'video', slug: m[1] };
+    if ((m = pathname.match(/^\/invite\/video\/([^/]+)\/?$/))) return { kind: 'video', slug: m[1] };
     if ((m = pathname.match(/^\/invite\/([^/]+)\/?$/))) return { kind: 'invite', slug: m[1] };
     if ((m = pathname.match(/^\/dol\/([^/]+)\/?$/))) return { kind: 'dol', slug: m[1] };
     return null;
