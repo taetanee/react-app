@@ -145,7 +145,7 @@ export default function InvitationView() {
       </div>
     );
   }
-  if (invite.eventType === 'dol') return <Navigate to={`/dol/${slug}`} replace />;
+  if (invite.eventType === 'dol') return <Navigate to={`/invite/dol/${slug}`} replace />;
 
   const accent = hexToAccent(invite.accentColor);
   const gallery = invite.gallery ?? [];

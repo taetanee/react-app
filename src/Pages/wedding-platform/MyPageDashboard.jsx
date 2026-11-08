@@ -21,7 +21,7 @@ const DOL_TAB_LABEL = { invite: '돌잔치 초대장', video: '성장영상' };
 
 const WEDDING_ACCENT = '#a78bda';
 
-// eventType: 'wedding'(청첩장, /invite/:slug) | 'dol'(돌잔치 초대장, /dol/:slug)
+// eventType: 'wedding'(청첩장, /invite/:slug) | 'dol'(돌잔치 초대장, /invite/dol/:slug)
 const EMPTY_INVITE = {
   eventType: 'wedding',
   groomFull: '', brideFull: '', groomShort: '', brideShort: '',
@@ -153,7 +153,7 @@ function InviteTab({ me, invite, setInvite }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const isDol = invite.eventType === 'dol';
-  const publicUrl = `https://mypad.kr/${isDol ? 'dol' : 'invite'}/${me.slug}`;
+  const publicUrl = `https://mypad.kr/invite/${isDol ? 'dol/' : ''}${me.slug}`;
 
   const update = (key, value) => setInvite(prev => ({ ...prev, [key]: value }));
   // 종류를 바꿀 때 포인트 색이 기본값이면 그 종류의 기본 색으로 같이 바꾼다
