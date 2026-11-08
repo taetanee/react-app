@@ -17,11 +17,6 @@ export const MEAL_TICKET_SAMPLES = [
   { code: 'MT-04', name: '카드형 · 플로럴', desc: '은은한 꽃 일러스트 배경', color: '#f3e7ec' },
 ];
 
-export const PRODUCT_TYPE_LABEL = {
-  PAPER_INVITATION: '종이청첩장',
-  MEAL_TICKET: '식권',
-};
-
 export const ORDER_STATUS_LABEL = {
   REQUESTED: '신청 접수',
   CONFIRMED: '확인중',

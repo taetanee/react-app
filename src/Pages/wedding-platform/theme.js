@@ -5,7 +5,6 @@ export const CREAM_DEEP = '#f6ece0';
 export const TEXT_DARK = '#3d3838';
 export const TEXT_MUTE = '#8d8488';
 export const BORDER = '#e7e0ec';
-export const DANGER = '#c2185b';
 export const DOL_ACCENT = '#f2a7a0';
 
 export const FONT = "'Gowun Dodum', 'Apple SD Gothic Neo', sans-serif";

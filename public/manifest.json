@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "MyPad 청첩장",
+  "name": "MyPad 모바일 청첩장",
   "icons": [
     {
       "src": "favicon.ico",
