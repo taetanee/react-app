@@ -1,7 +1,7 @@
 {
   "default": {
     "title": "MyPad 모바일 청첩장",
-    "description": "모바일 청첩장 · 식전영상"
+    "description": "모바일 청첩장 · 식전영상 · 돌잔치 초대장. 직접 만들고 링크 하나로 전하세요."
   },
   "routes": [
     { "path": "/mypage/login", "title": "모바일 청첩장 로그인", "description": "내 청첩장을 관리하세요" },

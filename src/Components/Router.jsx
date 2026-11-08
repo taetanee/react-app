@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import IntroPage from "../Pages/wedding-platform/IntroPage";
 import MyPageLogin from "../Pages/wedding-platform/MyPageLogin";
 import MyPageDashboard from "../Pages/wedding-platform/MyPageDashboard";
 import InvitationView from "../Pages/wedding-platform/InvitationView";
@@ -16,6 +17,9 @@ export default function Router() {
         <BrowserRouter>
             <RouteMeta />
             <Routes>
+                {/* 서비스 소개 */}
+                <Route path="/" element={<IntroPage />} />
+
                 {/* 고객 마이페이지 */}
                 <Route path="/mypage/login" element={<MyPageLogin />} />
                 <Route path="/mypage" element={<MyPageDashboard />} />
@@ -33,7 +37,7 @@ export default function Router() {
                 <Route path="/wedding2" element={<Navigate to={`/invite/${LEGACY_WEDDING_SLUG}`} replace />} />
                 <Route path="/weddingvideo" element={<Navigate to={`/invite/${LEGACY_WEDDING_SLUG}/video`} replace />} />
 
-                <Route path="*" element={<Navigate to="/mypage/login" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
     );
