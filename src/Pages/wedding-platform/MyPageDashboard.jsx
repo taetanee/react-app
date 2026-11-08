@@ -4,7 +4,7 @@ import {
   getToken, getMe, logout, saveInvite, saveVideo, uploadImage, createOrder, listMyOrders,
 } from '../../api/weddingPlatform';
 import {
-  CREAM, LAVENDER, LAVENDER_DEEP, TEXT_DARK, TEXT_MUTE, BORDER, FONT,
+  CREAM, LAVENDER, LAVENDER_DEEP, TEXT_DARK, TEXT_MUTE, BORDER, FONT, DOL_ACCENT,
   inputStyle, labelStyle, primaryButtonStyle, cardStyle,
 } from './theme';
 import { PAPER_INVITATION_SAMPLES, MEAL_TICKET_SAMPLES, ORDER_STATUS_LABEL } from './sampleCatalog';
@@ -16,13 +16,28 @@ const TABS = [
   { id: 'meal', label: '식권 신청' },
 ];
 
+// 돌잔치 고객에게는 탭 이름을 바꿔 보여준다
+const DOL_TAB_LABEL = { invite: '돌잔치 초대장', video: '성장영상' };
+
+const WEDDING_ACCENT = '#a78bda';
+
+// eventType: 'wedding'(청첩장, /invite/:slug) | 'dol'(돌잔치 초대장, /dol/:slug)
 const EMPTY_INVITE = {
+  eventType: 'wedding',
   groomFull: '', brideFull: '', groomShort: '', brideShort: '',
-  weddingDate: '', venueName: '', venueHall: '', venueAddr: '',
-  greeting: '', accentColor: '#a78bda', bgmYoutubeId: '',
-  accounts: { groom: [], bride: [] },
+  weddingDate: '',
+  babyName: '', babyShort: '', birthDate: '', fatherName: '', motherName: '',
+  eventDate: '',
+  venueName: '', venueHall: '', venueAddr: '',
+  greeting: '', accentColor: WEDDING_ACCENT, bgmYoutubeId: '',
+  accounts: { groom: [], bride: [], dad: [], mom: [] },
   gallery: [],
 };
+
+const EVENT_TYPES = [
+  { id: 'wedding', label: '결혼식', accent: WEDDING_ACCENT },
+  { id: 'dol', label: '돌잔치', accent: DOL_ACCENT },
+];
 
 const EMPTY_VIDEO = {
   titleLine1: '', titleLine2: '', dateLabel: '', slideMs: 4000, songIds: '',
@@ -137,9 +152,18 @@ function GalleryEditor({ gallery, onChange }) {
 function InviteTab({ me, invite, setInvite }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const publicUrl = `https://mypad.kr/invite/${me.slug}`;
+  const isDol = invite.eventType === 'dol';
+  const publicUrl = `https://mypad.kr/${isDol ? 'dol' : 'invite'}/${me.slug}`;
 
   const update = (key, value) => setInvite(prev => ({ ...prev, [key]: value }));
+  // 종류를 바꿀 때 포인트 색이 기본값이면 그 종류의 기본 색으로 같이 바꾼다
+  const changeType = (type) => setInvite(prev => ({
+    ...prev,
+    eventType: type,
+    accentColor: EVENT_TYPES.some(t => t.accent === prev.accentColor)
+      ? EVENT_TYPES.find(t => t.id === type).accent
+      : prev.accentColor,
+  }));
 
   const handleSave = async () => {
     setSaving(true);
@@ -157,10 +181,53 @@ function InviteTab({ me, invite, setInvite }) {
 
   return (
     <div>
+      <Section title="초대장 종류">
+        <div style={{ display: 'flex', gap: 8 }}>
+          {EVENT_TYPES.map(t => (
+            <button key={t.id} onClick={() => changeType(t.id)} style={{
+              flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer', fontFamily: FONT, fontSize: 14,
+              border: `2px solid ${invite.eventType === t.id ? LAVENDER_DEEP : BORDER}`,
+              background: '#fff', color: TEXT_DARK, fontWeight: invite.eventType === t.id ? 700 : 400,
+            }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </Section>
+
       <Section title="공개 링크 (하객에게 공유)">
         <CopyLink url={publicUrl} />
       </Section>
 
+      {isDol ? (
+        <>
+          <Section title="아기 정보">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <Field label="아기 이름"><input style={inputStyle} value={invite.babyName} onChange={e => update('babyName', e.target.value)} /></Field>
+              <Field label="부르는 이름 (예: 하윤이)"><input style={inputStyle} value={invite.babyShort} onChange={e => update('babyShort', e.target.value)} /></Field>
+            </div>
+            <Field label="태어난 날">
+              <input type="date" style={inputStyle} value={invite.birthDate} onChange={e => update('birthDate', e.target.value)} />
+            </Field>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <Field label="아빠 이름"><input style={inputStyle} value={invite.fatherName} onChange={e => update('fatherName', e.target.value)} /></Field>
+              <Field label="엄마 이름"><input style={inputStyle} value={invite.motherName} onChange={e => update('motherName', e.target.value)} /></Field>
+            </div>
+          </Section>
+
+          <Section title="돌잔치 정보">
+            <Field label="돌잔치 일시">
+              <input type="datetime-local" style={inputStyle} value={invite.eventDate} onChange={e => update('eventDate', e.target.value)} />
+            </Field>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <Field label="장소 이름"><input style={inputStyle} value={invite.venueName} onChange={e => update('venueName', e.target.value)} /></Field>
+              <Field label="홀 · 룸 이름"><input style={inputStyle} value={invite.venueHall} onChange={e => update('venueHall', e.target.value)} /></Field>
+            </div>
+            <Field label="장소 주소"><input style={inputStyle} value={invite.venueAddr} onChange={e => update('venueAddr', e.target.value)} /></Field>
+          </Section>
+        </>
+      ) : (
+      <>
       <Section title="신랑 · 신부 정보">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <Field label="신랑 이름"><input style={inputStyle} value={invite.groomFull} onChange={e => update('groomFull', e.target.value)} /></Field>
@@ -180,23 +247,28 @@ function InviteTab({ me, invite, setInvite }) {
         </div>
         <Field label="예식장 주소"><input style={inputStyle} value={invite.venueAddr} onChange={e => update('venueAddr', e.target.value)} /></Field>
       </Section>
+      </>
+      )}
 
       <Section title="인사말">
         <textarea
           style={{ ...inputStyle, minHeight: 100, resize: 'vertical', fontFamily: FONT }}
           value={invite.greeting}
           onChange={e => update('greeting', e.target.value)}
-          placeholder={'예) 인생에서 가장 소중한 순간을\n소중한 분들과 함께하고 싶습니다.'}
+          placeholder={isDol
+            ? '비워두면 기본 인사말이 들어가요.\n예) 저희 아이가 건강하게 자라 첫 번째 생일을 맞이하게 되었습니다.'
+            : '예) 인생에서 가장 소중한 순간을\n소중한 분들과 함께하고 싶습니다.'}
         />
       </Section>
 
-      <Section title="갤러리 사진">
+      <Section title={isDol ? '성장 앨범 사진' : '갤러리 사진'}>
         <GalleryEditor gallery={invite.gallery} onChange={g => update('gallery', g)} />
       </Section>
 
       <Section title="계좌번호">
-        <AccountEditor side="groom" label="신랑측" list={invite.accounts.groom} onChange={list => update('accounts', { ...invite.accounts, groom: list })} />
-        <AccountEditor side="bride" label="신부측" list={invite.accounts.bride} onChange={list => update('accounts', { ...invite.accounts, bride: list })} />
+        {(isDol ? [['dad', '아빠'], ['mom', '엄마']] : [['groom', '신랑측'], ['bride', '신부측']]).map(([side, label]) => (
+          <AccountEditor key={side} side={side} label={label} list={invite.accounts[side]} onChange={list => update('accounts', { ...invite.accounts, [side]: list })} />
+        ))}
       </Section>
 
       <Section title="배경음악 (유튜브 영상 ID)">
@@ -397,7 +469,7 @@ export default function MyPageDashboard() {
         setInvite({
           ...EMPTY_INVITE,
           ...meData.invite,
-          accounts: { groom: [], bride: [], ...(meData.invite?.accounts ?? {}) },
+          accounts: { groom: [], bride: [], dad: [], mom: [], ...(meData.invite?.accounts ?? {}) },
           gallery: meData.invite?.gallery ?? [],
         });
         setVideo({ ...EMPTY_VIDEO, ...meData.video });
@@ -453,7 +525,7 @@ export default function MyPageDashboard() {
                 borderBottom: tab === t.id ? `2px solid ${LAVENDER_DEEP}` : '2px solid transparent',
               }}
             >
-              {t.label}
+              {invite.eventType === 'dol' && DOL_TAB_LABEL[t.id] ? DOL_TAB_LABEL[t.id] : t.label}
             </button>
           ))}
         </div>

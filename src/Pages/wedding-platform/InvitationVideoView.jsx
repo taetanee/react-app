@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getInvitePublic, getVideoPublic } from '../../api/weddingPlatform';
+import { babyLabel } from './DolInvitationView';
 import { setPageMeta } from '../../utils/pageMeta';
 
 const INK = '#0d0b0a';
@@ -95,10 +96,9 @@ export default function InvitationVideoView() {
     Promise.all([getInvitePublic(slug), getVideoPublic(slug)])
       .then(([invite, videoCfg]) => {
         setSlides(invite.gallery ?? []);
-        setPageMeta({
-          title: `${invite.groomShort} ♥ ${invite.brideShort} 식전영상`,
-          description: '저희의 이야기를 영상으로 담았습니다',
-        });
+        setPageMeta(invite.eventType === 'dol'
+          ? { title: babyLabel(invite) ? `${babyLabel(invite)} 성장영상` : '성장영상', description: '첫 번째 생일까지의 이야기를 담았습니다' }
+          : { title: `${invite.groomShort} ♥ ${invite.brideShort} 식전영상`, description: '저희의 이야기를 영상으로 담았습니다' });
         setVideo(videoCfg);
       })
       .catch(err => setError(err.message));

@@ -15,7 +15,7 @@ function Field({ label, children }) {
 
 export default function AdminCustomerCreate() {
   const [adminKey, setAdminKey] = useState(sessionStorage.getItem(ADMIN_KEY_STORAGE) || '');
-  const [form, setForm] = useState({ loginId: '', password: '', slug: '', customerName: '', phone: '', naverOrderNo: '' });
+  const [form, setForm] = useState({ loginId: '', password: '', customerName: '', phone: '', naverOrderNo: '' });
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -35,7 +35,7 @@ export default function AdminCustomerCreate() {
       sessionStorage.setItem(ADMIN_KEY_STORAGE, adminKey.trim());
       const created = await adminCreateCustomer(adminKey.trim(), form);
       setResult(created);
-      setForm({ loginId: '', password: '', slug: '', customerName: '', phone: '', naverOrderNo: '' });
+      setForm({ loginId: '', password: '', customerName: '', phone: '', naverOrderNo: '' });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -58,9 +58,6 @@ export default function AdminCustomerCreate() {
           </Field>
           <Field label="비밀번호 (고객에게 전달)">
             <input style={inputStyle} value={form.password} onChange={e => update('password', e.target.value)} />
-          </Field>
-          <Field label="공개 URL 슬러그 (선택, 비우면 아이디 사용)">
-            <input style={inputStyle} value={form.slug} onChange={e => update('slug', e.target.value)} placeholder="mypad.kr/invite/이값" />
           </Field>
           <Field label="고객명">
             <input style={inputStyle} value={form.customerName} onChange={e => update('customerName', e.target.value)} />
@@ -85,6 +82,8 @@ export default function AdminCustomerCreate() {
             <div>아이디: <b>{result.loginId}</b></div>
             <div>마이페이지: <b>mypad.kr/mypage/login</b></div>
             <div>공개 청첩장: <b>mypad.kr/invite/{result.slug}</b></div>
+            <div>돌잔치 초대장: <b>mypad.kr/dol/{result.slug}</b></div>
+            <div style={{ color: TEXT_MUTE }}>공개 주소는 자동으로 만든 난수예요.</div>
             <div style={{ color: TEXT_MUTE, marginTop: 8 }}>위 정보를 고객에게 전달하세요.</div>
           </div>
         )}

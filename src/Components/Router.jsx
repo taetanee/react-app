@@ -1,14 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useParams, useNavigate, Outlet } from "react-router-dom";
 import Main from "../Pages/Main";
 import Page01 from "../Pages/Page01";
-import Page02 from "../Pages/Page02";
-import Page03 from "../Pages/Page03";
-import QuantPage from "../Pages/QuantPage";
 import ProposalPage from "../Pages/ProposalPage";
-import MovingAveragePage from "../Pages/MovingAveragePage";
-import StockComparePage from "../Pages/StockComparePage";
-import AccountPlannerPage from "../Pages/AccountPlannerPage";
 import Wedding from "../Pages/Wedding";
 import Wedding2 from "../Pages/Wedding2";
 import WeddingVideo from "../Pages/WeddingVideo";
@@ -16,6 +10,7 @@ import MyPageLogin from "../Pages/wedding-platform/MyPageLogin";
 import MyPageDashboard from "../Pages/wedding-platform/MyPageDashboard";
 import InvitationView from "../Pages/wedding-platform/InvitationView";
 import InvitationVideoView from "../Pages/wedding-platform/InvitationVideoView";
+import DolInvitationView from "../Pages/wedding-platform/DolInvitationView";
 import AdminCustomerCreate from "../Pages/wedding-platform/AdminCustomerCreate";
 import { generateWordId, validateWordId } from "../utils/wordGenerator";
 import { RouteMeta } from "../utils/pageMeta";
@@ -28,112 +23,6 @@ function RootRedirect() {
     const saved = localStorage.getItem('my_id');
     const target = saved ?? generateWordId();
     return <Navigate to={`/@${target}`} replace />;
-}
-
-// ── 공통: 햄버거 드롭다운 ─────────────────────────────────────
-function HamburgerMenu({ id }) {
-    const [menuOpen, setMenuOpen] = useState(false);
-    const menuRef = useRef(null);
-
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (menuRef.current && !menuRef.current.contains(e.target)) {
-                setMenuOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const dropdownLinkStyle = ({ isActive } = {}) => ({
-        display: 'block',
-        padding: '11px 20px',
-        textDecoration: 'none',
-        fontSize: '14px',
-        color: isActive ? '#007bff' : '#333',
-        fontWeight: isActive ? 'bold' : 'normal',
-        backgroundColor: isActive ? '#e9f5ff' : 'transparent',
-        borderBottom: '1px solid #f0f0f0',
-        cursor: 'pointer',
-        transition: 'background 0.15s',
-    });
-
-    return (
-        <div ref={menuRef} style={{ position: 'relative' }}>
-            <button
-                onClick={() => setMenuOpen(v => !v)}
-                style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '8px',
-                    height: 34,
-                    borderRadius: '6px',
-                    border: '1px solid',
-                    borderColor: menuOpen ? '#007bff' : '#ddd',
-                    background: menuOpen ? '#e9f5ff' : '#fff',
-                    cursor: 'pointer',
-                    padding: '0 12px',
-                    fontSize: '13px',
-                    color: menuOpen ? '#007bff' : '#555',
-                    fontWeight: '500',
-                    whiteSpace: 'nowrap',
-                }}
-            >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center', justifyContent: 'center' }}>
-                    {[0, 1, 2].map(i => (
-                        <span key={i} style={{
-                            display: 'block',
-                            width: 16,
-                            height: 2,
-                            borderRadius: 2,
-                            background: menuOpen ? '#007bff' : '#555',
-                            transition: 'background 0.2s',
-                        }} />
-                    ))}
-                </div>
-                숨겨진 메뉴
-            </button>
-
-            {menuOpen && (
-                <div style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 6px)',
-                    right: 0,
-                    background: '#fff',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '10px',
-                    boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
-                    minWidth: 140,
-                    zIndex: 999,
-                    overflow: 'hidden',
-                }}>
-                    <NavLink style={dropdownLinkStyle} to={id ? `/@${id}/moving-average` : '/'} onClick={() => setMenuOpen(false)}>
-                        지수 이동평균선
-                    </NavLink>
-                    <NavLink style={dropdownLinkStyle} to="/quant" onClick={() => setMenuOpen(false)}>
-                        S&P 500 퀀트
-                    </NavLink>
-                    <NavLink style={dropdownLinkStyle} to="/stock-compare" onClick={() => setMenuOpen(false)}>
-                        종목 비교
-                    </NavLink>
-                    <NavLink style={dropdownLinkStyle} to="/account-planner" onClick={() => setMenuOpen(false)}>
-                        절세 계좌 플래너
-                    </NavLink>
-                    <NavLink style={dropdownLinkStyle} to="/openai" onClick={() => setMenuOpen(false)}>
-                        오픈AI
-                    </NavLink>
-                    <span
-                        onClick={() => { setMenuOpen(false); alert('비공개 상태입니다.'); }}
-                        style={dropdownLinkStyle({ isActive: false })}
-                    >
-                        포트폴리오
-                    </span>
-                </div>
-            )}
-        </div>
-    );
 }
 
 // ── Layout: /@{id} 전용 (내 URL 편집 바 포함) ────────────────
@@ -206,7 +95,6 @@ function Layout() {
     return (
         <>
             <nav style={navStyle}>
-                <HamburgerMenu id={id} />
                 <NavLink style={navLinkStyle} to={`/@${id}`} end>나만의 요약</NavLink>
                 <NavLink style={navLinkStyle} to={`/@${id}/clipboard`}>나만의 복붙</NavLink>
             </nav>
@@ -289,33 +177,6 @@ function Layout() {
     );
 }
 
-// ── SharedLayout: /openai, /quant, /portfolio 전용 (내 URL 바 없음) ──
-function SharedLayout() {
-    const savedId = localStorage.getItem('my_id') ?? '';
-
-    const navLinkStyle = ({ isActive }) => ({
-        textDecoration: 'none',
-        color: isActive ? '#007bff' : '#333',
-        fontWeight: isActive ? 'bold' : 'normal',
-        padding: '8px 15px',
-        margin: '0 5px',
-        borderRadius: '4px',
-        transition: 'all 0.3s ease-in-out',
-        backgroundColor: isActive ? '#e9f5ff' : 'transparent',
-    });
-
-    return (
-        <>
-            <nav style={navStyle}>
-                <HamburgerMenu id={savedId} />
-                <NavLink style={navLinkStyle} to={savedId ? `/@${savedId}` : '/'} end>나만의 요약</NavLink>
-                <NavLink style={navLinkStyle} to={savedId ? `/@${savedId}/clipboard` : '/'}>나만의 복붙</NavLink>
-            </nav>
-            <Outlet />
-        </>
-    );
-}
-
 const navStyle = {
     padding: '8px 16px',
     backgroundColor: '#f8f8f8',
@@ -352,24 +213,15 @@ export default function Router() {
                 {/* 웨딩 플랫폼: 공개 청첩장 / 식전영상 (고객별 slug) */}
                 <Route path="/invite/:slug" element={<InvitationView />} />
                 <Route path="/invite/:slug/video" element={<InvitationVideoView />} />
+                <Route path="/dol/:slug" element={<DolInvitationView />} />
 
                 {/* 웨딩 플랫폼: 관리자 계정 발급 */}
                 <Route path="/admin/wedding" element={<AdminCustomerCreate />} />
-
-                {/* 고유 URL 없는 공유 페이지 */}
-                <Route element={<SharedLayout />}>
-                    <Route path="/openai"          element={<Page02 />} />
-                    <Route path="/quant"           element={<QuantPage />} />
-                    <Route path="/portfolio"       element={<Page03 />} />
-                    <Route path="/stock-compare"   element={<StockComparePage />} />
-                    <Route path="/account-planner" element={<AccountPlannerPage />} />
-                </Route>
 
                 {/* 개인 URL 페이지 */}
                 <Route path="/:id" element={<Layout />}>
                     <Route index element={<Main />} />
                     <Route path="clipboard"        element={<Page01 />} />
-                    <Route path="moving-average"   element={<MovingAveragePage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

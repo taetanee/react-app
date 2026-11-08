@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { getInvitePublic } from '../../api/weddingPlatform';
 import { setPageMeta } from '../../utils/pageMeta';
 
@@ -8,7 +8,7 @@ const CREAM_DEEP = '#f6ece0';
 const TEXT_DARK = '#3d3838';
 const TEXT_MUTE = '#a89fa0';
 
-function useDaysLeft(target) {
+export function useDaysLeft(target) {
   const [days, setDays] = useState(0);
   useEffect(() => {
     if (!target) return;
@@ -20,7 +20,7 @@ function useDaysLeft(target) {
   return days;
 }
 
-function CopyBtn({ text, accent }) {
+export function CopyBtn({ text, accent }) {
   const [done, setDone] = useState(false);
   return (
     <button
@@ -53,7 +53,7 @@ function useInView(threshold = 0.15) {
   return [ref, inView];
 }
 
-function Reveal({ children, delay = 0 }) {
+export function Reveal({ children, delay = 0 }) {
   const [ref, inView] = useInView();
   return (
     <div ref={ref} style={{
@@ -66,7 +66,7 @@ function Reveal({ children, delay = 0 }) {
   );
 }
 
-function SectionTitle({ eyebrow, title, accent }) {
+export function SectionTitle({ eyebrow, title, accent }) {
   return (
     <div style={{ textAlign: 'center', marginBottom: 30 }}>
       <div style={{ fontSize: 11, letterSpacing: 3, color: accent.deep, fontWeight: 500, marginBottom: 6, textTransform: 'uppercase' }}>{eyebrow}</div>
@@ -76,7 +76,7 @@ function SectionTitle({ eyebrow, title, accent }) {
   );
 }
 
-function MusicPill({ started, muted, onStart, onToggleMute, accent }) {
+export function MusicPill({ started, muted, onStart, onToggleMute, accent }) {
   return (
     <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 200 }}>
       <button
@@ -95,7 +95,7 @@ function MusicPill({ started, muted, onStart, onToggleMute, accent }) {
   );
 }
 
-function hexToAccent(hex) {
+export function hexToAccent(hex) {
   const base = hex && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#a78bda';
   // 단순 보정: 딥 컬러는 같은 색을 약간 더 어둡게
   const darken = (h) => {
@@ -121,7 +121,7 @@ export default function InvitationView() {
   }, [slug]);
 
   useEffect(() => {
-    if (!invite) return;
+    if (!invite || invite.eventType === 'dol') return;
     setPageMeta({
       title: `${invite.groomShort} ♥ ${invite.brideShort} 결혼식에 초대합니다`,
       description: [invite.venueName, invite.venueHall].filter(Boolean).join(' ') || '모바일 청첩장',
@@ -145,6 +145,7 @@ export default function InvitationView() {
       </div>
     );
   }
+  if (invite.eventType === 'dol') return <Navigate to={`/dol/${slug}`} replace />;
 
   const accent = hexToAccent(invite.accentColor);
   const gallery = invite.gallery ?? [];
