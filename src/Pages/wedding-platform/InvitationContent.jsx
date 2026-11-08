@@ -109,24 +109,77 @@ function Lightbox({ images, index, onClose, onMove }) {
   );
 }
 
-function Gallery({ images, accent, eyebrow, title, creamDeep }) {
+// 갤러리 배치: grid2(2열 정사각형, 기본) | grid3(3열 정사각형) | portrait(2열 세로형) | slide(옆으로 넘기기)
+export const GALLERY_LAYOUTS = [
+  { id: 'grid2', label: '2열 정사각형' },
+  { id: 'grid3', label: '3열 정사각형' },
+  { id: 'portrait', label: '2열 세로형' },
+  { id: 'slide', label: '슬라이드' },
+];
+
+function GallerySlide({ images, accent, creamDeep, onOpen }) {
+  const ref = useRef(null);
+  const [index, setIndex] = useState(0);
+  const go = (i) => {
+    const el = ref.current;
+    if (!el) return;
+    const next = (i + images.length) % images.length;
+    el.scrollTo({ left: next * el.clientWidth, behavior: 'smooth' });
+  };
+  const navBtn = { position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: 34, height: 34, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.85)', color: TEXT_DARK, fontSize: 20, cursor: 'pointer' };
+  return (
+    <div>
+      <div style={{ position: 'relative' }}>
+        <div
+          ref={ref}
+          onScroll={e => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
+          style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', borderRadius: 14, scrollbarWidth: 'none' }}
+        >
+          {images.map((src, i) => (
+            <div key={src + i} onClick={() => onOpen(i)} style={{ flex: '0 0 100%', aspectRatio: '3 / 4', scrollSnapAlign: 'center', background: creamDeep }}>
+              <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </div>
+          ))}
+        </div>
+        {images.length > 1 && <>
+          <button onClick={() => go(index - 1)} style={{ ...navBtn, left: 8 }} aria-label="이전 사진">‹</button>
+          <button onClick={() => go(index + 1)} style={{ ...navBtn, right: 8 }} aria-label="다음 사진">›</button>
+        </>}
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 12.5, color: TEXT_MUTE, marginTop: 10 }}>
+        <span style={{ color: accent.deep, fontWeight: 700 }}>{index + 1}</span> / {images.length}
+      </div>
+    </div>
+  );
+}
+
+function Gallery({ images, accent, eyebrow, title, creamDeep, layout = 'grid2' }) {
   const preview = useIsPreview();
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(null);
   if (images.length === 0) return null;
-  const INITIAL = 8;
+  const openAt = (i) => { if (!preview) setOpen(i); };
+  const cols = layout === 'grid3' ? 3 : 2;
+  const INITIAL = layout === 'grid3' ? 9 : 8;
   const visible = expanded ? images : images.slice(0, INITIAL);
   return (
     <Block>
       <SectionTitle eyebrow={eyebrow} title={title} accent={accent} />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-        {visible.map((src, i) => (
-          <div key={src + i} onClick={() => !preview && setOpen(i)} style={{ position: 'relative', aspectRatio: '1 / 1', overflow: 'hidden', borderRadius: 12, background: creamDeep, cursor: preview ? 'default' : 'zoom-in' }}>
-            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-        ))}
-      </div>
-      {!expanded && images.length > INITIAL && (
+      {layout === 'slide' ? (
+        <GallerySlide images={images} accent={accent} creamDeep={creamDeep} onOpen={openAt} />
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: cols === 3 ? 6 : 8 }}>
+          {visible.map((src, i) => (
+            <div key={src + i} onClick={() => openAt(i)} style={{
+              position: 'relative', aspectRatio: layout === 'portrait' ? '3 / 4' : '1 / 1', overflow: 'hidden',
+              borderRadius: cols === 3 ? 8 : 12, background: creamDeep, cursor: preview ? 'default' : 'zoom-in',
+            }}>
+              <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          ))}
+        </div>
+      )}
+      {layout !== 'slide' && !expanded && images.length > INITIAL && (
         <button onClick={() => setExpanded(true)} style={{
           display: 'block', margin: '20px auto 0', padding: '10px 26px', borderRadius: 20,
           border: `1px solid ${accent.base}60`, background: '#fff', color: TEXT_DARK, fontSize: 13.5, cursor: 'pointer',
@@ -304,12 +357,17 @@ function AccountGroup({ label, list, accent, collapsed }) {
   );
 }
 
-function Accounts({ groups, accent, collapsed }) {
+export const DEFAULT_ACCOUNT_TITLE = '마음 전하실 곳';
+
+function Accounts({ groups, accent, collapsed, title, message }) {
   const visible = groups.filter(g => g.list.some(a => (a.account || '').trim()));
   if (visible.length === 0) return null;
   return (
     <Block>
-      <SectionTitle eyebrow="Gift" title="마음 전하실 곳" accent={accent} />
+      <SectionTitle eyebrow="Gift" title={title || DEFAULT_ACCOUNT_TITLE} accent={accent} />
+      {message && (
+        <p style={{ fontSize: 14, lineHeight: 2, textAlign: 'center', color: TEXT_MUTE, margin: '-8px 0 24px', whiteSpace: 'pre-line' }}>{message}</p>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {visible.map(g => (
           <AccountGroup key={g.label} label={g.label} list={g.list.filter(a => (a.account || '').trim())} accent={accent} collapsed={collapsed} />
@@ -419,7 +477,7 @@ function WeddingBody({ invite, slug }) {
     greeting: () => <Greeting text={invite.greeting} accent={accent} />,
     couple: () => <Couple sides={sides} accent={accent} />,
     calendar: () => <CalendarSection date={date} accent={accent} title="예식 일시" ddayText={`${sides[0].short || ''} ♥ ${sides[1].short || ''} 결혼식까지`} />,
-    gallery: () => <Gallery images={invite.gallery ?? []} accent={accent} eyebrow="Gallery" creamDeep={pal.creamDeep} />,
+    gallery: () => <Gallery images={invite.gallery ?? []} accent={accent} eyebrow="Gallery" title={invite.galleryTitle} layout={invite.galleryLayout} creamDeep={pal.creamDeep} />,
     location: () => <Location invite={invite} accent={accent} />,
     contact: () => (
       <Contact accent={accent} groups={sides.map(s => ({
@@ -432,7 +490,7 @@ function WeddingBody({ invite, slug }) {
       }))} />
     ),
     notice: () => <Notice items={invite.notices} accent={accent} />,
-    account: () => <Accounts accent={accent} collapsed={invite.accountsCollapsed} groups={sides.map(s => ({ label: s.side, list: s.accounts }))} />,
+    account: () => <Accounts accent={accent} collapsed={invite.accountsCollapsed} title={invite.accountTitle} message={invite.accountMessage} groups={sides.map(s => ({ label: s.side, list: s.accounts }))} />,
     ending: () => <Ending invite={invite} accent={accent} />,
   };
 
@@ -463,9 +521,9 @@ function Shell({ invite, accent, pal, slug, hero, render, videoLabel }) {
         .ic-float { display: inline-block; animation: ic-float 3s ease-in-out infinite; }
       `}</style>
 
-      {hero}
+      <div data-section="main">{hero}</div>
       {resolveOrder(invite).filter(id => !isHidden(invite, id)).map(id => (
-        <React.Fragment key={id}>{render[id]?.()}</React.Fragment>
+        <div key={id} data-section={id}>{render[id]?.()}</div>
       ))}
 
       {slug && (
