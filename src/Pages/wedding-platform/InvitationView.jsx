@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getInvitePublic } from '../../api/weddingPlatform';
 import { setPageMeta } from '../../utils/pageMeta';
 import InvitationContent from './InvitationContent';
@@ -16,7 +16,7 @@ export default function InvitationView() {
   }, [slug]);
 
   useEffect(() => {
-    if (!invite || invite.eventType === 'dol') return;
+    if (!invite || (invite.eventType && invite.eventType !== 'wedding')) return;
     setPageMeta({
       title: `${invite.groomShort} ♥ ${invite.brideShort} 결혼식에 초대합니다`,
       description: [invite.venueName, invite.venueHall].filter(Boolean).join(' ') || '모바일 청첩장',
@@ -25,7 +25,8 @@ export default function InvitationView() {
 
   if (error) return <CenterMessage>청첩장을 찾을 수 없습니다.</CenterMessage>;
   if (!invite) return <CenterMessage>불러오는 중...</CenterMessage>;
-  if (invite.eventType === 'dol') return <Navigate to={`/invite/dol/${slug}`} replace />;
+  // 청첩장이 아닌 예전 데이터(돌잔치 등)는 보여주지 않는다
+  if (invite.eventType && invite.eventType !== 'wedding') return <CenterMessage>청첩장을 찾을 수 없습니다.</CenterMessage>;
 
   return <InvitationContent invite={invite} slug={slug} />;
 }

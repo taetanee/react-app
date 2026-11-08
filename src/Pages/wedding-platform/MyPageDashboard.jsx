@@ -4,12 +4,12 @@ import {
   getToken, getMe, logout, saveInvite, saveVideo, uploadImage, createOrder, listMyOrders,
 } from '../../api/weddingPlatform';
 import {
-  CREAM, LAVENDER, LAVENDER_DEEP, TEXT_DARK, TEXT_MUTE, BORDER, FONT, DOL_ACCENT,
+  CREAM, LAVENDER, LAVENDER_DEEP, TEXT_DARK, TEXT_MUTE, BORDER, FONT,
   inputStyle, labelStyle, primaryButtonStyle, cardStyle,
 } from './theme';
 import { PAPER_INVITATION_SAMPLES, MEAL_TICKET_SAMPLES, ORDER_STATUS_LABEL } from './sampleCatalog';
 import InvitationContent from './InvitationContent';
-import { sectionsFor, resolveOrder, isHidden } from './inviteSections';
+import { SECTIONS, resolveOrder, isHidden } from './inviteSections';
 
 const TABS = [
   { id: 'invite', label: '모바일 청첩장' },
@@ -18,27 +18,21 @@ const TABS = [
   { id: 'meal', label: '식권 신청' },
 ];
 
-// 돌잔치 고객에게는 탭 이름을 바꿔 보여준다
-const DOL_TAB_LABEL = { invite: '돌잔치 초대장', video: '성장영상' };
-
 const WEDDING_ACCENT = '#a78bda';
 
 const EMPTY_PARENT = { father: '', fatherDeceased: false, mother: '', motherDeceased: false, relation: '' };
 
-// eventType: 'wedding'(청첩장, /invite/:slug) | 'dol'(돌잔치 초대장, /invite/dol/:slug)
 const EMPTY_INVITE = {
   eventType: 'wedding',
   groomFull: '', brideFull: '', groomShort: '', brideShort: '',
   brideFirst: false,
   parents: { groom: { ...EMPTY_PARENT }, bride: { ...EMPTY_PARENT } },
   weddingDate: '',
-  babyName: '', babyShort: '', birthDate: '', fatherName: '', motherName: '',
-  eventDate: '',
   venueName: '', venueHall: '', venueAddr: '',
   transport: [],
-  contacts: { groom: '', bride: '', groomFather: '', groomMother: '', brideFather: '', brideMother: '', dad: '', mom: '' },
+  contacts: { groom: '', bride: '', groomFather: '', groomMother: '', brideFather: '', brideMother: '' },
   greeting: '', accentColor: WEDDING_ACCENT, bgmYoutubeId: '',
-  accounts: { groom: [], bride: [], dad: [], mom: [] },
+  accounts: { groom: [], bride: [] },
   accountsCollapsed: false,
   gallery: [],
   notices: [],
@@ -51,12 +45,13 @@ function normalizeInvite(saved = {}) {
   return {
     ...EMPTY_INVITE,
     ...saved,
+    eventType: 'wedding',
     parents: {
       groom: { ...EMPTY_PARENT, ...(saved.parents?.groom ?? {}) },
       bride: { ...EMPTY_PARENT, ...(saved.parents?.bride ?? {}) },
     },
     contacts: { ...EMPTY_INVITE.contacts, ...(saved.contacts ?? {}) },
-    accounts: { groom: [], bride: [], dad: [], mom: [], ...(saved.accounts ?? {}) },
+    accounts: { groom: [], bride: [], ...(saved.accounts ?? {}) },
     gallery: saved.gallery ?? [],
     transport: saved.transport ?? [],
     notices: saved.notices ?? [],
@@ -64,11 +59,6 @@ function normalizeInvite(saved = {}) {
     hiddenSections: saved.hiddenSections ?? [],
   };
 }
-
-const EVENT_TYPES = [
-  { id: 'wedding', label: '결혼식', accent: WEDDING_ACCENT },
-  { id: 'dol', label: '돌잔치', accent: DOL_ACCENT },
-];
 
 const ACCENT_PRESETS = ['#a78bda', '#e79aa8', '#f2a7a0', '#d9a45b', '#8fb39a', '#7fa3c9', '#9a8f86'];
 
@@ -259,7 +249,7 @@ function ParentsEditor({ label, value, onChange, relationPlaceholder }) {
 
 function SectionOrderEditor({ invite, onChange }) {
   const order = resolveOrder(invite);
-  const labels = Object.fromEntries(sectionsFor(invite).map(s => [s.id, s.label]));
+  const labels = Object.fromEntries(SECTIONS.map(s => [s.id, s.label]));
   const move = (idx, d) => {
     const j = idx + d;
     if (j < 0 || j >= order.length) return;
@@ -309,73 +299,21 @@ function EndingImageEditor({ value, onChange }) {
 // ───────────────────────── 청첩장 편집 탭 ─────────────────────────
 
 function InviteTab({ me, invite, setInvite }) {
-  const isDol = invite.eventType === 'dol';
-  const publicUrl = `https://mypad.kr/invite/${isDol ? 'dol/' : ''}${me.slug}`;
+  const publicUrl = `https://mypad.kr/invite/${me.slug}`;
 
   const update = (key, value) => setInvite(prev => ({ ...prev, [key]: value }));
   const patch = (obj) => setInvite(prev => ({ ...prev, ...obj }));
   const setContact = (key, value) => setInvite(prev => ({ ...prev, contacts: { ...prev.contacts, [key]: value } }));
   const setParents = (side, value) => setInvite(prev => ({ ...prev, parents: { ...prev.parents, [side]: value } }));
-  // 종류를 바꿀 때 포인트 색이 기본값이면 그 종류의 기본 색으로 같이 바꾼다
-  const changeType = (type) => setInvite(prev => ({
-    ...prev,
-    eventType: type,
-    accentColor: EVENT_TYPES.some(t => t.accent === prev.accentColor)
-      ? EVENT_TYPES.find(t => t.id === type).accent
-      : prev.accentColor,
-  }));
 
   const sides = [['groom', '신랑'], ['bride', '신부']];
 
   return (
     <div>
-      <Section title="초대장 종류">
-        <div style={{ display: 'flex', gap: 8 }}>
-          {EVENT_TYPES.map(t => (
-            <button key={t.id} onClick={() => changeType(t.id)} style={{
-              flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer', fontFamily: FONT, fontSize: 14,
-              border: `2px solid ${invite.eventType === t.id ? LAVENDER_DEEP : BORDER}`,
-              background: '#fff', color: TEXT_DARK, fontWeight: invite.eventType === t.id ? 700 : 400,
-            }}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </Section>
-
       <Section title="공개 링크 (하객에게 공유)" desc="저장한 뒤 이 링크를 카카오톡으로 보내면 이름 · 날짜 · 대표 사진이 미리보기로 나와요.">
         <CopyLink url={publicUrl} />
       </Section>
 
-      {isDol ? (
-        <>
-          <Section title="아기 정보">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <Field label="아기 이름"><input style={inputStyle} value={invite.babyName} onChange={e => update('babyName', e.target.value)} /></Field>
-              <Field label="부르는 이름 (예: 하윤이)"><input style={inputStyle} value={invite.babyShort} onChange={e => update('babyShort', e.target.value)} /></Field>
-            </div>
-            <Field label="태어난 날">
-              <input type="date" style={inputStyle} value={invite.birthDate} onChange={e => update('birthDate', e.target.value)} />
-            </Field>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <Field label="아빠 이름"><input style={inputStyle} value={invite.fatherName} onChange={e => update('fatherName', e.target.value)} /></Field>
-              <Field label="엄마 이름"><input style={inputStyle} value={invite.motherName} onChange={e => update('motherName', e.target.value)} /></Field>
-            </div>
-          </Section>
-
-          <Section title="돌잔치 일시 · 장소">
-            <Field label="돌잔치 일시">
-              <input type="datetime-local" style={inputStyle} value={invite.eventDate} onChange={e => update('eventDate', e.target.value)} />
-            </Field>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <Field label="장소 이름"><input style={inputStyle} value={invite.venueName} onChange={e => update('venueName', e.target.value)} /></Field>
-              <Field label="홀 · 룸 이름"><input style={inputStyle} value={invite.venueHall} onChange={e => update('venueHall', e.target.value)} /></Field>
-            </div>
-            <Field label="장소 주소 (도로명 주소를 넣으면 지도가 표시돼요)"><input style={inputStyle} value={invite.venueAddr} onChange={e => update('venueAddr', e.target.value)} /></Field>
-          </Section>
-        </>
-      ) : (
-        <>
           <Section title="신랑 · 신부" right={<Check checked={invite.brideFirst} onChange={v => update('brideFirst', v)}>신부 먼저 표시</Check>}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <Field label="신랑 이름"><input style={inputStyle} value={invite.groomFull} onChange={e => update('groomFull', e.target.value)} /></Field>
@@ -402,8 +340,6 @@ function InviteTab({ me, invite, setInvite }) {
             </div>
             <Field label="예식장 주소 (도로명 주소를 넣으면 지도가 표시돼요)"><input style={inputStyle} value={invite.venueAddr} onChange={e => update('venueAddr', e.target.value)} /></Field>
           </Section>
-        </>
-      )}
 
       <Section title="교통 안내" desc="오시는 길 아래에 표시돼요. (최대 10개)">
         <TitledListEditor
@@ -416,12 +352,6 @@ function InviteTab({ me, invite, setInvite }) {
       </Section>
 
       <Section title="연락처" desc="입력한 번호만 '연락하기'에 전화 · 문자 버튼으로 표시돼요.">
-        {isDol ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <Field label="아빠"><input style={inputStyle} inputMode="tel" placeholder="010-0000-0000" value={invite.contacts.dad} onChange={e => setContact('dad', e.target.value)} /></Field>
-            <Field label="엄마"><input style={inputStyle} inputMode="tel" placeholder="010-0000-0000" value={invite.contacts.mom} onChange={e => setContact('mom', e.target.value)} /></Field>
-          </div>
-        ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {sides.map(([side, label]) => (
               <div key={side}>
@@ -431,10 +361,9 @@ function InviteTab({ me, invite, setInvite }) {
               </div>
             ))}
           </div>
-        )}
       </Section>
 
-      <Section title="인사말" right={!isDol && (
+      <Section title="인사말" right={(
         <select
           value=""
           onChange={e => { if (e.target.value !== '') update('greeting', GREETING_SAMPLES[Number(e.target.value)]); }}
@@ -448,18 +377,16 @@ function InviteTab({ me, invite, setInvite }) {
           style={{ ...inputStyle, minHeight: 120, resize: 'vertical', fontFamily: FONT }}
           value={invite.greeting}
           onChange={e => update('greeting', e.target.value)}
-          placeholder={isDol
-            ? '비워두면 기본 인사말이 들어가요.\n예) 저희 아이가 건강하게 자라 첫 번째 생일을 맞이하게 되었습니다.'
-            : '예) 인생에서 가장 소중한 순간을\n소중한 분들과 함께하고 싶습니다.'}
+          placeholder={'예) 인생에서 가장 소중한 순간을\n소중한 분들과 함께하고 싶습니다.'}
         />
       </Section>
 
-      <Section title={isDol ? '성장 앨범 사진' : '갤러리 사진'} desc="첫 번째 사진이 대표 사진(맨 위 · 카카오톡 미리보기)으로 쓰여요. ‹ › 로 순서를 바꿀 수 있어요.">
+      <Section title="갤러리 사진" desc="첫 번째 사진이 대표 사진(맨 위 · 카카오톡 미리보기)으로 쓰여요. ‹ › 로 순서를 바꿀 수 있어요.">
         <GalleryEditor gallery={invite.gallery} onChange={g => update('gallery', g)} />
       </Section>
 
       <Section title="계좌번호" right={<Check checked={invite.accountsCollapsed} onChange={v => update('accountsCollapsed', v)}>처음엔 접어두기</Check>}>
-        {(isDol ? [['dad', '아빠'], ['mom', '엄마']] : [['groom', '신랑측'], ['bride', '신부측']]).map(([side, label]) => (
+        {[['groom', '신랑측'], ['bride', '신부측']].map(([side, label]) => (
           <AccountEditor key={side} label={label} list={invite.accounts[side]} onChange={list => update('accounts', { ...invite.accounts, [side]: list })} />
         ))}
       </Section>
@@ -851,7 +778,7 @@ export default function MyPageDashboard() {
                 borderBottom: tab === t.id ? `2px solid ${LAVENDER_DEEP}` : '2px solid transparent',
               }}
             >
-              {invite.eventType === 'dol' && DOL_TAB_LABEL[t.id] ? DOL_TAB_LABEL[t.id] : t.label}
+              {t.label}
               {t.id === 'invite' && dirty && <span style={{ color: '#c2185b' }}> •</span>}
             </button>
           ))}

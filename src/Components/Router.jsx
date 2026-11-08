@@ -5,7 +5,6 @@ import MyPageLogin from "../Pages/wedding-platform/MyPageLogin";
 import MyPageDashboard from "../Pages/wedding-platform/MyPageDashboard";
 import InvitationView from "../Pages/wedding-platform/InvitationView";
 import InvitationVideoView from "../Pages/wedding-platform/InvitationVideoView";
-import DolInvitationView from "../Pages/wedding-platform/DolInvitationView";
 import AdminCustomerCreate from "../Pages/wedding-platform/AdminCustomerCreate";
 import { RouteMeta } from "../utils/pageMeta";
 
@@ -21,10 +20,9 @@ export default function Router() {
                 <Route path="/mypage/login" element={<MyPageLogin />} />
                 <Route path="/mypage" element={<MyPageDashboard />} />
 
-                {/* 공개 청첩장 / 식전영상 / 돌잔치 (고객별 slug) */}
+                {/* 공개 청첩장 / 식전영상 (고객별 slug) */}
                 <Route path="/invite/:slug" element={<InvitationView />} />
                 <Route path="/invite/video/:slug" element={<InvitationVideoView />} />
-                <Route path="/invite/dol/:slug" element={<DolInvitationView />} />
 
                 {/* 관리자 계정 발급 */}
                 <Route path="/admin/wedding" element={<AdminCustomerCreate />} />

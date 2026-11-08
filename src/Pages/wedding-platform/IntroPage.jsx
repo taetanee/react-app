@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LAVENDER, LAVENDER_DEEP, CREAM, CREAM_DEEP, TEXT_DARK, TEXT_MUTE, BORDER, DOL_ACCENT, FONT } from './theme';
+import { LAVENDER, LAVENDER_DEEP, CREAM, CREAM_DEEP, TEXT_DARK, TEXT_MUTE, BORDER, FONT } from './theme';
 
 // 네이버 스마트스토어 상품 주소. 값을 넣으면 "구매하기" 버튼이 나타납니다.
 const SMARTSTORE_URL = '';
@@ -10,7 +10,6 @@ const SERIF = "'Gowun Batang', serif";
 const FEATURES = [
   { icon: '💌', title: '모바일 청첩장', desc: '인사말, 예식 정보, 갤러리, 계좌번호 복사까지. 링크 하나로 전해요.' },
   { icon: '🎬', title: '식전영상', desc: '우리 사진과 배경음악으로 만드는 웨딩 필름. 청첩장 안에서 바로 재생돼요.' },
-  { icon: '🎂', title: '돌잔치 초대장', desc: '아이의 첫 번째 생일도 같은 방식으로 예쁘게 초대하세요.' },
   { icon: '🎫', title: '종이청첩장 · 식권', desc: '마이페이지에서 샘플을 고르고 바로 주문할 수 있어요.' },
 ];
 
@@ -130,7 +129,7 @@ export default function IntroPage() {
               우리의 시작을<br />가장 따뜻하게 전하는 방법
             </h1>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: TEXT_MUTE, margin: '20px 0 32px' }}>
-              모바일 청첩장부터 식전영상, 돌잔치 초대장까지.<br />
+              모바일 청첩장부터 식전영상, 종이청첩장까지.<br />
               마이페이지에서 직접 만들고, 링크 하나로 소중한 분들께 보내세요.
             </p>
             <div className="ip-hero-actions" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -148,7 +147,7 @@ export default function IntroPage() {
       <section style={{ background: '#fff', padding: '72px 0' }}>
         <div className="ip-wrap">
           <SectionTitle eyebrow="Service" title="한 곳에서 모두 준비해요" />
-          <div className="ip-grid4">
+          <div className="ip-grid3">
             {FEATURES.map(f => (
               <div key={f.title} style={{ background: CREAM, border: `1px solid ${BORDER}`, borderRadius: 16, padding: '26px 20px' }}>
                 <div style={{ fontSize: 30, marginBottom: 14 }}>{f.icon}</div>
@@ -183,7 +182,7 @@ export default function IntroPage() {
               <div key={s.title} style={{ textAlign: 'center', padding: '8px 10px' }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: '50%', margin: '0 auto 14px',
-                  background: i === STEPS.length - 1 ? DOL_ACCENT : LAVENDER, color: '#fff',
+                  background: i === STEPS.length - 1 ? LAVENDER_DEEP : LAVENDER, color: '#fff',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16,
                 }}>{i + 1}</div>
                 <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{s.title}</div>

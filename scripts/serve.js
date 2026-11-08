@@ -1,4 +1,4 @@
-// 운영용 서버: build/ 를 서빙하고, 동적 경로(/invite/:slug, /invite/video/:slug, /invite/dol/:slug)는
+// 운영용 서버: build/ 를 서빙하고, 동적 경로(/invite/:slug, /invite/video/:slug)는
 // API 로 청첩장 정보를 조회해 메타 태그를 HTML 에 직접 넣어준다.
 // (카카오톡 등 JS 를 실행하지 않는 링크 미리보기용)
 // 실행: npm run build && npm run serve   (nginx 는 기존처럼 localhost:3000 으로 프록시)
@@ -43,21 +43,12 @@ function injectMeta(html, meta) {
 
 const absUrl = (u) => (!u ? undefined : /^https?:\/\//.test(u) ? u : SITE + (u.startsWith('/') ? '' : '/') + u);
 const place = (inv) => [inv.venueName, inv.venueHall].filter(Boolean).join(' ');
-const baby = (inv) => (inv.babyShort || inv.babyName || '').trim();
 
-// InvitationView / DolInvitationView / InvitationVideoView 의 setPageMeta 와 같은 규칙
+// InvitationView / InvitationVideoView 의 setPageMeta 와 같은 규칙
 function metaFor(kind, inv) {
     const image = absUrl((inv.gallery || [])[0]);
     if (kind === 'video') {
-        return inv.eventType === 'dol'
-            ? { title: baby(inv) ? `${baby(inv)} 성장영상` : '성장영상', description: '첫 번째 생일까지의 이야기를 담았습니다', image }
-            : { title: `${inv.groomShort} ♥ ${inv.brideShort} 식전영상`, description: '저희의 이야기를 영상으로 담았습니다', image };
-    }
-    if (kind === 'dol') {
-        return {
-            title: baby(inv) ? `${baby(inv)}의 첫 번째 생일에 초대합니다` : '첫 번째 생일에 초대합니다',
-            description: place(inv) || '돌잔치 초대장', image,
-        };
+        return { title: `${inv.groomShort} ♥ ${inv.brideShort} 식전영상`, description: '저희의 이야기를 영상으로 담았습니다', image };
     }
     return { title: `${inv.groomShort} ♥ ${inv.brideShort} 결혼식에 초대합니다`, description: place(inv) || '모바일 청첩장', image };
 }
@@ -66,7 +57,6 @@ function matchDynamic(pathname) {
     let m;
     if ((m = pathname.match(/^\/invite\/video\/([^/]+)\/?$/))) return { kind: 'video', slug: m[1] };
     if ((m = pathname.match(/^\/invite\/([^/]+)\/?$/))) return { kind: 'invite', slug: m[1] };
-    if ((m = pathname.match(/^\/invite\/dol\/([^/]+)\/?$/))) return { kind: 'dol', slug: m[1] };
     return null;
 }
 
@@ -116,6 +106,8 @@ const server = http.createServer(async (req, res) => {
     if (dyn) {
         try {
             const invite = await fetchInvite(dyn.slug);
+            // 청첩장이 아닌 예전 데이터(돌잔치 등)는 기본 메타로 보여준다
+            if (invite.eventType && invite.eventType !== 'wedding') return send(res, 200, indexHtml, MIME['.html'], 'no-cache');
             return send(res, 200, injectMeta(indexHtml, { ...DEFAULT_META, ...metaFor(dyn.kind, invite) }), MIME['.html'], 'no-cache');
         } catch (e) {
             console.warn(`[meta] ${pathname}: ${e.message}`);

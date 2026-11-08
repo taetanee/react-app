@@ -1,4 +1,4 @@
-// 청첩장 / 돌잔치 초대장 화면에서 같이 쓰는 작은 부품과 유틸
+// 모바일 청첩장 화면에서 같이 쓰는 작은 부품과 유틸
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 export const TEXT_DARK = '#3d3838';
@@ -23,9 +23,6 @@ export function parseDate(value) {
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? null : d;
 }
-
-// 아기 이름이 아직 입력되지 않았으면 빈 문자열 (제목에 undefined가 찍히지 않게)
-export const babyLabel = (invite) => (invite?.babyShort || invite?.babyName || '').trim();
 
 export function useDaysLeft(target) {
   const [days, setDays] = useState(0);

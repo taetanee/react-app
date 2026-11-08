@@ -1,21 +1,15 @@
-// 청첩장 / 돌잔치 초대장 본문.
-// 실제 공개 페이지(InvitationView, DolInvitationView)와 마이페이지 실시간 미리보기가 같이 쓴다.
+// 모바일 청첩장 본문.
+// 실제 공개 페이지(InvitationView)와 마이페이지 실시간 미리보기가 같이 쓴다.
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   TEXT_DARK, TEXT_MUTE, DAYS, PreviewContext, useIsPreview,
-  formatDateTime, formatDate, parseDate, babyLabel, useDaysLeft, hexToAccent,
+  formatDateTime, parseDate, useDaysLeft, hexToAccent,
   CopyBtn, Reveal, SectionTitle, MusicPill,
 } from './inviteParts';
 import { resolveOrder, isHidden } from './inviteSections';
-import { DOL_ACCENT } from './theme';
 
-const PALETTE = {
-  wedding: { cream: '#fdf8f1', creamDeep: '#f6ece0', accent: '#a78bda' },
-  dol: { cream: '#fffaf4', creamDeep: '#fbefe4', accent: DOL_ACCENT },
-};
-
-const DOL_DEFAULT_GREETING = '저희 아이가 건강하게 자라\n첫 번째 생일을 맞이하게 되었습니다.\n\n소중한 분들을 모시고\n감사의 마음을 나누고자 합니다.\n오셔서 축복해 주시면 감사하겠습니다.';
+const PALETTE = { cream: '#fdf8f1', creamDeep: '#f6ece0', accent: '#a78bda' };
 
 const nonEmpty = (list) => (Array.isArray(list) ? list.filter(i => (i?.title || '').trim() || (i?.desc || '').trim()) : []);
 const parentName = (name, deceased) => (name ? `${deceased ? '故 ' : ''}${name}` : '');
@@ -71,7 +65,7 @@ function MonthCalendar({ date, accent }) {
   );
 }
 
-function CalendarSection({ date, accent, title, ddayText, extra }) {
+function CalendarSection({ date, accent, title, ddayText }) {
   const daysLeft = useDaysLeft(date);
   if (!date) return null;
   return (
@@ -86,7 +80,6 @@ function CalendarSection({ date, accent, title, ddayText, extra }) {
             <span style={{ fontWeight: 700, color: accent.deep, fontSize: 17 }}>{daysLeft}</span>일 남았습니다
           </div>
         )}
-        {extra}
       </Reveal>
     </Block>
   );
@@ -417,7 +410,7 @@ function Couple({ sides, accent }) {
 }
 
 function WeddingBody({ invite, slug }) {
-  const pal = PALETTE.wedding;
+  const pal = PALETTE;
   const accent = hexToAccent(invite.accentColor, pal.accent);
   const date = parseDate(invite.weddingDate);
   const sides = weddingSides(invite);
@@ -446,90 +439,6 @@ function WeddingBody({ invite, slug }) {
   return (
     <Shell invite={invite} accent={accent} pal={pal} slug={slug} videoLabel="🎬 식전영상 보기"
       hero={<WeddingHero invite={invite} sides={sides} date={date} accent={accent} cream={pal.cream} />}
-      render={render} />
-  );
-}
-
-// ───────────────────────── 돌잔치 전용 ─────────────────────────
-
-function DolHero({ invite, date, accent, cream }) {
-  const cover = invite.gallery?.[0];
-  const baby = babyLabel(invite);
-  return (
-    <div style={{ position: 'relative', height: cover ? 480 : 300, overflow: 'hidden', background: `linear-gradient(160deg, ${accent.base}55, ${cream})` }}>
-      {cover && <img src={cover} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
-      <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, rgba(61,56,56,0.05) 0%, rgba(61,56,56,0) 45%, ${cream} 96%)` }} />
-      <div style={{ position: 'absolute', bottom: 40, left: 0, right: 0, textAlign: 'center' }}>
-        <div className="ic-float" style={{ fontSize: 30, marginBottom: 6 }}>🎂</div>
-        <div style={{ fontSize: 12, letterSpacing: 5, color: accent.deep, marginBottom: 12, fontWeight: 600 }}>FIRST BIRTHDAY</div>
-        <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: 1, marginBottom: 10 }}>{baby ? `${baby}의 첫 번째 생일` : '첫 번째 생일'}</div>
-        <div style={{ fontSize: 13.5, opacity: 0.9, letterSpacing: 0.5 }}>{date ? formatDateTime(date) : ''}</div>
-      </div>
-    </div>
-  );
-}
-
-function Baby({ invite, accent }) {
-  const birth = parseDate(invite.birthDate);
-  if (!invite.babyName && !birth && !invite.fatherName && !invite.motherName) return null;
-  return (
-    <Block pad="10px 24px 40px">
-      <Reveal>
-        <div style={{ background: '#fff', borderRadius: 20, padding: '24px 20px', textAlign: 'center', boxShadow: `0 6px 24px ${accent.base}25` }}>
-          <div style={{ fontSize: 11, letterSpacing: 3, color: accent.deep, marginBottom: 10 }}>STAR OF THE DAY</div>
-          <div style={{ fontSize: 22, fontWeight: 700 }}>{invite.babyName}</div>
-          {birth && <div style={{ fontSize: 13.5, color: TEXT_MUTE, marginTop: 6 }}>{formatDate(birth)} 태어났어요</div>}
-          {(invite.fatherName || invite.motherName) && (
-            <div style={{ fontSize: 14, marginTop: 14, paddingTop: 14, borderTop: `1px dashed ${accent.base}60` }}>
-              {invite.fatherName && <>아빠 <b>{invite.fatherName}</b></>}
-              {invite.fatherName && invite.motherName && <span style={{ color: accent.base, margin: '0 8px' }}>·</span>}
-              {invite.motherName && <>엄마 <b>{invite.motherName}</b></>}
-            </div>
-          )}
-        </div>
-      </Reveal>
-    </Block>
-  );
-}
-
-function DolBody({ invite, slug }) {
-  const pal = PALETTE.dol;
-  const accent = hexToAccent(invite.accentColor, pal.accent);
-  const date = parseDate(invite.eventDate);
-  const birth = parseDate(invite.birthDate);
-  const baby = babyLabel(invite);
-  const daysSinceBirth = birth && date ? Math.floor((date - birth) / 86400000) + 1 : null;
-  const a = invite.accounts ?? {};
-  const c = invite.contacts ?? {};
-
-  const render = {
-    greeting: () => <Greeting text={invite.greeting || DOL_DEFAULT_GREETING} accent={accent} />,
-    baby: () => <Baby invite={invite} accent={accent} />,
-    calendar: () => (
-      <CalendarSection date={date} accent={accent} title="돌잔치 일시" ddayText={baby ? `${baby} 돌잔치까지` : '돌잔치까지'}
-        extra={daysSinceBirth > 0 && (
-          <div style={{ textAlign: 'center', fontSize: 13, color: accent.deep, marginTop: 10 }}>돌잔치 날은 태어난 지 <b>{daysSinceBirth}</b>일째 되는 날이에요</div>
-        )} />
-    ),
-    gallery: () => <Gallery images={invite.gallery ?? []} accent={accent} eyebrow="Growing Up" title="성장 앨범" creamDeep={pal.creamDeep} />,
-    location: () => <Location invite={invite} accent={accent} />,
-    contact: () => (
-      <Contact accent={accent} groups={[{
-        title: '아기 부모님',
-        people: [
-          { role: '아빠', name: invite.fatherName, phone: c.dad },
-          { role: '엄마', name: invite.motherName, phone: c.mom },
-        ],
-      }]} />
-    ),
-    notice: () => <Notice items={invite.notices} accent={accent} />,
-    account: () => <Accounts accent={accent} collapsed={invite.accountsCollapsed} groups={[{ label: '아빠', list: a.dad ?? [] }, { label: '엄마', list: a.mom ?? [] }]} />,
-    ending: () => <Ending invite={invite} accent={accent} />,
-  };
-
-  return (
-    <Shell invite={invite} accent={accent} pal={pal} slug={slug} videoLabel="🎬 성장영상 보기"
-      hero={<DolHero invite={invite} date={date} accent={accent} cream={pal.cream} />}
       render={render} />
   );
 }
@@ -579,10 +488,9 @@ function Shell({ invite, accent, pal, slug, hero, render, videoLabel }) {
 }
 
 export default function InvitationContent({ invite, slug, preview = false }) {
-  const Body = invite.eventType === 'dol' ? DolBody : WeddingBody;
   return (
     <PreviewContext.Provider value={preview}>
-      <Body invite={invite} slug={slug} />
+      <WeddingBody invite={invite} slug={slug} />
     </PreviewContext.Provider>
   );
 }

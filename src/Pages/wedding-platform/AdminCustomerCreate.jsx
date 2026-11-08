@@ -82,7 +82,6 @@ export default function AdminCustomerCreate() {
             <div>아이디: <b>{result.loginId}</b></div>
             <div>마이페이지: <b>mypad.kr/mypage/login</b></div>
             <div>공개 청첩장: <b>mypad.kr/invite/{result.slug}</b></div>
-            <div>돌잔치 초대장: <b>mypad.kr/invite/dol/{result.slug}</b></div>
             <div style={{ color: TEXT_MUTE }}>공개 주소는 자동으로 만든 난수예요.</div>
             <div style={{ color: TEXT_MUTE, marginTop: 8 }}>위 정보를 고객에게 전달하세요.</div>
           </div>
